@@ -1,0 +1,2 @@
+lead_id,data_lead,origem,nome,email,whatsapp,ambiente,metragem,utm_source,utm_medium,utm_campaign,utm_term,utm_content,gclid,fbclid,status,data_mql,data_sql,data_venda,motivo_perdido,vendedor,faturamento,observacao,sincronizado_capi
+EXEMPLO-001,2026-05-17 14:30:00,LP - carpete-em-placas,Jean Teste,jean@exemplo.com,5511999999999,corporativo/escritório,acima de 100m²,google,cpc,brand-search,carpete-corporativo,banner-1,Cj0KCQjwxxxx,fb.1.xxxx,MQL,2026-05-17 14:31:00,,,,João Silva,,Cliente interessado em orçamento técnico,FALSE
