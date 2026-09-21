@@ -1,0 +1,36 @@
+{
+ "inicio": 2,
+ "ticket": 15000,
+ "taxas": {
+  "recompra": 0.01,
+  "recompra_recorrentes": 0.02,
+  "cross_sell": 0.0087,
+  "campanhas_cross_sell": 1,
+  "email": 0.0005,
+  "emails": 2,
+  "descadastro": 0.0007,
+  "reativacao": 0.005,
+  "campanhas_reativacao": 1
+ },
+ "base": {
+  "leads_sem_compra": 800,
+  "recentes": 20,
+  "ativos": 30,
+  "inativos": 200,
+  "recorrentes": 10
+ },
+ "coortes_pre": [
+  [
+   3,
+   2
+  ],
+  [
+   2,
+   1
+  ],
+  [
+   1,
+   1
+  ]
+ ]
+}

@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.DS_Store
+# execuções de clientes ficam fora da skill (projecao-template/clientes/)
+*.xlsx
+premissas*.json
+ga4.json

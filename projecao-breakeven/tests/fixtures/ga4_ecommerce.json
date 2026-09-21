@@ -1,0 +1,70 @@
+{
+  "propriedade": "properties/0",
+  "extraido_em": "sintetico",
+  "meses": {
+    "junho/2026": {
+      "inicio": "",
+      "fim": "",
+      "google_investimento": 4040.0,
+      "google_cliques": 5050,
+      "google_impressoes": 420833,
+      "sessoes_google": 4292,
+      "sessoes_meta": 3367,
+      "sessoes_outros_pagos": 0,
+      "sessoes_nao_pagas": 5000,
+      "sessoes_total": 12659,
+      "carrinho_pago": 498,
+      "checkout_pago": 274,
+      "compras_pagas_ga4": 0,
+      "receita_paga_ga4": 0.0
+    },
+    "julho/2026": {
+      "inicio": "",
+      "fim": "",
+      "google_investimento": 3984.0,
+      "google_cliques": 4980,
+      "google_impressoes": 415000,
+      "sessoes_google": 4233,
+      "sessoes_meta": 3320,
+      "sessoes_outros_pagos": 0,
+      "sessoes_nao_pagas": 5000,
+      "sessoes_total": 12553,
+      "carrinho_pago": 491,
+      "checkout_pago": 270,
+      "compras_pagas_ga4": 0,
+      "receita_paga_ga4": 0.0
+    },
+    "agosto/2026": {
+      "inicio": "",
+      "fim": "",
+      "google_investimento": 4096.0,
+      "google_cliques": 5120,
+      "google_impressoes": 426667,
+      "sessoes_google": 4352,
+      "sessoes_meta": 3413,
+      "sessoes_outros_pagos": 0,
+      "sessoes_nao_pagas": 5000,
+      "sessoes_total": 12765,
+      "carrinho_pago": 505,
+      "checkout_pago": 278,
+      "compras_pagas_ga4": 0,
+      "receita_paga_ga4": 0.0
+    },
+    "setembro/2026": {
+      "inicio": "",
+      "fim": "",
+      "google_investimento": 1840.0,
+      "google_cliques": 2300,
+      "google_impressoes": 191667,
+      "sessoes_google": 1955,
+      "sessoes_meta": 1533,
+      "sessoes_outros_pagos": 0,
+      "sessoes_nao_pagas": 2300,
+      "sessoes_total": 5788,
+      "carrinho_pago": 227,
+      "checkout_pago": 125,
+      "compras_pagas_ga4": 0,
+      "receita_paga_ga4": 0.0
+    }
+  }
+}

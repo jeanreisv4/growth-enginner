@@ -1,0 +1,347 @@
+{
+ "atualizado_em": "2026-09-19",
+ "nota": "Benchmarks para loja de multimídia e acessórios automotivos com leads de Meta Ads e venda por WhatsApp/telefone (loja de multimídia automotiva). Cada número foi aberto na página da fonte em 18 e 19/09/2026. A coluna TAXA UTILIZADA é a da loja de multimídia; para outro cliente, troque pelo analise.json.",
+ "colunas": [
+  "PREMISSA",
+  "FONTE",
+  "BENCHMARK ENCONTRADO",
+  "PERÍODO ANALISADO",
+  "TAXA UTILIZADA",
+  "JUSTIFICATIVA"
+ ],
+ "spans": [
+  [
+   "B",
+   "B"
+  ],
+  [
+   "C",
+   "D"
+  ],
+  [
+   "E",
+   "G"
+  ],
+  [
+   "H",
+   "H"
+  ],
+  [
+   "I",
+   "I"
+  ],
+  [
+   "J",
+   "N"
+  ]
+ ],
+ "nota_tabela": "O histórico da loja de multimídia tem um mês fechado e uma venda, e não sustenta taxa nenhuma para dezembro. As etapas sem histórico suficiente recebem alvo de mercado; as demais seguem o histórico. Onde não existe número do modelo exato (loja de multimídia automotiva no Brasil), a tabela usa o segmento mais próximo e diz que é aproximação.",
+ "linhas": [
+  [
+   "Leads contatados (conexão)",
+   "Foureyes, Dealership Close Rates by Metro (mai/2026); Harvard Business Review, The Short Life of Online Sales Leads (2011)",
+   "Contato com 69% dos leads inbound, de 47% a 79% entre 48 mercados; quem contata abaixo de 66% fecha abaixo da média. Resposta em até 1 hora: quase 7 vezes mais chance de qualificar o lead",
+   "Foureyes: 1º tri/2026, 1.150 lojas, 2,6 mi de leads. HBR: 2.241 empresas auditadas",
+   "22% → 69% em dezembro",
+   "Única taxa de contato publicada com base grande. É aproximação: concessionárias de veículos dos EUA, leads de todas as origens. O MQL da loja de multimídia sai do lead contatado, então lead → MQL sobe na mesma proporção (16,0% → 50,1%) e o resto do funil fica igual."
+  ],
+  [
+   "MQL → SQL (conferência)",
+   "First Page Sage, Sales Funnel Conversion Rate Benchmarks 2026",
+   "Automotivo: lead → MQL 21%, MQL → SQL 42%",
+   "2017–2025, majoritariamente B2B",
+   "26% (janela da loja de multimídia), sem alvo de mercado",
+   "O mercado sugere espaço (42%), mas a loja de multimídia já passa o automotivo em lead → SQL (13% em dezembro, contra 9%) por causa do contato de 69%. Levar também o MQL → SQL a 42% poria o lead → venda em cerca de 7%, 3,5 vezes o automotivo (2%). Não seria realista somar os dois."
+  ],
+  [
+   "SQL → venda",
+   "RD Station, Dados RD Station: benchmarks e métricas reais (ago/2026); First Page Sage, Sales Funnel Conversion Rate Benchmarks 2026",
+   "Conversão no CRM: Hardware e Eletrônicos 28,3%, Varejo 33,2%. Automotivo: SQL → oportunidade 46% × oportunidade → fechado 49% ≈ 22,5% (multiplicação nossa)",
+   "RD: dados de 2025, 97 mi de negociações no RD CRM. First Page Sage: 2017–2025",
+   "5,9% → 33,2% em dezembro",
+   "Usa o varejo da RD Station, o único dado brasileiro de varejo; é o maior dos três, e a escolha foi do usuário para manter dezembro no azul. A RD não publica a definição exata (negociação → venda, mais perto de SQL → venda do que de lead → venda). Com 28,3% (o meio das três referências), dezembro fica em −R$ 1,4 mil e o acumulado zera em agosto de 2027."
+  ],
+  [
+   "Lead → venda resultante (checagem, não premissa)",
+   "First Page Sage (2026); Foureyes, 2026 Automotive Dealer Benchmarks Report",
+   "Automotivo ≈ 2,0% (21% × 42% × 46% × 49%). Concessionárias: 11,7% dos leads de venda compraram",
+   "First Page Sage: 2017–2025. Foureyes: jan–dez/2025, mais de 22.900 sites",
+   "4,3% em dezembro (resultado das taxas acima)",
+   "Fica entre o automotivo geral e o varejo de veículos, que tem produto e intenção de compra diferentes. A loja de multimídia está hoje em 0,23%."
+  ],
+  [
+   "CPM base e saturação do público",
+   "Growth Pack da loja de multimídia (Meta diário); Superads, CPM Benchmarks in Brazil",
+   "loja de multimídia: R$ 2,54 em 07–15/08 e R$ 2,61 em 16–24/08 (mesmas campanhas, antes e depois do início do impulsionamento eleitoral); R$ 5,19 em 25–30/08 e R$ 7,43 em 10–17/09 (formulário de leads). Mediana do Brasil: R$ 18,26 (jul/2025–jul/2026, todos os objetivos). Nenhuma fonte mede quanto o CPM sobe quando a verba escala num público local",
+   "ago–set/2026; jul/2025–jul/2026",
+   "Base de R$ 7,43 em setembro subindo 1,1% ao mês até R$ 8,00 em abril/2027 (quando a verba chega a R$ 21,3 mil), estável depois",
+   "O CPM subiu com a troca para formulário, não com a eleição. A alta até R$ 8,00 é premissa do usuário (o público local satura com a verba 7 vezes maior), sem benchmark. É o maior CPM que ainda fecha o acumulado nos 12 meses com folga: com R$ 8,25 zera em agosto de 2027, com R$ 8,50 em setembro e com R$ 10 não zera."
+  ],
+  [
+   "Eleição de 2026 (CPM)",
+   "TRE-RJ, Cartilha Eleições 2026; CNN Brasil (02/09/2022); Growth Pack da loja de multimídia",
+   "Impulsionamento pago de 16/08 a 01/10/2026; 1º turno 04/10, 2º turno 25/10. Em 2022, um público eleitoral amplo (16+, Brasil inteiro) passou de R$ 5,03 para R$ 96,71 de CPM na 2ª quinzena de agosto. No público da loja de multimídia, o CPM não mudou no início da janela (R$ 2,54 → R$ 2,61)",
+   "2022 e 2026",
+   "Setembro já medido na janela; outubro ×1,05 (2º turno)",
+   "O número de 2022 é de campanha eleitoral de alcance nacional, não de anunciante local de formulário. O próprio dado da loja de multimídia mostra efeito pequeno. O impulsionamento do 1º turno acaba em 01/10; outubro leva uma folga de 5% pelo 2º turno."
+  ],
+  [
+   "Datas comemorativas e Black Friday (CPM)",
+   "Superads (global e varejo global, jul/2025–jul/2026); Bïrch (EUA, 2021–2023)",
+   "Global: novembro +20,7% sobre outubro (1,18x a média). Varejo global: novembro 1,31x, dezembro 0,81x, maio 1,16x. EUA: +40% só na semana de pico de novembro. No Brasil, a Superads não mostrou pico em nov–dez/2025",
+   "jul/2025–jul/2026; 2021–2023",
+   "Novembro ×1,20; maio ×1,15; junho ×1,10; agosto ×1,05; demais meses ×1,00 (antes do remarketing)",
+   "Não há CPM por data comemorativa no Brasil; os multiplicadores vêm do varejo global e ficam do lado caro, a pedido do usuário. O CPM de novembro é o maior risco sazonal."
+  ],
+  [
+   "Remarketing (CPM)",
+   "Lebesgue (2024); AdRoll, Q1 2026 State of Digital Advertising; Metadata.io (2025)",
+   "Meta: CPM de remarketing US$ 8,43 contra US$ 7,50 de prospecção (+12,4%). Display: retargeting +18% no ano, prospecção −11%. B2B: custo por lead do remarketing 28% menor",
+   "2024–2026",
+   "20% da verba em remarketing a partir de novembro, com CPM 15% maior: CPM total ×1,03",
+   "O remarketing custa mais por mil impressões, mas tende a converter mais; o ganho de conversão não entra na projeção. Aproximação: a Lebesgue não publica metodologia e a AdRoll é display."
+  ],
+  [
+   "CTR de link",
+   "LocaliQ / WordStream, Facebook Advertising Benchmarks 2025; Superads, CTR Benchmarks in Brazil",
+   "Automotive – Repair, Service & Parts (objetivo Tráfego): 0,80%. Brasil, todas as indústrias: 1,70%, mas contando todos os cliques",
+   "2025, EUA; jul/2025–jul/2026, Brasil",
+   "0,68% → 0,80% em dezembro",
+   "O único comparativo do setor (peças e serviços automotivos) é 0,80%, e a loja de multimídia está um pouco abaixo. Os números de 1,7% a 2,6% contam todos os cliques e não se comparam com CTR de link. O alvo supõe criativo melhor, sem ir além do setor. Aproximação: EUA, objetivo Tráfego."
+  ],
+  [
+   "Clique → lead",
+   "LocaliQ / WordStream, Facebook Advertising Benchmarks 2025 e 2026",
+   "Campanhas de leads: média de todas as indústrias 7,72% (2025) e 8,54% (2026); Casa e Reformas 5,22%; Automotive – For Sale 4,15% (2026)",
+   "2025 e abr/2025–jun/2026, EUA",
+   "6,6% (setembro, campanha de formulário atual)",
+   "A loja de multimídia está dentro da faixa do mercado, então a taxa fica a de setembro, sem ganho suposto. Na média de campanhas de leads (7,7%), o custo por lead cairia de R$ 14,10 para cerca de R$ 12: é folga, não premissa. Agosto misturava campanhas de catálogo e mensagem e não serve de base."
+  ],
+  [
+   "Ticket da venda",
+   "Amostras de preço: MercadoCar, Havan, Wolloko, Diverso ABC, Navpro, Faaftech e Cronoshare",
+   "Aparelho de R$ 1.100 a R$ 2.300 (mediana R$ 1.600); kit moldura + chicote R$ 145 a R$ 340; instalação de tela R$ 300 a R$ 600; câmera de ré instalada R$ 290 a R$ 499; interface de volante R$ 247 a R$ 387",
+   "Preços vistos em 18/09/2026",
+   "R$ 1.500 → R$ 2.500 em dezembro",
+   "Não há ticket médio nem taxa de anexação publicados para loja de som ou multimídia. Aparelho + kit + instalação dá R$ 1.450 a R$ 2.250; com câmera de ré e interface de volante, R$ 2.000 a R$ 3.100. R$ 2.500 é o kit com câmera de ré, no meio da faixa. É estimativa a partir de amostras, não benchmark, e depende de a loja de multimídia vender o kit completo."
+  ],
+  [
+   "Margem de contribuição",
+   "IBGE, Pesquisa Anual de Comércio 2024 (tabela 10645); Damodaran, Margins by Sector (NYU Stern, jan/2026)",
+   "Comércio de peças e acessórios para veículos: margem de comercialização de 42,8% sobre o custo, ou 29,9% da receita líquida de revenda. Retail (Special Lines): margem bruta de 35,3% (EUA) e 32,1% (mercados emergentes)",
+   "2024; jan/2026",
+   "25% (informada pelo usuário)",
+   "A margem bruta do setor fica entre 30% e 35%; os 25% informados descontam os custos variáveis da venda (cartão, comissão). Coerente com o mercado."
+  ],
+  [
+   "Sazonalidade da demanda (12 meses)",
+   "Google Trends (\"central multimídia\", \"som automotivo\", \"smart tv\"); IBGE PMC (tabela 8883); Superads (CPM)",
+   "Busca por \"central multimídia\" (média das duas grafias, razão à média móvel de 12 meses, 2021–2025): jan 1,01; fev 0,96; mar 0,97; abr 0,96; mai 0,98; jun 1,01; jul 1,07; ago 1,04; set 0,94; out 0,97; nov 1,01; dez 1,05. Semana da Black Friday +5%; \"smart tv\" +74% a +108% na mesma semana. IBGE peças e acessórios: novembro e dezembro 1,03",
+   "Google Trends 2021–2025 (geo Brasil, mensal, semanal e diário); IBGE 2023–2025",
+   "Novembro ×1,05 e dezembro ×1,08; demais meses 1,00",
+   "Os picos de central multimídia são julho (férias), agosto (Dia dos Pais) e dezembro (Natal); Dia das Mães, Namorados e Dia do Consumidor não aparecem na busca. A projeção aplica só novembro e dezembro; de fevereiro a maio a busca fica 2% a 4% abaixo da média e julho e agosto 4% a 7% acima, o que se compensa no ano. Na Black Friday a busca sobe cerca de 5%: os +90% são de smart TV. Ganho da oferta da loja de multimídia nessas datas não entra, por falta de dado de conversão."
+  ],
+  [
+   "WhatsApp como canal de venda (contexto)",
+   "Opinion Box, Pesquisa WhatsApp no Brasil 2025; OmniChat, Chat Commerce Report 2026",
+   "60% dos usuários de WhatsApp já compraram pelo app. Varejo: 9% de conversão em atendimento receptivo",
+   "jun/2025 (n = 1.126); 2025 (cerca de 600 marcas, 51 mi de conversas)",
+   "Contexto, sem taxa usada",
+   "Mostra que o canal comporta a venda. A taxa da OmniChat é de fornecedor e não tem definição publicada, então não entra no cálculo."
+  ]
+ ],
+ "descartados": [
+  "Superads, CPL no Brasil (média de US$ 88,8, meses de US$ 0,81 a US$ 441): série errática, coeficiente de variação de 157%. Não serve para projeção.",
+  "Trafius, \"CPM Brasil R$ 8–45\": sem metodologia, amostra nem período.",
+  "LocaliQ 2025: substituído pela edição WordStream 2026; a tabela de leads de 2025 não traz o setor automotivo.",
+  "Ruler Analytics, 1,7% sessão → conversão no automotivo em social pago: mede visitas ao site no Reino Unido, não formulário nativo.",
+  "\"Lead → venda de concessionária de 2% a 5%, top 10% com 8% a 10%\" (Demand Local, Dealership Accelerator) e \"60% dos compradores mandam lead online\" (Cox Automotive): só em snippets e blogs agregadores, sem fonte primária aberta.",
+  "Meta/Kantar \"72,4% mais propensos a comprar de marcas com mensagens\" e \"78% dos brasileiros fecham mais fácil por mensagem\": só em snippets.",
+  "Zenvia, Octadesk e Sebrae sobre vendas por WhatsApp: só em matérias secundárias; a da Zenvia é opinião das empresas, não taxa.",
+  "Tupi.fm e AutoCidade, faixas de preço de instalação: blogs sem fonte citada.",
+  "Taxa de anexação e ticket médio de loja de som: nenhuma fonte publicada. O estudo Roland Berger/DPK (mercado de R$ 2,2 bi) é de 2016 e não traz ticket.",
+  "Varejo de car audio nos EUA (CE Pro, 12VoltNews, Mobile Electronics): nenhum dado de conversão consulta → venda encontrado.",
+  "Superads, páginas \"automotive\" e \"leads\": abrem, mas o texto diz \"All industries in All countries\"; os números são os globais. Não há dado automotivo nem por objetivo, e os filtros de Brasil + indústria só carregam por JavaScript.",
+  "Superads, \"Retail in Brazil\" (CPM de cerca de US$ 2,30): só no snippet; a página redireciona para a global de varejo.",
+  "AdAmigo (Brasil: CPM US$ 4,20, CPC US$ 0,35): a página diz que são projeções para 2026, sem fonte primária.",
+  "Trafius (CPM de R$ 15 a 30 em formulário, Black Friday até +70%) e Intent Marketing (CPM de R$ 15 a 28, CPL de R$ 15 a 55): sem metodologia; a Intent diz que não é amostra auditada.",
+  "Efeito de escalar a verba sobre CPM e CPL, e proporção entre CTR de link e CTR de todos os cliques: nenhuma fonte primária com números; só afirmações de blogs.",
+  "Sazonalidade global de CPM (novembro +20% a 29%, Superads): é global; no Brasil a mesma fonte mostra ago–dez/2025 mais barato. Não aplicada.",
+  "CPM +30% a +80% na Black Friday no Brasil (blogs de agências) e \"CPM de novembro 41% acima da média\" (1.247 contas): sem dado ou só em snippet, e não é Brasil.",
+  "Conversão maior na Black Friday: sem dado primário brasileiro; fora do Brasil (NRF, 2023) a conversão da semana da BF foi menor (2,79%) que a das semanas vizinhas (2,99% e 3,01%). O volume da BF vem do tráfego.",
+  "Automotivo no e-commerce na BF 2024 (+36%, Neotrust) e descontos de 60% em autopeças online (BigDataCorp): crescimento contra o ano anterior e puxado por peças com desconto, sem paralelo para instalação de multimídia.",
+  "Meta Ad Library Report (Brasil): sem acesso (login). CPM das eleições de 2024: nenhuma fonte aberta.",
+  "\"CPM 12% a 100% mais caro no remarketing\" (searchlab, viniensina, Lebesgue em snippet) e \"até 50% mais caro em 2026\" (blogs de agência): só em snippets ou sem dado.",
+  "Efeito de escalar a verba sobre o CPM (\"saturação em 40–55% do budget\", \"frequência acima de 3–4\"): só em snippets, sem fonte primária. Por isso a alta do CPM até R$ 10 é premissa do usuário."
+ ],
+ "fontes": [
+  {
+   "texto": "Foureyes · Dealership Close Rates by Metro · contato com 69% dos leads (47% a 79%) · 2026",
+   "link": "https://www.foureyes.io/blog/dealership-close-rates-by-metro"
+  },
+  {
+   "texto": "Harvard Business Review · The Short Life of Online Sales Leads · resposta em até 1 hora, quase 7x mais chance de qualificar · 2011 (lido em cópia do artigo; o original tem paywall)",
+   "link": "https://hbr.org/2011/03/the-short-life-of-online-sales-leads"
+  },
+  {
+   "texto": "InsideSales.com / MIT (Oldroyd) · Lead Response Management Study · ligar em 5 min em vez de 30 min: 21x mais chance de qualificar · 2007",
+   "link": "https://25649.fs1.hubspotusercontent-na2.net/hub/25649/file-13535879-pdf/docs/mit_study.pdf"
+  },
+  {
+   "texto": "Velocify · The Ultimate Contact Strategy · 93% dos leads convertidos foram contatados até a 6ª tentativa · c. 2016",
+   "link": "https://appexchange.salesforce.com/partners/servlet/servlet.FileDownload?file=00P3000000P3dgaEAB"
+  },
+  {
+   "texto": "RD Station · Dados RD Station: benchmarks e métricas reais · conversão no CRM de Hardware e Eletrônicos 28,3% e Varejo 33,2% · 2026",
+   "link": "https://www.rdstation.com/blog/marketing/dados-rd-station-benchmarks/"
+  },
+  {
+   "texto": "First Page Sage · Sales Funnel Conversion Rate Benchmarks: 2026 Report · automotivo por etapa · 2026",
+   "link": "https://firstpagesage.com/seo-blog/sales-funnel-conversion-rate-benchmarks-report/"
+  },
+  {
+   "texto": "Foureyes · 2026 Automotive Dealer Benchmarks Report · 11,7% dos leads de venda compraram · 2026",
+   "link": "https://www.foureyes.io/blog/2026-automotive-dealer-benchmarks-report"
+  },
+  {
+   "texto": "Superads · Facebook Ads CPM Benchmarks in Brazil · CPM mediano de US$ 3,46 · 2026",
+   "link": "https://www.superads.ai/facebook-ads-costs/cpm-cost-per-mille/brazil"
+  },
+  {
+   "texto": "Superads · Facebook Ads CTR Benchmarks in Brazil · CTR mediano de 1,70% · 2026",
+   "link": "https://www.superads.ai/facebook-ads-costs/ctr-click-through-rate/brazil"
+  },
+  {
+   "texto": "IBGE · Pesquisa Anual de Comércio 2024, tabela 10645 · margem de comercialização de peças e acessórios para veículos 42,8% · 2024",
+   "link": "https://sidra.ibge.gov.br/tabela/10645"
+  },
+  {
+   "texto": "IBGE · Pesquisa Mensal de Comércio, tabela 8883 · índice de volume sem ajuste sazonal por atividade · 2023–2025",
+   "link": "https://sidra.ibge.gov.br/tabela/8883"
+  },
+  {
+   "texto": "Damodaran (NYU Stern) · Margins by Sector (US) · Retail (Special Lines) margem bruta de 35,3% · jan/2026",
+   "link": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/margin.html"
+  },
+  {
+   "texto": "Damodaran (NYU Stern) · Margins by Sector (Emerging Markets) · Retail (Special Lines) margem bruta de 32,1% · jan/2026",
+   "link": "https://www.stern.nyu.edu/~adamodar/pc/datasets/marginemerg.xls"
+  },
+  {
+   "texto": "MercadoCar · Central Multimídia · amostra de preços dos aparelhos · visto em 18/09/2026",
+   "link": "https://www.mercadocar.com.br/central-multimidia"
+  },
+  {
+   "texto": "Havan · Multimídia Receiver Pioneer DMH-Z5380TV · R$ 1.999,90 · visto em 18/09/2026",
+   "link": "https://www.havan.com.br/multimidia-receiver-dmh-z5380tv-com-tv-digital-pioneer-diversos/p"
+  },
+  {
+   "texto": "Wolloko · Multimídias Faaftech · R$ 990 a R$ 1.221 · visto em 18/09/2026",
+   "link": "https://wolloko.com.br/multimidias1/multimidias-faaftech1/"
+  },
+  {
+   "texto": "Diverso ABC · loja de som com instalação · multimídia a partir de R$ 1.450, câmera de ré instalada a partir de R$ 290 · visto em 18/09/2026",
+   "link": "https://www.diversomabc.com.br/"
+  },
+  {
+   "texto": "Navpro · kit moldura e chicotes para central multimídia · R$ 145 a R$ 338 · visto em 18/09/2026",
+   "link": "https://www.navpro.com.br/kits-de-instalacao-para-central-multimidia/volkswagen/vw-amarok-moldura-e-chicotes-para-instalacao-de-central-multimidia-7-navpro-caska"
+  },
+  {
+   "texto": "Faaftech · Central Multimídia B2B · câmera instalada a partir de R$ 499 · visto em 18/09/2026",
+   "link": "https://www.faaftech.com/central-multimidia-b2b/"
+  },
+  {
+   "texto": "Cronoshare · Quanto custa instalar um som automotivo · instalação de tela R$ 300 a R$ 600 · 2026",
+   "link": "https://www.cronoshare.com.br/quanto-custa/instalar-som-automotivo"
+  },
+  {
+   "texto": "MercadoCar · Interface de Volante · R$ 247 a R$ 387 · visto em 18/09/2026",
+   "link": "https://www.mercadocar.com.br/interface-de-volante"
+  },
+  {
+   "texto": "Opinion Box · Pesquisa WhatsApp no Brasil 2025 · 60% já compraram pelo app · 2025",
+   "link": "https://blog.opinionbox.com/pesquisa-whatsapp-no-brasil/"
+  },
+  {
+   "texto": "OmniChat · Chat Commerce no Brasil: dados do varejo conversacional 2025 · 9% de conversão no receptivo · 2026",
+   "link": "https://omni.chat/blog/chat-commerce-brasil-varejo/"
+  },
+  {
+   "texto": "WordStream by LocaliQ · Facebook Ads Benchmarks 2026 · clique → lead automotivo 4,15%, média 8,54% · 2026",
+   "link": "https://www.wordstream.com/blog/facebook-ads-benchmarks-2026"
+  },
+  {
+   "texto": "LocaliQ · Facebook Advertising Benchmarks 2025 · CTR de peças e serviços automotivos 0,80%; leads: conversão 7,72%, Casa e Reformas 5,22% · 2025",
+   "link": "https://localiq.com/blog/facebook-advertising-benchmarks/"
+  },
+  {
+   "texto": "Superads · Facebook Ads CPC Benchmarks in Brazil · CPC mediano de US$ 0,20 · 2026",
+   "link": "https://www.superads.ai/facebook-ads-costs/cpc-cost-per-click/brazil"
+  },
+  {
+   "texto": "Banco Central do Brasil · PTAX · câmbio médio de venda de R$ 5,2777 por US$ (jul/2025–jul/2026)",
+   "link": "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/"
+  },
+  {
+   "texto": "Google Trends · \"central multimídia\", Brasil, 2021–2026 · novembro 1,00–1,06, semana da BF +5% · consultado em 19/09/2026",
+   "link": "https://trends.google.com/trends/explore?date=2021-01-01%202026-08-31&geo=BR&q=central%20multim%C3%ADdia"
+  },
+  {
+   "texto": "Google Trends · \"som automotivo\", Brasil · pico na semana do Natal · consultado em 19/09/2026",
+   "link": "https://trends.google.com/trends/explore?date=2021-01-01%202026-08-31&geo=BR&q=som%20automotivo"
+  },
+  {
+   "texto": "Google Trends · \"smart tv\", Brasil · semana da BF +74% a +108% · consultado em 19/09/2026",
+   "link": "https://trends.google.com/trends/explore?date=today%205-y&geo=BR&q=smart%20tv"
+  },
+  {
+   "texto": "Confi Neotrust via Stone · Black Friday 2025: R$ 10,19 bi de quinta a domingo, R$ 4,76 bi na sexta · 2025",
+   "link": "https://conteudo.stone.com.br/black-friday-2025-resultados-vendas/"
+  },
+  {
+   "texto": "Cielo · ICVA Black Friday 2025: lojas físicas −1,4%, e-commerce +9,0% · 2025",
+   "link": "https://blog.cielo.com.br/indice-icva/black-friday-2025/"
+  },
+  {
+   "texto": "NielsenIQ · Black Friday 2025 no Brasil: mais de um terço espera 3 meses ou mais pelas ofertas · 2025",
+   "link": "https://nielseniq.com/global/en/insights/analysis/2025/2025-brazilian-black-friday/"
+  },
+  {
+   "texto": "NRF via Mercado&Consumo · conversão na semana da BF 2023 de 2,79%, menor que nas semanas vizinhas · 2024",
+   "link": "https://mercadoeconsumo.com.br/07/10/2024/noticias-varejo/conversao-na-black-friday-de-2023-foi-de-279-menor-que-na-semana-anterior-e-seguinte/"
+  },
+  {
+   "texto": "TRE-RJ · Cartilha Eleições 2026 · impulsionamento pago suspenso em 02/10 · 2026",
+   "link": "https://apps.tre-rj.jus.br/site/cartilha-eleicoes-2026/index.html"
+  },
+  {
+   "texto": "CNN Brasil · Custo de impulsionamento de anúncios sobe 1.800% em 15 dias de campanha · 2022",
+   "link": "https://www.cnnbrasil.com.br/politica/custo-de-impulsionamento-de-anuncios-sobe-1-800-em-15-dias-de-campanha/"
+  },
+  {
+   "texto": "Superads · Facebook Ads CPM Benchmarks, global e varejo · novembro +20,7% · 2026",
+   "link": "https://www.superads.ai/facebook-ads-costs/cpm-cost-per-mille/"
+  },
+  {
+   "texto": "Bïrch · Meta ad costs analysis · pico de novembro +40% (EUA) · 2024",
+   "link": "https://bir.ch/blog/meta-ad-costs-analysis"
+  },
+  {
+   "texto": "Lebesgue · Prospecting vs retargeting Facebook ads · CPM US$ 7,50 contra US$ 8,43 · 2024",
+   "link": "https://lebesgue.io/facebook-ads/prospecting-vs-retargeting-facebook-ads"
+  },
+  {
+   "texto": "AdRoll · Q1 2026 State of Digital Advertising · retargeting +18% · 2026",
+   "link": "https://lite.aol.com/tech/story/0022/20260324/9676968.htm"
+  },
+  {
+   "texto": "Metadata.io · Meta ads cost B2B · CPL de remarketing 28% menor · 2025",
+   "link": "https://metadata.io/meta-ads-cost-b2b"
+  },
+  {
+   "texto": "Cielo · ICVA Dia dos Pais 2026 · +7,7% nominal · 2026",
+   "link": "https://blog.cielo.com.br/indice-icva/vendas-varejo-dia-dos-pais-2026/"
+  }
+ ]
+}

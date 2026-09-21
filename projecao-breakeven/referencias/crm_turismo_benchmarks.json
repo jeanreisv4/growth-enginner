@@ -1,0 +1,174 @@
+{
+ "atualizado_em": "2026-09-18",
+ "nota": "Benchmarks de recompra e reativação para turismo/agência de viagens, conferidos na página de cada fonte em 18/09/2026. A coluna TAXA UTILIZADA vale para os valores padrão do crm.json; se o cliente mudar uma taxa, ajuste a linha.",
+ "colunas": [
+  "PREMISSA",
+  "FONTE",
+  "BENCHMARK ENCONTRADO",
+  "PERÍODO ANALISADO",
+  "TAXA UTILIZADA",
+  "JUSTIFICATIVA"
+ ],
+ "spans": [
+  [
+   "B",
+   "B"
+  ],
+  [
+   "C",
+   "D"
+  ],
+  [
+   "E",
+   "G"
+  ],
+  [
+   "H",
+   "H"
+  ],
+  [
+   "I",
+   "I"
+  ],
+  [
+   "J",
+   "N"
+  ]
+ ],
+ "nota_tabela": "Toda taxa do CRM vem de benchmark externo, verificado na página da fonte. Onde não existe número do modelo exato da agência de viagens, a tabela usa o segmento mais próximo e diz que é aproximação.",
+ "linhas": [
+  [
+   "Recompra via WhatsApp (clientes de 6 a 12 meses)",
+   "Nexus (FSB) para a Secom/PR (2025); Futura Inteligência + Apex, via Panrotas (2023); Grupo Wish, via Panrotas (2025)",
+   "28% dos brasileiros viajam 2 ou mais vezes por ano, sobre 61% que viajam ao menos uma vez (46% de quem viaja); 24,9% de quem viajou em 12 meses comprou por agência; recompra de 12% numa rede de resorts brasileira",
+   "Nexus: 14 a 28/10/2024. Futura: 17 a 20/07/2023. Wish: não informado",
+   "1% ao mês (12% ao ano)",
+   "Triangulação: 46% × 24,9% ≈ 11,4%, coerente com os 12% do Grupo Wish. É aproximação: nenhuma agência brasileira publica taxa de recompra. Fica abaixo da retenção de receita por safra do Airbnb (36% a 40% no segundo ano), que é plataforma de alta frequência."
+  ],
+  [
+   "Recompra de clientes recorrentes",
+   "Promodo, Travel Industry Benchmarks Report 2026",
+   "Intervalo médio entre reservas de 312 dias; 146 dias para quem tem 7 ou mais reservas",
+   "Não informado",
+   "2% ao mês (2× a taxa base)",
+   "Evidência fraca: vem da base de um único cliente (FREETOUR.com). Só atua se a agência de viagens informar clientes recorrentes (hoje em branco)."
+  ],
+  [
+   "Janela da recompra",
+   "Expedia Group, Path to Purchase (2023); IBGE, PNAD Contínua Turismo 2024 (2025)",
+   "Viagem internacional: 85 dias de decisão e 94 dias entre a compra e a viagem. 74,0% dos domicílios que viajaram fizeram uma única viagem no trimestre",
+   "Expedia: 24/03 a 19/04/2023. IBGE: 2024",
+   "Recompra só a partir de 6 meses depois da compra",
+   "O ciclo de uma viagem internacional leva cerca de 6 meses; antes disso o cliente está na viagem já comprada. A pesquisa da Expedia não inclui o Brasil: aproximação."
+  ],
+  [
+   "Cross-sell e novas viagens (clientes com menos de 6 meses)",
+   "Omnisend, Email Marketing Benchmarks (2026)",
+   "Automação de cross-sell: abertura 42,09%, CTR 3,02%, conversão 0,87%, US$ 0,95 por e-mail",
+   "2025",
+   "0,87% por campanha, 1 campanha por mês",
+   "Aproximação de e-commerce, medida para itens adicionais. Em turismo equivale a vender aéreo, seguro ou passeio a quem já comprou pacote."
+  ],
+  [
+   "E-mail para leads que não compraram",
+   "Omnisend, Email Marketing Benchmarks (2026); Revinate, 2026 Hospitality Benchmark Report",
+   "Campanhas da categoria Travel: conversão de 0,05%. Hotéis: 0,53% de reservas por e-mail em listas com menos de 5 mil contatos e 0,06% acima de 50 mil",
+   "Omnisend: 2025. Revinate: jan a dez/2025",
+   "0,05% por e-mail, 2 e-mails por mês",
+   "Piso do setor de viagem. A lista da agência de viagens é pequena, faixa em que o Revinate chega a 0,53%, mas o ticket de hotel é bem menor que R$ 15 mil; por isso fica o piso."
+  ],
+  [
+   "Descadastro da base de e-mail",
+   "RD Station, Dados RD Station: Benchmarks (2026)",
+   "Turismo e Lazer: abertura 19,63%, cliques 1,56%, cancelamento 0,07%",
+   "2025",
+   "0,07% por e-mail enviado",
+   "Dado brasileiro do próprio segmento. Tira contatos da base de leads mês a mês."
+  ],
+  [
+   "Reativação de clientes inativos (mais de 12 meses)",
+   "Omnisend, Email Marketing Benchmarks (2026)",
+   "Automação de reativação de clientes: abertura 33,11%, CTR 1,99%, conversão 0,54%, US$ 0,51 por e-mail",
+   "2025",
+   "0,5% por campanha, 1 campanha por mês",
+   "O número de venda mais conservador encontrado. Referências maiores (20% a 40% no livro Marketing Metrics; 26% no estudo de win-back B2B de Dan Pfister, 2019) são genéricas, de fonte secundária e não são de turismo."
+  ],
+  [
+   "Alcance do WhatsApp (informativo)",
+   "Braze (2024); RD Station, Dados RD Station: Benchmarks (2026)",
+   "68% de leitura de mensagens de marketing (usuários com opt-in); no CRM de Turismo e Lazer, taxa de conversão de 5,9% e WhatsApp usado por 89,45% das contas",
+   "Braze: não informado. RD Station: 2025",
+   "Não usada como taxa",
+   "Não existe benchmark público de conversão em venda por WhatsApp em turismo. A recompra por WhatsApp usa a taxa de recompra (primeira linha), e o WhatsApp é o canal."
+  ]
+ ],
+ "descartados": [
+  "\"98% de abertura\" do WhatsApp (blog do WhatsApp Business, 2023): o número não traz estudo nem base. Descartado.",
+  "\"69% dos leads não prontos convertem em 24 meses\": fonte primária não localizada e texto contraditório. Descartado.",
+  "\"1 em cada 3 que respondem compram\" (OmniChat, 2026): varejo de ticket baixo. 3% a 7% de conversão (Chatarmin) e 14,9% (Movida): fornecedor sem amostra e caso autorreportado. Descartados.",
+  "Recompra de Decolar (cerca de 51% dos clientes do ano já tinham comprado), Jet2 (61% em pacotes), Tauck (55%) e Viking (53%): medem quantos compradores do ano já eram clientes, não quanto da base volta a comprar. Servem só como teto de marcas maduras.",
+  "Retenção de 55% em hospitalidade e viagens (CustomerGauge via Statista; First Page Sage): fonte secundária, sem definição. Pesquisa da TravelOperations (2025): sem amostra nem definição. Descartados como taxa."
+ ],
+ "fontes": [
+  {
+   "texto": "Nexus (FSB) para a Secom/PR · 61% dos brasileiros viajam a lazer ao menos uma vez por ano; 22% de 2 a 3 vezes; 6% 4 vezes ou mais · 2025",
+   "link": "https://www.nexus.fsb.com.br/estudos-divulgados/61-dos-brasileiros-fazem-pelo-menos-uma-viagem-a-lazer-no-ano/"
+  },
+  {
+   "texto": "Futura Inteligência + Apex, via Panrotas · 24,9% de quem viajou em 12 meses comprou por agência; o brasileiro viaja 1,9 vez por ano · 2023",
+   "link": "https://www.panrotas.com.br/agencias-de-viagens/mercado/2023/08/quem-e-o-publico-que-compra-das-agencias-de-viagens-estudo-revela_198925.html"
+  },
+  {
+   "texto": "Panrotas, Grupo Wish lança programa de fidelidade My Wish · taxa de recompra de 12% · 2025",
+   "link": "https://www.panrotas.com.br/hotelaria/mercado/2025/10/grupo-wish-lanca-programa-de-fidelidade-my-wish-com-cashback-e-outros-beneficios_222438.html"
+  },
+  {
+   "texto": "Airbnb, prospecto S-1 (SEC) · retenção de receita por safra de 36% a 40% no segundo ano (safras 2014 a 2017); 69% da receita de 2019 de hóspedes recorrentes · 2020",
+   "link": "https://www.sec.gov/Archives/edgar/data/1559720/000119312520294801/d81668ds1.htm"
+  },
+  {
+   "texto": "IBGE, PNAD Contínua Turismo 2024 · 19,3% dos domicílios viajaram em 3 meses; 45,7% nos de renda alta; 74,0% dos que viajaram fizeram uma viagem · 2025",
+   "link": "https://agenciadenoticias.ibge.gov.br/media/com_mediaibge/arquivos/70dbd167dc67f3deba4cb577364e58e4.pdf"
+  },
+  {
+   "texto": "Expedia Group, Path to Purchase · janela de decisão de 71 dias e pós-compra de 73 dias; internacional 85 e 94 dias · 2023",
+   "link": "https://go2.advertising.expedia.com/rs/185-EIA-216/images/Expedia_Group-Path2Purchase-2023.pdf"
+  },
+  {
+   "texto": "Promodo, Travel Industry Benchmarks Report 2026 · intervalo entre reservas de 312 dias; 146 dias para 7 ou mais reservas · 2026",
+   "link": "https://www.promodo.com/blog/tourism-marketing-benchmarks"
+  },
+  {
+   "texto": "Omnisend, Email Marketing Benchmarks · Travel: conversão de campanha 0,05%; cross-sell 0,87%; reativação de clientes 0,54% · 2026",
+   "link": "https://www.omnisend.com/blog/email-marketing-benchmarks/"
+  },
+  {
+   "texto": "Revinate, 2026 Hospitality Benchmark Report · reservas por e-mail: 0,53% em listas com menos de 5 mil contatos e 0,06% acima de 50 mil · 2026",
+   "link": "https://www.revinate.com/hospitality-report/email-channel-global/"
+  },
+  {
+   "texto": "RD Station, Dados RD Station: Benchmarks · Turismo e Lazer: abertura 19,63%, cliques 1,56%, cancelamento 0,07%; CRM com conversão de 5,9% · 2026",
+   "link": "https://www.rdstation.com/blog/marketing/dados-rd-station-benchmarks/"
+  },
+  {
+   "texto": "Braze, The powerful impact of using WhatsApp for customer engagement · 68% de leitura de mensagens de marketing · 2024",
+   "link": "https://www.braze.com/resources/articles/the-powerful-impact-of-using-whatsapp-for-customer-engagement"
+  },
+  {
+   "texto": "GetResponse, Email Marketing Benchmarks · Travel: abertura 32,83%, CTR 2,52%; Brasil: abertura 28,32% · 2024 (contexto, não usado como taxa)",
+   "link": "https://www.getresponse.com/resources/reports/email-marketing-benchmarks"
+  },
+  {
+   "texto": "Despegar.com, Form 20-F FY2024 · cerca de 51,4% dos clientes de viagem de 2024 já tinham comprado antes · 2025 (citado como teto, não usado como taxa)",
+   "link": "https://www.sec.gov/Archives/edgar/data/1703141/000162828025020808/desp-20241231.htm"
+  },
+  {
+   "texto": "Jet2 plc, Annual Report 2025 · 61% de recompra em pacotes de férias · 2025 (citado como teto, não usado como taxa)",
+   "link": "https://www.jet2plc.com/-/media/Jet2/Jet2plc/Jet2Plc_Redesign2025/Reports/2025/Annual_Report_2025/Jet2_Plc_AnnualReport2025.pdf"
+  },
+  {
+   "texto": "Strategic WinBack (Dan Pfister), Client Winback Benchmark Study · 26% de clientes B2B recuperados em campanhas de win-back · 2019 (descartado como taxa)",
+   "link": "https://www.linkedin.com/pulse/client-winback-benchmark-study-dan-pfister"
+  }
+ ]
+}
