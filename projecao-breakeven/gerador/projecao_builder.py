@@ -9,12 +9,14 @@ Extensões opcionais em cfg (todas retrocompatíveis):
   quarter_keys   {'receita','custo','resultado','cum'[,'vendas','roas','share']} -> bloco "Visão por quarter" (fórmulas vivas, com fonte e crescimento)
   metodologia    [(titulo, [linhas])] -> aba visível "Premissas · <aba>" (fonte, janela, alertas, premissas assumidas, cenário base)
   historico      {'meses': [{'rotulo','status','janela'}], 'linhas': [(rotulo, fmt, [valores])], 'nota': str}
+  legado         mesma forma do historico, com um 4o item opcional por linha: 'sub' (linha secundaria) ou 'ating' (razao, vermelho < 1 e verde >= 1)
   envelope       {'linhas': [(rotulo, fmt, atual, mediana, melhor, melhor_mes, referencia, alvo)], 'nota': str, 'alvo_em': 'M4'}
   base_ref       {'titulo': str, 'nota': str, 'linhas': [(rotulo, fmt, [12 valores])]}   -> cenário de referência (valores do piloto)
   pilot_ref      {'header': str, 'status': str, 'valores': {indice_linha_meta: valor}}
   real_prefill   {indice_mes(0-based): {chave_metrica: valor}}
   month_labels   lista de 12 rótulos de calendário (ex.: 'set/2026')
   notes_rows     altura (linhas) do bloco de notas; padrão 8
+  hidden_rows    chaves de linhas que ficam ocultas na aba (intermediárias de fórmula e flags dos cartões)
 Tipos de métrica: 'input' | 'link' | 'linkf' (1º mês, demais) | 'calc' | 'calcf' (1º mês, demais) | 'cum' | 'mixed' (lista de 12: número = célula editável, texto = fórmula)
 Nas fórmulas do projetado: {c} coluna do mês, {p} coluna do mês anterior, {r} coluna do realizado do mês, {HAS} flag "mês tem realizado", {P_x} premissa x.
 """
@@ -35,6 +37,16 @@ RED, BLACK, INK, GRAY, GRAY7 = "E50914", "111111", "1F2937", "6B7280", "4B5563"
 LIGHT, LINE, WHITE, GREEN = "F3F4F6", "E5E7EB", "FFFFFF", "15803D"
 INPUT_FILL, LINK_FILL, INPUT_FONT = "FFF1B8", "FFFBE6", "1F2937"   # sem azul: fundo carrega o significado
 REAL_FILL, REAL_LINK_FILL = "FBE0E0", "FDF2F2"                    # realizado em vermelho-claro (marca V4)
+# Cor por bloco (sem azul, regra do usuário): a faixa da seção, a tarja da coluna A e a barra do rótulo saem da mesma cor,
+# para quem lê a planilha separar num relance investimento, marketing (mídia) e vendas (inside sales).
+BLOCOS = {
+    'investimento': ("374151", "INVESTIMENTO"),
+    'marketing':    ("E50914", "MARKETING"),
+    'vendas':       ("B45309", "VENDAS"),
+    'financeiro':   ("15803D", "FINANCEIRO"),
+    'resultado':    ("111111", "RESULTADO"),
+}
+BLOCO_PADRAO = 'resultado'
 FONT = "Calibri"
 FMT_BRL, FMT_BRL2, FMT_INT = '"R$" #,##0', '"R$" #,##0.00', '#,##0'
 FMT_PCT0, FMT_PCT1, FMT_PCT2, FMT_X = '0%', '0.0%', '0.00%', '0.00"x"'
@@ -60,6 +72,7 @@ RIGHT = Alignment(horizontal='right', vertical='center'); LEFT = Alignment(horiz
 CENTER = Alignment(horizontal='center', vertical='center')
 HWRAP = Alignment(horizontal='center', vertical='center', wrap_text=True)
 HWRAPL = Alignment(horizontal='left', vertical='center', wrap_text=True, indent=1)
+VERT = Alignment(horizontal='center', vertical='center', text_rotation=90)   # tarja do bloco na coluna A
 def num(x): return f"IF(ISNUMBER({x}),{x},0)"
 def slug(s): return re.sub(r"[^a-z0-9]+", "_", unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower()).strip("_")
 
@@ -79,7 +92,7 @@ def build_sheet(ws, cfg, logo_path):
     n = int(cfg.get('n_months', N_MONTHS_MAX))
     PROJ, REAL, SUPC, TOT_P, TOT_R, MARGIN_COL, ALL_TABLE_COLS = grade_colunas(n)
     FIRST_COL, LAST_MONTH_COL = PROJ[0], REAL[-1]
-    KPI_LAST = get_column_letter(max(19, 5 + 2*n))   # área dos cartões de indicadores
+    KPI_LAST = get_column_letter(max(21, 5 + 2*n))   # área dos cartões de indicadores (começam em G, 5 cartões de 3 colunas)
     wb = ws.parent
     sup = wb.create_sheet(f"_apoio_{slug(ws.title)}"[:31]); sup.sheet_state = 'hidden'
     SREF = f"'{sup.title}'!"
@@ -100,7 +113,7 @@ def build_sheet(ws, cfg, logo_path):
     ws.sheet_view.showGridLines = False
     ws.sheet_view.zoomScale = 80
     ws.column_dimensions['A'].width = 11
-    ws.column_dimensions['B'].width = 40
+    ws.column_dimensions['B'].width = 52   # cabe o rótulo com prefixo de unidade sem ser cortado pela célula do Mês 1
     for col in PROJ + REAL: ws.column_dimensions[col].width = 12
     for col in ('C', 'D', 'E', 'F', 'G', 'H', 'I'): ws.column_dimensions[col].width = 15.5   # blocos de quarter/envelope legíveis
     ws.column_dimensions[TOT_P].width = 13.5; ws.column_dimensions[TOT_R].width = 13.5
@@ -115,7 +128,7 @@ def build_sheet(ws, cfg, logo_path):
     today = datetime.date.today().strftime("%d/%m/%Y")
     ws.row_dimensions[1].height = 8
     ws.row_dimensions[2].height = 26; ws.row_dimensions[3].height = 18; ws.row_dimensions[4].height = 16
-    if logo_path and os.path.exists(logo_path):   # logo opcional: ponha um PNG em gerador/logo.png para marcar a planilha
+    if logo_path and os.path.exists(logo_path):   # logo opcional: ponha um PNG em gerador/logo.png
         img = XLImage(logo_path); img.width = 60; img.height = 61; ws.add_image(img, 'A2')
     put('B2', cfg['title'], font(18, True, BLACK), al=Alignment(vertical='center'))
     put('B3', cfg['subtitle'], font(11, False, GRAY))
@@ -130,7 +143,7 @@ def build_sheet(ws, cfg, logo_path):
     cur = META_TOP + 11
     QK = cfg.get('quarter_keys')
     if QK: Q_TOP = cur; cur = Q_TOP + 8
-    HIST = cfg.get('historico'); ENV = cfg.get('envelope')
+    HIST = cfg.get('historico'); ENV = cfg.get('envelope'); LEG = cfg.get('legado')
     TABLE_TITLE = cur; TABLE_NOTE = TABLE_TITLE + 1; HDR1 = TABLE_TITLE + 2; HDR2 = HDR1 + 1
     metrics = cfg['metrics']
     R = {}; r = HDR2 + 1
@@ -174,10 +187,13 @@ def build_sheet(ws, cfg, logo_path):
         put(f'B{PREM_END+1}', "Budget médio de mídia por dia (Mês 1)", font(9, False, GRAY, True), al=LEFT)
         put(f'C{PREM_END+1}', f"=IFERROR({P[mk]}/{P[dk]},0)", font(9, False, GRAY, True), fmt=FMT_BRL2, al=RIGHT)
 
-    # ---- 02 KPI cards (3 colunas cada)
-    TRIPLES = [('E', 'G'), ('H', 'J'), ('K', 'M'), ('N', 'P'), ('Q', 'S')]
-    for i, (label, formula, fmt, sub) in enumerate(cfg['kpis'](ctx)):
-        c1, c2 = TRIPLES[i % 5]; r0 = 9 if i < 5 else 13
+    # ---- 02 KPI cards (3 colunas cada, a partir de G: deixa respiro entre as premissas e os cartões)
+    KPI_COL0, cards = 7, cfg['kpis'](ctx)
+    POR_LINHA = 5 if len(cards) > 8 else 4   # no máximo duas fileiras; 7 cartões ficam 4 + 3, não 5 + 2
+    for i, (label, formula, fmt, sub) in enumerate(cards):
+        col0 = KPI_COL0 + 3 * (i % POR_LINHA)
+        c1, c2 = get_column_letter(col0), get_column_letter(col0 + 2)
+        r0 = 9 + 4 * (i // POR_LINHA)
         cols = [get_column_letter(j) for j in range(ws[c1 + '1'].column, ws[c2 + '1'].column + 1)]
         for rr in (r0, r0 + 1, r0 + 2):
             ws.merge_cells(f'{c1}{rr}:{c2}{rr}')
@@ -189,10 +205,10 @@ def build_sheet(ws, cfg, logo_path):
         if fmt: v.number_format = fmt
         put(f'{c1}{r0+2}', sub, font(8, False, GRAY, True), al=LEFT)
     box = Border(top=thin, bottom=thin, left=thin, right=thin)
-    put('E17', "Legenda", font(8, True, GRAY), al=LEFT)
-    for sw, tx, fl, text in [('F', 'G', INPUT_FILL, "Alavanca editável (amarelo)"), ('I', 'J', LINK_FILL, "Puxa a premissa geral"),
-                             ('L', 'M', REAL_FILL, "Realizado: preencha (vermelho-claro)"), ('O', 'P', REAL_LINK_FILL, "Realizado: puxa o projetado"),
-                             ('R', 'S', None, "Calculado pelo modelo")]:
+    put('G17', "Legenda", font(8, True, GRAY), al=LEFT)
+    for sw, tx, fl, text in [('H', 'I', INPUT_FILL, "Alavanca editável (amarelo)"), ('K', 'L', LINK_FILL, "Puxa a premissa geral"),
+                             ('N', 'O', REAL_FILL, "Realizado: preencha (vermelho-claro)"), ('Q', 'R', REAL_LINK_FILL, "Realizado: puxa o projetado"),
+                             ('T', 'U', None, "Calculado pelo modelo")]:
         put(f'{sw}17', None, None, fill(fl) if fl else None, bd=box); put(f'{tx}17', text, font(8, False, GRAY), al=LEFT)
 
     # ---- meta de breakeven + coluna PILOTO + notas
@@ -277,16 +293,31 @@ def build_sheet(ws, cfg, logo_path):
             a, b = spec_t[4:].split('/'); return f'=IFERROR({TOT_R}{R[a]}/{TOT_R}{R[b]},"")'
 
     bold_rows = {k for k in cfg.get('bold_rows', ()) if k in R}; r = HDR2 + 1
+    bloco, bloco_ini, tarjas = BLOCO_PADRAO, None, []
     for m in metrics:
         ws.row_dimensions[r].height = 17
         if m[0] == 'sec':
+            novo = (m[2] if len(m) > 2 else None) or BLOCO_PADRAO
+            if bloco_ini is not None and novo != bloco:   # seções vizinhas do mesmo bloco continuam na mesma tarja
+                tarjas.append((bloco_ini, r - 1, bloco)); bloco_ini = None
+            bloco = novo
+            cor_sec = BLOCOS.get(bloco, BLOCOS[BLOCO_PADRAO])[0]
             for col in ALL_TABLE_COLS:
-                ws[f'{col}{r}'].fill = fill(LIGHT); ws[f'{col}{r}'].border = Border(bottom=thin)
-            put(f'B{r}', m[1], font(8, True, RED), al=LEFT); r += 1; continue
+                ws[f'{col}{r}'].fill = fill(cor_sec); ws[f'{col}{r}'].border = Border(bottom=thin)
+            put(f'B{r}', m[1], font(8, True, WHITE), al=LEFT)
+            if bloco_ini is None: bloco_ini = r
+            r += 1; continue
         key, label, kind, src, fmt, tot, real = m
         is_bold = key in bold_rows
         is_cum0 = (kind == 'cum' and key == cfg['cum_key'] and acum0 is not None)
-        put(f'B{r}', label, font(9, True, INK), al=LEFT, bd=Border(bottom=thin, left=redbar if kind in ('input', 'link', 'linkf') else None))
+        cor_bloco = BLOCOS.get(bloco, BLOCOS[BLOCO_PADRAO])[0]
+        # alavanca: rótulo e meses projetados na cor da alavanca, com barra da cor do bloco (o total é fórmula e fica cinza)
+        mix_edit = kind == 'mixed' and any(not (isinstance(x, str) and x.startswith('=')) for x in src)   # algum mês digitável
+        mix_link = kind == 'mixed' and any(isinstance(x, str) and x.startswith('={P_') for x in src)        # algum mês puxa a premissa
+        alav = (fill(INPUT_FILL) if kind == 'input' or mix_edit else
+                fill(LINK_FILL) if kind in ('link', 'linkf') or mix_link else None)
+        put(f'B{r}', label, font(9, True, INK), alav, None, LEFT,
+            Border(bottom=thin, left=Side(style='medium', color=cor_bloco) if alav is not None else None))
         for k in range(n):
             pc, rc = PROJ[k], REAL[k]
             pp, rp = (PROJ[k-1], REAL[k-1]) if k > 0 else (None, None)
@@ -294,7 +325,9 @@ def build_sheet(ws, cfg, logo_path):
             if kind == 'mixed':
                 v = src[k]
                 if isinstance(v, str) and v.startswith('='):
-                    put(f'{pc}{r}', v.format(**FMTK), font(9, is_bold, INK), None, fmt, RIGHT, Border(bottom=thin))
+                    puxa = v.startswith('={P_')
+                    put(f'{pc}{r}', v.format(**FMTK), font(9, is_bold and not puxa, INPUT_FONT if puxa else INK, puxa),
+                        fill(LINK_FILL) if puxa else None, fmt, RIGHT, Border(bottom=thin))
                 else:
                     put(f'{pc}{r}', v, font(9, True, INPUT_FONT), fill(INPUT_FILL), fmt, RIGHT, Border(bottom=thin))
             elif kind == 'input':
@@ -331,13 +364,22 @@ def build_sheet(ws, cfg, logo_path):
                 expr = real.format(c=rc, p=rp, pc=pc, **R, **PF)
                 put(f'{rc}{r}', f'=IF({has(k)}=0,"",IFERROR({expr},""))', font(9, is_bold, INK), None, fmt, RIGHT, Border(bottom=thin))
         al_tot = CENTER if real == '""' else RIGHT
-        put(f'{TOT_P}{r}', total_proj(tot, key), font(9, True, INK), fill(LIGHT), fmt, al_tot, Border(bottom=thin))
+        fl_tot = fill(LIGHT)   # o total é sempre fórmula: fica cinza, porque amarelo é o código de "você pode editar"
+        put(f'{TOT_P}{r}', total_proj(tot, key), font(9, True, INK), fl_tot, fmt, al_tot, Border(bottom=thin))
         if real == '""':
-            put(f'{TOT_R}{r}', None, font(9, True, INK), fill(LIGHT), fmt, al_tot, Border(bottom=thin))
+            put(f'{TOT_R}{r}', None, font(9, True, INK), fl_tot, fmt, al_tot, Border(bottom=thin))
             ws.merge_cells(f'{TOT_P}{r}:{TOT_R}{r}')
         else:
-            put(f'{TOT_R}{r}', total_real(tot, key), font(9, True, INK), fill(LIGHT), fmt, RIGHT, Border(bottom=thin))
+            put(f'{TOT_R}{r}', total_real(tot, key), font(9, True, INK), fl_tot, fmt, RIGHT, Border(bottom=thin))
         r += 1
+    for key in [k for k in cfg.get('hidden_rows', ()) if k in R]:
+        ws.row_dimensions[R[key]].hidden = True   # intermediária de fórmula: existe para a planilha, não para quem lê
+    if bloco_ini is not None: tarjas.append((bloco_ini, r - 1, bloco))
+    for ini, fim, b in tarjas:   # tarja vertical na coluna A: o bloco da linha se lê sem precisar procurar o título
+        cor, nome = BLOCOS.get(b, BLOCOS[BLOCO_PADRAO])
+        for _rr in range(ini, fim + 1): ws[f'A{_rr}'].fill = fill(cor)
+        put(f'A{ini}', nome, font(8, True, WHITE), fill(cor), None, VERT)
+        if fim > ini: ws.merge_cells(f'A{ini}:A{fim}')
     for k, vals in (cfg.get('real_prefill') or {}).items():
         for key, v in vals.items():
             cel = ws[f'{REAL[k]}{R[key]}'] if key in R else None
@@ -346,6 +388,10 @@ def build_sheet(ws, cfg, logo_path):
         rng = f"{FIRST_COL}{R[key]}:{TOT_R}{R[key]}"
         ws.conditional_formatting.add(rng, CellIsRule(operator='lessThan', formula=['0'], font=Font(name=FONT, size=9, bold=True, color=RED)))
         ws.conditional_formatting.add(rng, CellIsRule(operator='greaterThanOrEqual', formula=['0'], font=Font(name=FONT, size=9, bold=True, color=GREEN)))
+    for key in [k for k in cfg.get('x_rows', ()) if k in R]:   # múltiplo: o prejuízo começa abaixo de 1,0x, não abaixo de zero
+        rng = f"{FIRST_COL}{R[key]}:{TOT_R}{R[key]}"
+        ws.conditional_formatting.add(rng, CellIsRule(operator='lessThan', formula=['1'], font=Font(name=FONT, size=9, bold=True, color=RED)))
+        ws.conditional_formatting.add(rng, CellIsRule(operator='greaterThanOrEqual', formula=['1'], font=Font(name=FONT, size=9, bold=True, color=GREEN)))
 
     # ---- aba de apoio (oculta): rótulos, flags do realizado, espelho contíguo, funil
     put('B1', f"Apoio de '{ws.title}' (gerado; gráficos, KPIs, meta e realizado dependem desta aba)", font(9, True, RED), sheet=sup)
@@ -441,7 +487,7 @@ def build_sheet(ws, cfg, logo_path):
 
     # ---- aba de metodologia (fonte, janela, alertas, premissas assumidas, cenário base)
     MET = cfg.get('metodologia'); BASE = cfg.get('base_ref')
-    if MET or BASE or HIST or ENV:
+    if MET or BASE or HIST or ENV or LEG:
         met = wb.create_sheet(f"Premissas · {ws.title}"[:31])
         met.sheet_view.showGridLines = False
         met.column_dimensions['A'].width = 3; met.column_dimensions['B'].width = 46
@@ -491,26 +537,44 @@ def build_sheet(ws, cfg, logo_path):
               rr += 1
           return rr
         rr = secoes(MET, rr)
-        if HIST:
-            put(f'B{rr}', "HISTÓRICO · MESES LIDOS DA FONTE", font(9, True, RED), sheet=met)
-            put(f'B{rr+1}', HIST.get('nota', "Meses marcados como janela alimentam as taxas atuais; 'referência' é a evidência do nível atingível."), font(9, False, GRAY, True), sheet=met)
+        def tabela_meses(titulo, nota, meses_, linhas_, rr):
+            """Tabela mês a mês da aba Premissas. Serve ao histórico e ao legado (projetado × realizado)."""
+            put(f'B{rr}', titulo, font(9, True, RED), sheet=met)
+            if nota: put(f'B{rr+1}', nota, font(9, False, GRAY, True), sheet=met)
             hh = rr + 2; met.row_dimensions[hh].height = 20
-            hcols = [get_column_letter(3 + j) for j in range(len(HIST['meses']))]
+            hcols = [get_column_letter(3 + j) for j in range(len(meses_))]
             put(f'B{hh}', "MÉTRICA", font(9, True, WHITE), fill(BLACK), al=HWRAPL, sheet=met)
-            for j, mth in enumerate(HIST['meses']):
+            for j, mth in enumerate(meses_):
                 put(f'{hcols[j]}{hh}', mth['rotulo'], font(8, True, WHITE), fill(BLACK), al=HWRAP, sheet=met)
-            st = hh + 1; met.row_dimensions[st].height = 28
-            put(f'B{st}', "Status na fonte", font(9, True, INK), al=LEFT, bd=Border(bottom=thin), sheet=met)
-            for j, mth in enumerate(HIST['meses']):
-                tags = [t for t, on in (("janela", mth.get('janela')), ("referência", mth.get('referencia'))) if on]
-                txt = ("antes da V4" if mth.get('pre') else mth['status']) + ("\n" + " · ".join(tags) if tags else "")
-                put(f'{hcols[j]}{st}', txt, font(8, bool(tags), GRAY), fill(LIGHT) if tags else None, al=HWRAP, bd=Border(bottom=thin), sheet=met)
-            for i2, (label, fmt, vals) in enumerate(HIST['linhas']):
+            tem_status = any(m.get('status') or m.get('janela') or m.get('referencia') or m.get('pre') for m in meses_)
+            st = hh   # sem status (legado), as linhas começam logo abaixo do cabeçalho
+            if tem_status:
+                st = hh + 1; met.row_dimensions[st].height = 28
+                put(f'B{st}', "Status na fonte", font(9, True, INK), al=LEFT, bd=Border(bottom=thin), sheet=met)
+                for j, mth in enumerate(meses_):
+                    tags = [t for t, on in (("janela", mth.get('janela')), ("referência", mth.get('referencia'))) if on]
+                    txt = ("antes da V4" if mth.get('pre') else mth.get('status', '')) + ("\n" + " · ".join(tags) if tags else "")
+                    put(f'{hcols[j]}{st}', txt, font(8, bool(tags), GRAY), fill(LIGHT) if tags else None, al=HWRAP, bd=Border(bottom=thin), sheet=met)
+            for i2, lin in enumerate(linhas_):
+                label, fmt, vals = lin[0], lin[1], lin[2]; estilo = lin[3] if len(lin) > 3 else None
                 r2 = st + 1 + i2
-                put(f'B{r2}', label, font(9, True, INK), al=LEFT, bd=Border(bottom=thin), sheet=met)
+                put(f'B{r2}', label, font(9, estilo != 'sub', INK), al=LEFT, bd=Border(bottom=thin), sheet=met)
                 for j, v in enumerate(vals):
-                    put(f'{hcols[j]}{r2}', v, font(9, False, GRAY), None, fmt, RIGHT, Border(bottom=thin), sheet=met)
-            rr = st + len(HIST['linhas']) + 2
+                    put(f'{hcols[j]}{r2}', v, font(9, estilo == 'ating', GRAY), None, fmt, RIGHT, Border(bottom=thin), sheet=met)
+                if estilo == 'ating' and hcols:   # atingimento: vermelho abaixo de 100%, verde a partir de 100%
+                    faixa = f'C{r2}:{hcols[-1]}{r2}'
+                    met.conditional_formatting.add(faixa, CellIsRule(operator='lessThan', formula=['1'], font=Font(name=FONT, size=9, bold=True, color=RED)))
+                    met.conditional_formatting.add(faixa, CellIsRule(operator='greaterThanOrEqual', formula=['1'], font=Font(name=FONT, size=9, bold=True, color=GREEN)))
+            return st + len(linhas_) + 2
+        if HIST:
+            rr = tabela_meses("HISTÓRICO · MESES LIDOS DA FONTE",
+                              HIST.get('nota', "Meses marcados como janela alimentam as taxas atuais; 'referência' é a evidência do nível atingível."),
+                              HIST['meses'], HIST['linhas'], rr)
+        if LEG:
+            rr = tabela_meses(LEG.get('titulo', "PROJETADO × REALIZADO · O QUE A PROJEÇÃO ANTERIOR PROMETEU"),
+                              LEG.get('nota', "O que uma projeção anterior prometia mês a mês, contra o que a fonte registra como realizado. "
+                                              "Atingimento = realizado ÷ prometido; fica em branco quando falta um dos dois."),
+                              LEG['meses'], LEG['linhas'], rr)
         if ENV:
             put(f'B{rr}', "ENVELOPE HISTÓRICO E ALVO DA RAMPA", font(9, True, RED), sheet=met)
             put(f'B{rr+1}', ENV.get('nota', ''), font(9, False, GRAY, True), sheet=met)
@@ -539,7 +603,8 @@ def build_sheet(ws, cfg, logo_path):
                     put(f'{col}{r2}', vals[k] if k < len(vals) else None, font(9, False, GRAY), None, fmt, RIGHT, Border(bottom=thin), sheet=met)
             rr = hdr + len(BASE['linhas']) + 2
         rr = secoes(cfg.get('metodologia_fim'), rr)   # fontes e notas que ficam no fim da aba
-        met.print_area = f"A1:N{rr}"
+        ult = get_column_letter(max(14, 2 + max([len(SUPC)] + [len(x['meses']) for x in (HIST, LEG) if x])))
+        met.print_area = f"A1:{ult}{rr}"
         met.page_setup.orientation = 'landscape'; met.sheet_properties.pageSetUpPr = PageSetupProperties(fitToPage=True)
         met.page_setup.fitToWidth = 1; met.page_setup.fitToHeight = 0
 

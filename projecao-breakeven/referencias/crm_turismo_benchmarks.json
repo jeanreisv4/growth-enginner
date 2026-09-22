@@ -35,7 +35,7 @@
    "N"
   ]
  ],
- "nota_tabela": "Toda taxa do CRM vem de benchmark externo, verificado na página da fonte. Onde não existe número do modelo exato da agência de viagens, a tabela usa o segmento mais próximo e diz que é aproximação.",
+ "nota_tabela": "Toda taxa do CRM vem de benchmark externo, verificado na página da fonte. Onde não existe número do modelo exato da EZ, a tabela usa o segmento mais próximo e diz que é aproximação.",
  "linhas": [
   [
    "Recompra via WhatsApp (clientes de 6 a 12 meses)",
@@ -51,7 +51,7 @@
    "Intervalo médio entre reservas de 312 dias; 146 dias para quem tem 7 ou mais reservas",
    "Não informado",
    "2% ao mês (2× a taxa base)",
-   "Evidência fraca: vem da base de um único cliente (FREETOUR.com). Só atua se a agência de viagens informar clientes recorrentes (hoje em branco)."
+   "Evidência fraca: vem da base de um único cliente (FREETOUR.com). Só atua se a EZ informar clientes recorrentes (hoje em branco)."
   ],
   [
    "Janela da recompra",
@@ -75,7 +75,7 @@
    "Campanhas da categoria Travel: conversão de 0,05%. Hotéis: 0,53% de reservas por e-mail em listas com menos de 5 mil contatos e 0,06% acima de 50 mil",
    "Omnisend: 2025. Revinate: jan a dez/2025",
    "0,05% por e-mail, 2 e-mails por mês",
-   "Piso do setor de viagem. A lista da agência de viagens é pequena, faixa em que o Revinate chega a 0,53%, mas o ticket de hotel é bem menor que R$ 15 mil; por isso fica o piso."
+   "Piso do setor de viagem. A lista da EZ é pequena, faixa em que o Revinate chega a 0,53%, mas o ticket de hotel é bem menor que R$ 15 mil; por isso fica o piso."
   ],
   [
    "Descadastro da base de e-mail",

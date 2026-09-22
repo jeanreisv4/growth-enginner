@@ -115,7 +115,7 @@ Requisitos: Python 3.9 ou mais novo.
 
 ```bash
 git clone https://github.com/jeanreisv4/growth-enginner.git
-cd growth-enginner/projecao-breakeven
+cd v4-projecao-breakeven
 python3 -m pip install --user pandas openpyxl pycel
 python3 tests/regressao.py     # 11 casos, incluindo a demo
 ```
@@ -209,6 +209,7 @@ Lê a fonte e mostra meses fechados, fee, verba, margem e as taxas efetivas da j
 | `--metodologia-extra` | seções de análise e a tabela de benchmarks |
 | `--inicio-contrato` `--obs` `--marca` | Mês 1, observações e marca no rodapé |
 | `--conexao-so-lead` `--sem-etapa-venda` `--margem-informativa` | variações do funil conforme o que o cliente mede |
+| `--legado arquivo.json` | bloco **projetado × realizado** na aba Premissas: o que uma projeção anterior prometia, mês a mês, contra o realizado da fonte, com a linha de atingimento |
 
 ## Benchmarks e fontes
 

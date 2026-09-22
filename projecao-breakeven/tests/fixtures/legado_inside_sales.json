@@ -1,0 +1,9 @@
+{
+ "titulo": "PROJETADO × REALIZADO · O QUE A PROJEÇÃO ANTERIOR PROMETEU",
+ "nota": "Projeção anterior sintética, para o teste. Atingimento = realizado ÷ prometido.",
+ "meses": [
+  {"mes": "junho",  "ano": 2026, "projetado": {"Leads": 600, "Vendas": 8, "Faturamento V4": 20000}},
+  {"mes": "julho",  "ano": 2026, "projetado": {"Leads": 650, "Vendas": 9, "Faturamento V4": 22000}},
+  {"mes": "agosto", "ano": 2026, "projetado": {"Leads": 700, "Vendas": 10, "Faturamento V4": 24000}}
+ ]
+}

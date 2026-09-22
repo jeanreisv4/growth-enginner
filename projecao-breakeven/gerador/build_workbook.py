@@ -27,7 +27,10 @@ def norm(s):
 def esc(s): return str(s).replace("{", "{{").replace("}", "}}")
 def Ln(x, n): return (list(x) + [list(x)[-1]] * n)[:n] if isinstance(x, (list, tuple)) else [x] * n
 
-USO_COMUM = ("• Projetado: edite as células amarelas (premissas gerais à esquerda e alavancas mês a mês). Indicadores, meta de breakeven e gráficos recalculam sozinhos. "
+USO_COMUM = ("• Como ler a tabela: a tarja colorida da esquerda diz a que bloco a linha pertence (investimento, marketing, vendas, financeiro, resultado) "
+             "e o prefixo do nome diz a unidade — [R$] dinheiro, [%] taxa, [QNTD] quantidade, [X] múltiplo. Em [X], 1,00x significa que o mês se pagou. "
+             "As alavancas (as linhas que você pode mexer) têm a linha inteira pintada de amarelo.\n"
+             "• Projetado: edite as células amarelas (premissas gerais à esquerda e alavancas mês a mês). Indicadores, meta de breakeven e gráficos recalculam sozinhos. "
              "Linhas em amarelo-claro puxam a premissa geral; digite um número por cima para alterar só um mês.\n"
              "• Realizado: preencha as células de fundo vermelho-claro de cada mês (volumes e valores). Taxas, custos unitários, acumulados, resultado e ROI do realizado saem por fórmula "
              "e ficam em branco até o mês ter dado. Parâmetros de negócio do realizado (comissão, margem) puxam o projetado (vermelho mais claro) e podem ser sobrescritos. "
@@ -37,13 +40,13 @@ USO_COMUM = ("• Projetado: edite as células amarelas (premissas gerais à esq
 def is_kpis(ctx):
     pb = kpi_payback_cards(ctx, cum_key='cum_cons')
     return [
+      (f"RESULTADO LÍQUIDO · {ctx.n} MESES", f"={ctx.tot('resultado_cons')}", FMT_BRL, "resultado MC − custos"),
       (f"RECEITA DA AGÊNCIA · {ctx.n} MESES", f"={ctx.tot('receita_cons')}", FMT_BRL, "realizado onde existe, projetado à frente"),
+      (f"CUSTO TOTAL · {ctx.n} MESES", f"={ctx.tot('custo_cons')}", FMT_BRL, "fee + mídia"),
+      ("RETORNO POR R$ 1 INVESTIDO", f"=IFERROR({ctx.tot('mc_cons')}/{ctx.tot('custo_cons')},0)", FMT_X, "1,0x = o período se paga"),
       (f"GMV GERADO · {ctx.n} MESES", f"={ctx.tot('gmv')}", FMT_BRL, "vendas × ticket médio"),
       (f"VENDAS · {ctx.n} MESES", f"={ctx.tot('vendas')}", FMT_INT, "vendas equivalentes"),
-      (f"CUSTO TOTAL · {ctx.n} MESES", f"={ctx.tot('custo_cons')}", FMT_BRL, "fee + mídia"),
-      (f"RESULTADO LÍQUIDO · {ctx.n} MESES", f"={ctx.tot('resultado_cons')}", FMT_BRL, "resultado MC − custos"),
-      ("ROI DO PROJETO", f"=IFERROR({ctx.tot('resultado_cons')}/{ctx.tot('custo_cons')},0)", FMT_PCT1, "acumulado no período"),
-      pb['azul'], pb['payback'], pb['exposicao'], pb['excedente'],
+      pb['azul'], pb['payback'],
     ]
 
 FMT_DEC = '#,##0.0'
@@ -58,32 +61,64 @@ def _simplificar_is(cfg, p):
         tira |= {'cresc', 'teto'}
         troca_['midia'] = dict(kind='input', src=Ln(p['verba_plano'], int(p.get('n_months', 12))))
     if float(p['prem'].get('margem', 0)) >= 0.999 and float(p['prem'].get('comissao', 1)) < 0.999:
-        # a comissão já é a margem da agência (agência de viagens: 20% do valor vendido): a linha de margem 100% seria enfeite
+        # a comissão já é a margem da agência (EZ: 20% do valor vendido): a linha de margem 100% seria enfeite
         tira |= {'margem'}
-        troca_['comissao'] = dict(label="COMISSÃO SOBRE O GMV (MARGEM DA AGÊNCIA)")
-        troca_['mc'] = dict(label="RESULTADO MC (= RECEITA DA AGÊNCIA)", src="={c}{receita}", real="{c}{receita}")
-        troca_['roas_be'] = dict(label="ROAS DE BREAKEVEN ((FEE + MÍDIA) ÷ MÍDIA)", src="=IFERROR(({c}{fee}+{c}{midia})/{c}{midia},0)")
+        troca_['comissao'] = dict(label="[%] COMISSÃO SOBRE O GMV (MARGEM DA AGÊNCIA)")
+        troca_['mc'] = dict(label="[R$] RESULTADO MC (= RECEITA DA AGÊNCIA)", src="={c}{receita}", real="{c}{receita}")
         cfg['meta'] = lambda ctx, m: meta_block(ctx, m, p['target'], 'gmv', 'ticket', 'vendas', 'custo_cons', 'cum_cons', None, comissao_key='comissao', acum0_key='acum0')
         cfg['premises'] = [(k, "Comissão sobre o GMV (margem da agência)", v, f) if k == 'comissao' else (k, lab, v, f) for k, lab, v, f in cfg['premises']]
     if float(p['prem'].get('comissao', 1)) >= 0.999 and not p.get('crm'):
-        # receita própria do cliente (consultoria, varejo de revestimentos, loja de multimídia): sem comissão nem GMV de agência; o faturamento (vendas × ticket) já é a receita
+        # receita própria do cliente (consultoria, RPS, loja de multimídia): sem comissão nem GMV de agência; o faturamento (vendas × ticket) já é a receita
         tira |= {'comissao', 'receita'}
-        troca_['gmv'] = dict(label="FATURAMENTO (VENDAS × TICKET)")
+        troca_['gmv'] = dict(label="[R$] FATURAMENTO (VENDAS × TICKET)")
         troca_['margem'] = dict(tot='div:mc/gmv')
-        troca_['mc'] = dict(label="RESULTADO MC (FATURAMENTO × MARGEM)", src="={c}{gmv}*{c}{margem}", real="{c}{gmv}*{c}{margem}")
-        troca_['receita_cons'] = dict(label="FATURAMENTO CONSOLIDADO", src="=IF({HAS}=0,{c}{gmv},{r}{gmv})")
-        troca_['roas'] = dict(label="ROAS (FATURAMENTO ÷ MÍDIA)", src="=IFERROR({c}{gmv}/{c}{midia},0)", tot='div:gmv/midia', real="{c}{gmv}/{c}{midia}")
-        troca_['cresc_receita'] = dict(label="CRESCIMENTO DO FATURAMENTO (MÊS ANTERIOR)")
+        troca_['mc'] = dict(label="[R$] RESULTADO MC (FATURAMENTO × MARGEM)", src="={c}{gmv}*{c}{margem}", real="{c}{gmv}*{c}{margem}")
+        troca_['receita_cons'] = dict(label="[R$] FATURAMENTO", src="=IF({HAS}=0,{c}{gmv},{r}{gmv})")
+        troca_['mc_cons'] = dict(label="[R$] RESULTADO MC (FATURAMENTO × MARGEM)")
+        troca_['roas'] = dict(label="[X] ROAS (FATURAMENTO ÷ MÍDIA)")
+        troca_['roas_be'] = dict(label="[X] ROAS DE BREAKEVEN (FATURAMENTO NECESSÁRIO ÷ MÍDIA)")
+        troca_['fat_be'] = dict(label="[R$] FATURAMENTO NECESSÁRIO PARA ZERAR O MÊS",
+                                src="=IFERROR({c}{custo_cons}*{c}{receita_cons}/{c}{mc_cons},IFERROR({c}{custo_cons}*{c}{gmv}/{c}{mc},0))")
+        troca_['vendas_be'] = dict(src="=IFERROR(ROUNDUP({c}{fat_be}*{c}{vendas}/{c}{gmv},0),0)")
+        troca_['cresc_receita'] = dict(label="[%] CRESCIMENTO DO FATURAMENTO (MÊS ANTERIOR)")
         cfg['meta'] = lambda ctx, m: meta_block(ctx, m, p['target'], 'gmv', 'ticket', 'vendas', 'custo_cons', 'cum_cons', 'margem', acum0_key='acum0')
         cfg['kpis'] = lambda ctx: [(k[0].replace("RECEITA DA AGÊNCIA", "FATURAMENTO"),) + tuple(k[1:]) for k in is_kpis(ctx) if not k[0].startswith("GMV")]
         cfg['charts'] = [dict(ch, title="Faturamento e crescimento mês a mês") if ch.get('type') == 'growth' else ch for ch in cfg['charts']]
     if p.get('sem_lp'):
         tira |= {'connect', 'visitas_pagas', 'custo_visita', 'organicas', 'visitas_lp'}
-        troca_['conv_lp'] = dict(label="CLIQUE → LEAD", tot='div:leads/cliques', real="{c}{leads}/{c}{cliques}")
+        troca_['conv_lp'] = dict(label="[%] CLIQUE → LEAD", tot='div:leads/cliques', real="{c}{leads}/{c}{cliques}")
         troca_['leads'] = dict(src="={c}{cliques}*{c}{conv_lp}")
-        troca_['visita_venda'] = dict(label="CLIQUE → VENDA", src="=IFERROR({c}{vendas}/{c}{cliques},0)", tot='div:vendas/cliques', real="{c}{vendas}/{c}{cliques}")
+        troca_['visita_venda'] = dict(label="[%] CLIQUE → VENDA", src="=IFERROR({c}{vendas}/{c}{cliques},0)", tot='div:vendas/cliques', real="{c}{vendas}/{c}{cliques}")
         cfg['funnel'] = [("Cliques", 'cliques')] + [f for f in cfg['funnel'] if f[1] != 'visitas_lp']
-    if p.get('sem_conexao') or p.get('conexao_so_lead'):
+    else:
+        # tem página de destino: o connect rate entra e segue a rampa mês a mês, como CTR e as demais alavancas
+        if p.get('connect_mensal'):
+            troca_['connect'] = dict(kind='input', src=Ln(p['connect_mensal'], int(p.get('n_months', 12))))
+            cfg['premises'] = [x for x in cfg['premises'] if x[0] != 'connect']
+        if not p.get('visitas_organicas'):
+            # sem tráfego orgânico medido na página: visitas totais seriam iguais às pagas, então o funil corre sobre as pagas
+            tira |= {'organicas', 'visitas_lp'}
+            troca_['conv_lp'] = dict(tot='div:leads/visitas_pagas', real="{c}{leads}/{c}{visitas_pagas}")
+            troca_['leads'] = dict(src="={c}{visitas_pagas}*{c}{conv_lp}")
+            troca_['visita_venda'] = dict(src="=IFERROR({c}{vendas}/{c}{visitas_pagas},0)", tot='div:vendas/visitas_pagas', real="{c}{vendas}/{c}{visitas_pagas}")
+            cfg['funnel'] = [("Visitas", 'visitas_pagas') if f[1] == 'visitas_lp' else f for f in cfg['funnel']]
+    if float(p['prem'].get('lag', 1.0)) >= 0.999:
+        # o ciclo fecha tudo no mês do lead: "originadas pelos SQLs do mês" seria uma cópia de "fechadas no mês"
+        tira |= {'vendas_ger', 'lag'}
+        troca_['vendas'] = dict(kind='calc', src="={c}{sqls}*{c}{sql_venda}")
+    if p.get('atendimento') and p.get('con_lead_mensal'):
+        # Quem vira SQL é quem o time conectou, MQL ou não. Uma linha só de conexão (todo MQL já é um lead,
+        # então somar os dois contaria a mesma pessoa duas vezes), e o MQL fica no marketing como qualidade.
+        tira |= {'con_mql', 'mql_con', 'custo_con_mql'}
+        troca_['con_lead'] = dict(kind='input', src=Ln(p['con_lead_mensal'], int(p.get('n_months', 12))),
+                                  label="[%] CONEXÃO SOBRE OS LEADS (MQL OU NÃO)", fmt=FMT_PCT1)
+        troca_['leads_con'] = dict(label="[QNTD] CONEXÕES")
+        troca_['custo_con_lead'] = dict(label="[R$] CUSTO POR CONEXÃO")
+        troca_['mql_sql'] = dict(label="[%] CONEXÃO → SQL", tot='div:sqls/leads_con', real="{c}{sqls}/{c}{leads_con}")
+        troca_['sqls'] = dict(src="={c}{leads_con}*{c}{mql_sql}")
+        cfg['premises'] = [x for x in cfg['premises'] if x[0] not in ('con_lead', 'con_mql')]
+        cfg['funnel'] = [("Conexões", 'leads_con') if f[1] == 'mqls' else f for f in cfg['funnel']]
+    if not p.get('atendimento') and (p.get('sem_conexao') or p.get('conexao_so_lead')):
         # conexão não medida: as linhas ficam (o usuário acompanha leads e MQLs conectados), mas sem taxa inventada.
         # A conexão fica em branco para preencher; enquanto estiver vazia, a linha é informativa e o funil segue MQL → SQL.
         # sem_conexao: nenhuma das duas é medida; conexao_so_lead: a conexão lead vem da fonte e só a de MQL fica em branco.
@@ -96,11 +131,11 @@ def _simplificar_is(cfg, p):
             troca_['custo_con_lead'] = dict(src='=IFERROR({c}{midia}/{c}{leads_con},"")')
         troca_['mql_con'] = dict(src='=IF({P_con_mql}="","",{c}{mqls}*{c}{con_mql})')
         troca_['custo_con_mql'] = dict(src='=IFERROR({c}{midia}/{c}{mql_con},"")')
-        troca_['mql_sql'] = dict(label="MQL → SQL", tot='div:sqls/mqls', real="{c}{sqls}/{c}{mqls}")
+        troca_['mql_sql'] = dict(label="[%] MQL → SQL", tot='div:sqls/mqls', real="{c}{sqls}/{c}{mqls}")
         troca_['sqls'] = dict(src="={c}{mqls}*{c}{mql_sql}")
         rot_branca = {"con_lead": "Conexão lead (preencha quando medir)", "con_mql": "Conexão MQL (preencha quando medir)"}
         cfg['premises'] = [(k, rot_branca[k], None, f) if k in brancas else (k, lab, v, f) for k, lab, v, f in cfg['premises']]
-    if p.get('con_lead_mensal') and not p.get('sem_conexao'):   # conexão com alvo de mercado: sobe mês a mês junto com lead → MQL
+    if p.get('con_lead_mensal') and not p.get('sem_conexao') and not p.get('atendimento'):   # conexão com alvo de mercado, fora da cadeia
         troca_['con_lead'] = dict(kind='input', src=Ln(p['con_lead_mensal'], int(p.get('n_months', 12))))
         cfg['premises'] = [x for x in cfg['premises'] if x[0] != 'con_lead']
     if p.get('fee_plano'):   # fee mês a mês (ex.: sobe quando o CRM entra no fee)
@@ -136,18 +171,21 @@ def _simplificar_is(cfg, p):
                                               series=[('gmv', RED, False), ('gmv_recompra', GREEN, False), ('gmv_reativ', GRAY, False)], y_fmt=FMT_BRL)]
     org = p.get('organico')
     if org:
-        # SEO: visitas orgânicas × conversão viram leads; o funil corre sobre os leads totais (pagos + orgânicos)
-        troca_.setdefault('leads', {})['label'] = "LEADS PAGOS"   # mescla: sem LP, a fórmula de leads já foi trocada para cliques
+        # orgânico (SEO, social, indicação): entradas × conversão viram leads; o funil corre sobre os totais (pagos + orgânicos).
+        # A origem e o nome da métrica de entrada vêm do piloto, porque em cliente sem site a entrada não é "visita".
+        org_origem = (org.get('origem') or "SEO").upper()
+        org_metrica = (org.get('metrica') or "visitas orgânicas").upper()
+        troca_.setdefault('leads', {})['label'] = "[QNTD] LEADS PAGOS"   # mescla: sem LP, a fórmula de leads já foi trocada para cliques
         troca_['mqls'] = dict(src="={c}{leads_total}*{c}{lead_mql}")
         troca_['lead_mql'] = dict(tot='div:mqls/leads_total', real="{c}{mqls}/{c}{leads_total}")
-        troca_['conv_funil'] = dict(label="CONV. FUNIL (LEAD TOTAL → VENDA)", src="=IFERROR({c}{vendas}/{c}{leads_total},0)",
+        troca_['conv_funil'] = dict(label="[%] CONVERSÃO DO FUNIL (LEAD TOTAL → VENDA)", src="=IFERROR({c}{vendas}/{c}{leads_total},0)",
                                     tot='div:vendas/leads_total', real="{c}{vendas}/{c}{leads_total}")
         troca_.setdefault('leads_con', {})['src'] = ('=IF({P_con_lead}="","",{c}{leads_total}*{c}{con_lead})' if p.get('sem_conexao')
                                                     else "={c}{leads_total}*{c}{con_lead}")
         troca_.setdefault('con_lead', {})['real'] = "{c}{leads_con}/{c}{leads_total}"
         cfg['funnel'] = [("Leads totais", 'leads_total') if f[1] == 'leads' else f for f in cfg['funnel']]
         i = next(j for j, x in enumerate(cfg['premises']) if x[0] == 'lag')
-        cfg['premises'].insert(i, ("conv_seo", "Conversão visita orgânica → lead (SEO)", org['conversao'], FMT_PCT2))
+        cfg['premises'].insert(i, ("conv_seo", f"Conversão {org_metrica.lower()} → lead ({org.get('origem') or 'SEO'})", org['conversao'], FMT_PCT2))
     if not tira and not troca_:
         return cfg
     cfg['premises'] = [x for x in cfg['premises'] if x[0] not in tira]
@@ -159,7 +197,7 @@ def _simplificar_is(cfg, p):
         t = troca_.get(m[0])
         if t:
             key, label, kind, src, fmt, tot, real = m
-            m = (key, t.get('label', label), t.get('kind', kind), t.get('src', src), fmt, t.get('tot', tot), t.get('real', real))
+            m = (key, t.get('label', label), t.get('kind', kind), t.get('src', src), t.get('fmt', fmt), t.get('tot', tot), t.get('real', real))
         mets.append(m)
     if crm:
         n_ = int(p.get('n_months', 12)); proj = grade_colunas(n_)[0]
@@ -172,32 +210,32 @@ def _simplificar_is(cfg, p):
         base_f = ["={P_base_leads0}"] + [f"=MAX(0,{proj[k-1]}{{base_leads}}*(1-{{P_desc}}*{{P_n_email}})+{proj[k-1]}{{leads_cons}}-{proj[k-1]}{{vendas_cons}}-{proj[k-1]}{{v_email}})" for k in range(1, n_)]
         inicio = int(crm['inicio'])
         bloco = [
-          ('sec', "CRM · RECOMPRA E REATIVAÇÃO DA BASE"),
+          ('sec', "CRM · RECOMPRA E REATIVAÇÃO DA BASE", 'vendas'),
           ('crm_on', "CRM ATIVO NO MÊS?  (1 = SIM)", 'input', [0 if k + 1 < inicio else 1 for k in range(n_)], '0', 'sum', '""'),
-          ('leads_cons', "LEADS NOVOS NO MÊS (REALIZADO ONDE EXISTE)", 'calc', "=IF({HAS}=0,{c}{" + lk + "},{r}{" + lk + "})", FMT_INT, 'sum', '""'),
-          ('vendas_cons', "VENDAS DE NOVOS LEADS (REALIZADO ONDE EXISTE)", 'calc', "=IF({HAS}=0,{c}{vendas},{r}{vendas})", FMT_INT, 'sum', '""'),
-          ('base_leads', "LEADS SEM COMPRA NA BASE (INÍCIO DO MÊS)", 'mixed', base_f, FMT_INT, 'last', '""'),
-          ('cli_recentes', "CLIENTES COM MENOS DE 6 MESES", 'mixed', [coorte(k, 1, 5, 'base_recentes0') for k in range(n_)], FMT_INT, 'last', '""'),
-          ('cli_ativos', "CLIENTES DE 6 A 12 MESES", 'mixed', [coorte(k, 6, 12, 'base_ativos0') for k in range(n_)], FMT_INT, 'last', '""'),
-          ('cli_inativos', "CLIENTES INATIVOS (MAIS DE 12 MESES)", 'mixed', [coorte(k, 13, 10 ** 6, 'base_inativos0') for k in range(n_)], FMT_INT, 'last', '""'),
-          ('v_whats', "VENDAS · WHATSAPP (RECOMPRA DE CLIENTES)", 'calc', "={c}{crm_on}*({c}{cli_ativos}*{P_tx_rec}+" + blank('base_recorrentes') + "*{P_tx_rec2})", FMT_DEC, 'sum', 'in'),
-          ('v_cross', "VENDAS · CROSS-SELL E NOVAS VIAGENS", 'calc', "={c}{crm_on}*{c}{cli_recentes}*{P_tx_cross}*{P_n_cross}", FMT_DEC, 'sum', 'in'),
-          ('v_email', "VENDAS · E-MAIL (LEADS SEM COMPRA)", 'calc', "={c}{crm_on}*{c}{base_leads}*{P_tx_email}*{P_n_email}", FMT_DEC, 'sum', 'in'),
-          ('v_reat', "VENDAS · CAMPANHAS DE REATIVAÇÃO (INATIVOS)", 'calc', "={c}{crm_on}*{c}{cli_inativos}*{P_tx_reat}*{P_n_reat}", FMT_DEC, 'sum', 'in'),
-          ('novos_clientes', "NOVOS CLIENTES NO MÊS (NOVOS LEADS + E-MAIL)", 'calc', "={c}{vendas_cons}+{c}{v_email}", FMT_DEC, 'sum', '""'),
+          ('leads_cons', "[QNTD] LEADS NOVOS NO MÊS (REALIZADO ONDE EXISTE)", 'calc', "=IF({HAS}=0,{c}{" + lk + "},{r}{" + lk + "})", FMT_INT, 'sum', '""'),
+          ('vendas_cons', "[QNTD] VENDAS DE NOVOS LEADS (REALIZADO ONDE EXISTE)", 'calc', "=IF({HAS}=0,{c}{vendas},{r}{vendas})", FMT_INT, 'sum', '""'),
+          ('base_leads', "[QNTD] LEADS SEM COMPRA NA BASE (INÍCIO DO MÊS)", 'mixed', base_f, FMT_INT, 'last', '""'),
+          ('cli_recentes', "[QNTD] CLIENTES COM MENOS DE 6 MESES", 'mixed', [coorte(k, 1, 5, 'base_recentes0') for k in range(n_)], FMT_INT, 'last', '""'),
+          ('cli_ativos', "[QNTD] CLIENTES DE 6 A 12 MESES", 'mixed', [coorte(k, 6, 12, 'base_ativos0') for k in range(n_)], FMT_INT, 'last', '""'),
+          ('cli_inativos', "[QNTD] CLIENTES INATIVOS (MAIS DE 12 MESES)", 'mixed', [coorte(k, 13, 10 ** 6, 'base_inativos0') for k in range(n_)], FMT_INT, 'last', '""'),
+          ('v_whats', "[QNTD] VENDAS · WHATSAPP (RECOMPRA DE CLIENTES)", 'calc', "={c}{crm_on}*({c}{cli_ativos}*{P_tx_rec}+" + blank('base_recorrentes') + "*{P_tx_rec2})", FMT_DEC, 'sum', 'in'),
+          ('v_cross', "[QNTD] VENDAS · CROSS-SELL E NOVAS VIAGENS", 'calc', "={c}{crm_on}*{c}{cli_recentes}*{P_tx_cross}*{P_n_cross}", FMT_DEC, 'sum', 'in'),
+          ('v_email', "[QNTD] VENDAS · E-MAIL (LEADS SEM COMPRA)", 'calc', "={c}{crm_on}*{c}{base_leads}*{P_tx_email}*{P_n_email}", FMT_DEC, 'sum', 'in'),
+          ('v_reat', "[QNTD] VENDAS · CAMPANHAS DE REATIVAÇÃO (INATIVOS)", 'calc', "={c}{crm_on}*{c}{cli_inativos}*{P_tx_reat}*{P_n_reat}", FMT_DEC, 'sum', 'in'),
+          ('novos_clientes', "[QNTD] NOVOS CLIENTES NO MÊS (NOVOS LEADS + E-MAIL)", 'calc', "={c}{vendas_cons}+{c}{v_email}", FMT_DEC, 'sum', '""'),
           ('gmv_recompra', "[2] GMV · RECOMPRA DA BASE (WHATSAPP + CROSS-SELL)", 'calc', "=({c}{v_whats}+{c}{v_cross})*{P_ticket_crm}", FMT_BRL, 'sum', "({c}{v_whats}+{c}{v_cross})*{P_ticket_crm}"),
           ('gmv_reativ', "[3] GMV · REATIVAÇÃO (E-MAIL PARA LEADS + INATIVOS)", 'calc', "=({c}{v_email}+{c}{v_reat})*{P_ticket_crm}", FMT_BRL, 'sum', "({c}{v_email}+{c}{v_reat})*{P_ticket_crm}"),
-          ('gmv_total', "GMV TOTAL (NOVOS + RECOMPRA + REATIVAÇÃO)", 'calc', "={c}{gmv}+{c}{gmv_recompra}+{c}{gmv_reativ}", FMT_BRL, 'sum', "{c}{gmv}+{c}{gmv_recompra}+{c}{gmv_reativ}"),
+          ('gmv_total', "[R$] GMV TOTAL (NOVOS + RECOMPRA + REATIVAÇÃO)", 'calc', "={c}{gmv}+{c}{gmv_recompra}+{c}{gmv_reativ}", FMT_BRL, 'sum', "{c}{gmv}+{c}{gmv_recompra}+{c}{gmv_reativ}"),
         ]
         j = next(k for k, m in enumerate(mets) if m[0] == 'gmv') + 1
         mets[j:j] = bloco
     if org:
         n_ = int(p.get('n_months', 12)); j = next(k for k, m in enumerate(mets) if m[0] == 'leads') + 1
         mets[j:j] = [
-          ('visitas_seo', "VISITAS ORGÂNICAS (SEO)", 'input', Ln(org['visitas'], n_), FMT_INT, 'sum', 'in'),
-          ('conv_seo', "VISITA ORGÂNICA → LEAD", 'link', 'conv_seo', FMT_PCT2, 'div:leads_seo/visitas_seo', "{c}{leads_seo}/{c}{visitas_seo}"),
-          ('leads_seo', "LEADS ORGÂNICOS (SEO)", 'calc', "={c}{visitas_seo}*{c}{conv_seo}", FMT_INT, 'sum', 'in'),
-          ('leads_total', "LEADS TOTAIS (PAGOS + ORGÂNICOS)", 'calc', "={c}{leads}+{c}{leads_seo}", FMT_INT, 'sum', "{c}{leads}+{c}{leads_seo}"),
+          ('visitas_seo', f"[QNTD] {org_metrica} ({org_origem})", 'input', Ln(org['visitas'], n_), FMT_INT, 'sum', 'in'),
+          ('conv_seo', f"[%] {org_metrica} → LEAD", 'link', 'conv_seo', FMT_PCT2, 'div:leads_seo/visitas_seo', "{c}{leads_seo}/{c}{visitas_seo}"),
+          ('leads_seo', f"[QNTD] LEADS ORGÂNICOS ({org_origem})", 'calc', "={c}{visitas_seo}*{c}{conv_seo}", FMT_INT, 'sum', 'in'),
+          ('leads_total', "[QNTD] LEADS TOTAIS (PAGOS + ORGÂNICOS)", 'calc', "={c}{leads}+{c}{leads_seo}", FMT_INT, 'sum', "{c}{leads}+{c}{leads_seo}"),
         ]
     cfg['metrics'] = mets
     return cfg
@@ -214,79 +252,92 @@ def inside_sales_config(p):
                 ("con_lead", "Conexão Lead", pr['con_lead'], FMT_PCT0), ("con_mql", "Conexão MQL", pr['con_mql'], FMT_PCT0),
                 ("cresc", "Crescimento mensal da verba de mídia", pr.get('cresc', 0.0), FMT_PCT1),
                 ("teto", "Teto da verba mensal (0 = sem teto)", pr.get('teto', 0) or 0, FMT_BRL),
-                ("lag", "Lag comercial (fração das vendas no mês do lead)", pr['lag'], FMT_PCT0),
+                ("lag", "Ciclo de venda: % das vendas que fecha ainda no mês do lead", pr['lag'], FMT_PCT0),
                 ("acum0", "Acumulado inicial (déficit já existente, negativo)", pr['acum0'], FMT_BRL), ("dias", "Dias do mês (budget médio/dia)", pr['dias'], '0')],
       budget_day=('midia', 'dias'), acum0_key='acum0',
       metrics=[
-        ('sec', "MARKETING · ATÉ O MQL"),
-        ('fee', "FEE V4", 'link', 'fee', FMT_BRL, 'sum', 'in'),
-        ('midia', "MÍDIA", 'linkf', ("={P_midia}", "=MIN({p}{midia}*(1+{P_cresc}),IF({P_teto}>0,{P_teto},{p}{midia}*(1+{P_cresc})))"), FMT_BRL, 'sum', 'in'),
-        ('custo', "CUSTO TOTAL (FEE V4 + MÍDIA)", 'calc', "={c}{fee}+{c}{midia}", FMT_BRL, 'sum', "{c}{fee}+{c}{midia}"),
-        ('cpm', "CPM", 'input', Ln(mo['cpm'], n), FMT_BRL2, 'div1000:midia/impress', "{c}{midia}/{c}{impress}*1000"),
-        ('impress', "IMPRESSÕES", 'calc', "=IFERROR({c}{midia}/{c}{cpm}*1000,0)", FMT_INT, 'sum', 'in'),
-        ('ctr', "CTR", 'input', Ln(mo['ctr'], n), FMT_PCT2, 'div:cliques/impress', "{c}{cliques}/{c}{impress}"),
-        ('cliques', "CLIQUES", 'calc', "={c}{impress}*{c}{ctr}", FMT_INT, 'sum', 'in'),
-        ('cpc', "CPC", 'calc', "=IFERROR({c}{midia}/{c}{cliques},0)", FMT_BRL2, 'div:midia/cliques', "{c}{midia}/{c}{cliques}"),
-        ('connect', "CONNECT RATE", 'link', 'connect', FMT_PCT0, 'div:visitas_pagas/cliques', "{c}{visitas_pagas}/{c}{cliques}"),
-        ('visitas_pagas', "VISITAS PAGAS", 'calc', "={c}{cliques}*{c}{connect}", FMT_INT, 'sum', 'in'),
-        ('custo_visita', "CUSTO / VISITA", 'calc', "=IFERROR({c}{midia}/{c}{visitas_pagas},0)", FMT_BRL2, 'div:midia/visitas_pagas', "{c}{midia}/{c}{visitas_pagas}"),
-        ('organicas', "VISITAS ORGÂNICAS", 'link', 'organicas', FMT_INT, 'sum', 'in'),
-        ('visitas_lp', "VISITAS LP", 'calc', "={c}{visitas_pagas}+{c}{organicas}", FMT_INT, 'sum', "{c}{visitas_pagas}+{c}{organicas}"),
-        ('conv_lp', "CONV. LP", 'input', Ln(mo['conv_lp'], n), FMT_PCT2, 'div:leads/visitas_lp', "{c}{leads}/{c}{visitas_lp}"),
-        ('leads', "LEADS", 'calc', "={c}{visitas_lp}*{c}{conv_lp}", FMT_INT, 'sum', 'in'),
-        ('cpl', "CPL", 'calc', "=IFERROR({c}{midia}/{c}{leads},0)", FMT_BRL2, 'div:midia/leads', "{c}{midia}/{c}{leads}"),
-        ('lead_mql', "LEAD → MQL", 'input', Ln(mo['lead_mql'], n), FMT_PCT2, 'div:mqls/leads', "{c}{mqls}/{c}{leads}"),
-        ('mqls', "MQLS", 'calc', "={c}{leads}*{c}{lead_mql}", FMT_INT, 'sum', 'in'),
-        ('custo_mql', "CUSTO / MQL", 'calc', "=IFERROR({c}{midia}/{c}{mqls},0)", FMT_BRL2, 'div:midia/mqls', "{c}{midia}/{c}{mqls}"),
-        ('sec', "VENDAS · DA CONEXÃO À RECEITA"),
-        ('con_lead', "CONEXÃO LEAD", 'link', 'con_lead', FMT_PCT0, 'div:leads_con/leads', "{c}{leads_con}/{c}{leads}"),
-        ('leads_con', "LEADS CONECTADOS", 'calc', "={c}{leads}*{c}{con_lead}", FMT_INT, 'sum', 'in'),
-        ('custo_con_lead', "CUSTO / CONEXÃO LEAD", 'calc', "=IFERROR({c}{midia}/{c}{leads_con},0)", FMT_BRL2, 'div:midia/leads_con', "{c}{midia}/{c}{leads_con}"),
-        ('con_mql', "CONEXÃO MQL", 'link', 'con_mql', FMT_PCT0, 'div:mql_con/mqls', "{c}{mql_con}/{c}{mqls}"),
-        ('mql_con', "MQL CONECTADOS", 'calc', "={c}{mqls}*{c}{con_mql}", FMT_INT, 'sum', 'in'),
-        ('custo_con_mql', "CUSTO / CONEXÃO MQL", 'calc', "=IFERROR({c}{midia}/{c}{mql_con},0)", FMT_BRL2, 'div:midia/mql_con', "{c}{midia}/{c}{mql_con}"),
-        ('mql_sql', "MQL CON. → SQL", 'input', Ln(mo['mql_sql'], n), FMT_PCT2, 'div:sqls/mql_con', "{c}{sqls}/{c}{mql_con}"),
-        ('sqls', "SQLS", 'calc', "={c}{mql_con}*{c}{mql_sql}", FMT_INT, 'sum', 'in'),
-        ('custo_sql', "CUSTO / SQL", 'calc', "=IFERROR({c}{midia}/{c}{sqls},0)", FMT_BRL2, 'div:midia/sqls', "{c}{midia}/{c}{sqls}"),
-        ('sql_venda', "SQL → VENDA", 'input', Ln(mo['sql_venda'], n), FMT_PCT2, 'div:vendas/sqls', "{c}{vendas}/{c}{sqls}"),
-        ('vendas_ger', "VENDAS GERADAS NO MÊS (ANTES DO LAG)", 'calc', "={c}{sqls}*{c}{sql_venda}", FMT_INT, 'sum', '""'),
-        ('vendas', "VENDAS", 'calcf', ("={c}{vendas_ger}*{P_lag}", "={c}{vendas_ger}*{P_lag}+{p}{vendas_ger}*(1-{P_lag})"), FMT_INT, 'sum', 'in'),
-        ('custo_venda', "CUSTO / VENDA", 'calc', "=IFERROR({c}{midia}/{c}{vendas},0)", FMT_BRL2, 'div:midia/vendas', "{c}{midia}/{c}{vendas}"),
-        ('conv_funil', "CONV. FUNIL (LEAD → VENDA)", 'calc', "=IFERROR({c}{vendas}/{c}{leads},0)", FMT_PCT1, 'div:vendas/leads', "{c}{vendas}/{c}{leads}"),
-        ('visita_venda', "VISITA → VENDA", 'calc', "=IFERROR({c}{vendas}/{c}{visitas_lp},0)", FMT_PCT1, 'div:vendas/visitas_lp', "{c}{vendas}/{c}{visitas_lp}"),
-        ('ticket', "TICKET MÉDIO", 'input', Ln(mo['ticket'], n), FMT_BRL2, 'div:gmv/vendas', "{c}{gmv}/{c}{vendas}"),
-        ('gmv', "GMV (VENDAS × TICKET)", 'calc', "={c}{vendas}*{c}{ticket}", FMT_BRL, 'sum', 'in'),
-        ('comissao', "COMISSÃO SOBRE O GMV", 'link', 'comissao', FMT_PCT1, 'div:receita/gmv', 'proj'),
-        ('receita', "RECEITA DA AGÊNCIA (GMV × COMISSÃO)", 'calc', "={c}{gmv}*{c}{comissao}", FMT_BRL, 'sum', "{c}{gmv}*{c}{comissao}"),
-        ('margem', "MARGEM DE CONTRIBUIÇÃO", 'link', 'margem', FMT_PCT0, 'div:mc/receita', 'proj'),
-        ('sec', "FINANCEIRO · RESULTADO E PAYBACK"),
-        ('mc', "RESULTADO MC (RECEITA × MARGEM)", 'calc', "={c}{receita}*{c}{margem}", FMT_BRL, 'sum', "{c}{receita}*{c}{margem}"),
-        ('roas', "ROAS (RECEITA ÷ MÍDIA)", 'calc', "=IFERROR({c}{receita}/{c}{midia},0)", FMT_X, 'div:receita/midia', "{c}{receita}/{c}{midia}"),
-        ('roas_be', "ROAS DE BREAKEVEN ((FEE + MÍDIA) ÷ MÍDIA ÷ MARGEM)", 'calc', "=IFERROR(({c}{fee}+{c}{midia})/({c}{midia}*{c}{margem}),0)", FMT_X, 'avg', '""'),
-        ('mc_midia', "RETORNO DOS ANÚNCIOS APÓS A MARGEM (MC − MÍDIA)", 'calc', "={c}{mc}-{c}{midia}", FMT_BRL, 'sum', "{c}{mc}-{c}{midia}"),
-        ('roi_midia', "ROI DA MÍDIA APÓS A MARGEM ((MC − MÍDIA) ÷ MÍDIA)", 'calc', "=IFERROR({c}{mc_midia}/{c}{midia},0)", FMT_PCT1, 'div:mc_midia/midia', "{c}{mc_midia}/{c}{midia}"),
-        ('custo_acum', "CUSTO ACUMULADO (FEE + MÍDIA)", 'cum', 'custo', FMT_BRL, 'last', 'cum'),
-        ('resultado', "RESULTADO LÍQUIDO (DEPOIS DO FEE V4)", 'calc', "={c}{mc}-{c}{custo}", FMT_BRL, 'sum', "{c}{mc}-{c}{custo}"),
-        ('roi_mes', "ROI DO MÊS", 'calc', "=IFERROR({c}{resultado}/{c}{custo},0)", FMT_PCT1, 'div:resultado/custo', "{c}{resultado}/{c}{custo}"),
-        ('cum', "RESULTADO ACUMULADO (PROJETADO)", 'cum', 'resultado', FMT_BRL, 'last', 'cum'),
-        ('sec', "RESULTADO · REALIZADO ONDE EXISTE, PROJETADO À FRENTE"),
-        ('receita_cons', "RECEITA CONSOLIDADA", 'calc', "=IF({HAS}=0,{c}{receita},{r}{receita})", FMT_BRL, 'sum', '""'),
-        ('custo_cons', "CUSTO CONSOLIDADO (FEE + MÍDIA)", 'calc', "=IF({HAS}=0,{c}{custo},{r}{custo})", FMT_BRL, 'sum', '""'),
-        ('mc_cons', "RESULTADO MC CONSOLIDADO", 'calc', "=IF({HAS}=0,{c}{mc},{r}{mc})", FMT_BRL, 'sum', '""'),
-        ('resultado_cons', "RESULTADO LÍQUIDO DO MÊS", 'calc', "={c}{mc_cons}-{c}{custo_cons}", FMT_BRL, 'sum', '""'),
-        ('cum_cons', "RESULTADO ACUMULADO", 'cum', 'resultado_cons', FMT_BRL, 'last', '""'),
-        ('cresc_receita', "CRESCIMENTO DA RECEITA (MÊS ANTERIOR)", 'calcf', ('=""', '=IFERROR({c}{receita_cons}/{p}{receita_cons}-1,"")'), FMT_PCT1, 'avg', '""'),
-        ('custo_acum_cons', "CUSTO ACUMULADO", 'cum', 'custo_cons', FMT_BRL, 'last', '""'),
-        ('roi_projeto', "ROI DO PROJETO (ACUMULADO)", 'calc', "=IFERROR({c}{cum_cons}/{c}{custo_acum_cons},0)", FMT_PCT1, 'last', '""'),
+        ('sec', "INVESTIMENTO · O QUE A OPERAÇÃO CUSTA POR MÊS", 'investimento'),
+        ('fee', "[R$] FEE V4", 'link', 'fee', FMT_BRL, 'sum', 'in'),
+        ('midia', "[R$] VERBA DE MÍDIA (INVESTIMENTO)", 'linkf', ("={P_midia}", "=MIN({p}{midia}*(1+{P_cresc}),IF({P_teto}>0,{P_teto},{p}{midia}*(1+{P_cresc})))"), FMT_BRL, 'sum', 'in'),
+        ('custo', "[R$] CUSTO TOTAL (FEE V4 + MÍDIA)", 'calc', "={c}{fee}+{c}{midia}", FMT_BRL, 'sum', "{c}{fee}+{c}{midia}"),
+        ('sec', "MARKETING · DA VERBA AO MQL", 'marketing'),
+        ('cpm', "[R$] CPM (CUSTO POR MIL IMPRESSÕES)", 'input', Ln(mo['cpm'], n), FMT_BRL2, 'div1000:midia/impress', "{c}{midia}/{c}{impress}*1000"),
+        ('impress', "[QNTD] IMPRESSÕES", 'calc', "=IFERROR({c}{midia}/{c}{cpm}*1000,0)", FMT_INT, 'sum', 'in'),
+        ('ctr', "[%] CTR (IMPRESSÃO → CLIQUE)", 'input', Ln(mo['ctr'], n), FMT_PCT2, 'div:cliques/impress', "{c}{cliques}/{c}{impress}"),
+        ('cliques', "[QNTD] CLIQUES", 'calc', "={c}{impress}*{c}{ctr}", FMT_INT, 'sum', 'in'),
+        ('cpc', "[R$] CPC (CUSTO POR CLIQUE)", 'calc', "=IFERROR({c}{midia}/{c}{cliques},0)", FMT_BRL2, 'div:midia/cliques', "{c}{midia}/{c}{cliques}"),
+        ('connect', "[%] CONNECT RATE (CLIQUE → VISITA NA PÁGINA)", 'link', 'connect', FMT_PCT0, 'div:visitas_pagas/cliques', "{c}{visitas_pagas}/{c}{cliques}"),
+        ('visitas_pagas', "[QNTD] VISITAS PAGAS NA PÁGINA", 'calc', "={c}{cliques}*{c}{connect}", FMT_INT, 'sum', 'in'),
+        ('custo_visita', "[R$] CUSTO POR VISITA", 'calc', "=IFERROR({c}{midia}/{c}{visitas_pagas},0)", FMT_BRL2, 'div:midia/visitas_pagas', "{c}{midia}/{c}{visitas_pagas}"),
+        ('organicas', "[QNTD] VISITAS ORGÂNICAS", 'link', 'organicas', FMT_INT, 'sum', 'in'),
+        ('visitas_lp', "[QNTD] VISITAS TOTAIS NA PÁGINA", 'calc', "={c}{visitas_pagas}+{c}{organicas}", FMT_INT, 'sum', "{c}{visitas_pagas}+{c}{organicas}"),
+        ('conv_lp', "[%] VISITA → LEAD", 'input', Ln(mo['conv_lp'], n), FMT_PCT2, 'div:leads/visitas_lp', "{c}{leads}/{c}{visitas_lp}"),
+        ('leads', "[QNTD] LEADS", 'calc', "={c}{visitas_lp}*{c}{conv_lp}", FMT_INT, 'sum', 'in'),
+        ('cpl', "[R$] CPL (CUSTO POR LEAD)", 'calc', "=IFERROR({c}{midia}/{c}{leads},0)", FMT_BRL2, 'div:midia/leads', "{c}{midia}/{c}{leads}"),
+        # O MQL é qualificação de marketing: sai de critérios do formulário ou da landing page, não do julgamento do vendedor.
+        # Por isso lead → MQL fecha o bloco de marketing, e o comercial começa no atendimento.
+        ('lead_mql', "[%] LEAD → MQL", 'input', Ln(mo['lead_mql'], n), FMT_PCT2, 'div:mqls/leads', "{c}{mqls}/{c}{leads}"),
+        ('mqls', "[QNTD] MQLS", 'calc', "={c}{leads}*{c}{lead_mql}", FMT_INT, 'sum', 'in'),
+        ('custo_mql', "[R$] CUSTO POR MQL", 'calc', "=IFERROR({c}{midia}/{c}{mqls},0)", FMT_BRL2, 'div:midia/mqls', "{c}{midia}/{c}{mqls}"),
+        ('sec', "VENDAS · DA CONEXÃO À RECEITA", 'vendas'),
+        ('con_lead', "[%] CONEXÃO — LEAD ATENDIDO", 'link', 'con_lead', FMT_PCT0, 'div:leads_con/leads', "{c}{leads_con}/{c}{leads}"),
+        ('leads_con', "[QNTD] LEADS CONECTADOS", 'calc', "={c}{leads}*{c}{con_lead}", FMT_INT, 'sum', 'in'),
+        ('custo_con_lead', "[R$] CUSTO POR LEAD CONECTADO", 'calc', "=IFERROR({c}{midia}/{c}{leads_con},0)", FMT_BRL2, 'div:midia/leads_con', "{c}{midia}/{c}{leads_con}"),
+        ('con_mql', "[%] CONEXÃO — MQL ATENDIDO", 'link', 'con_mql', FMT_PCT0, 'div:mql_con/mqls', "{c}{mql_con}/{c}{mqls}"),
+        ('mql_con', "[QNTD] MQLS CONECTADOS", 'calc', "={c}{mqls}*{c}{con_mql}", FMT_INT, 'sum', 'in'),
+        ('custo_con_mql', "[R$] CUSTO POR MQL CONECTADO", 'calc', "=IFERROR({c}{midia}/{c}{mql_con},0)", FMT_BRL2, 'div:midia/mql_con', "{c}{midia}/{c}{mql_con}"),
+        ('mql_sql', "[%] MQL CON. → SQL", 'input', Ln(mo['mql_sql'], n), FMT_PCT2, 'div:sqls/mql_con', "{c}{sqls}/{c}{mql_con}"),
+        ('sqls', "[QNTD] SQLS", 'calc', "={c}{mql_con}*{c}{mql_sql}", FMT_INT, 'sum', 'in'),
+        ('custo_sql', "[R$] CUSTO POR SQL", 'calc', "=IFERROR({c}{midia}/{c}{sqls},0)", FMT_BRL2, 'div:midia/sqls', "{c}{midia}/{c}{sqls}"),
+        ('sql_venda', "[%] SQL → VENDA", 'input', Ln(mo['sql_venda'], n), FMT_PCT2, 'div:vendas/sqls', "{c}{vendas}/{c}{sqls}"),
+        ('vendas_ger', "[QNTD] VENDAS ORIGINADAS PELOS SQLS DO MÊS", 'calc', "={c}{sqls}*{c}{sql_venda}", FMT_INT, 'sum', '""'),
+        ('vendas', "[QNTD] VENDAS FECHADAS NO MÊS", 'calcf', ("={c}{vendas_ger}*{P_lag}", "={c}{vendas_ger}*{P_lag}+{p}{vendas_ger}*(1-{P_lag})"), FMT_INT, 'sum', 'in'),
+        ('custo_venda', "[R$] CUSTO POR VENDA (CAC)", 'calc', "=IFERROR({c}{midia}/{c}{vendas},0)", FMT_BRL2, 'div:midia/vendas', "{c}{midia}/{c}{vendas}"),
+        ('conv_funil', "[%] CONVERSÃO DO FUNIL (LEAD → VENDA)", 'calc', "=IFERROR({c}{vendas}/{c}{leads},0)", FMT_PCT1, 'div:vendas/leads', "{c}{vendas}/{c}{leads}"),
+        ('visita_venda', "[%] VISITA → VENDA", 'calc', "=IFERROR({c}{vendas}/{c}{visitas_lp},0)", FMT_PCT1, 'div:vendas/visitas_lp', "{c}{vendas}/{c}{visitas_lp}"),
+        ('ticket', "[R$] TICKET MÉDIO", 'input', Ln(mo['ticket'], n), FMT_BRL2, 'div:gmv/vendas', "{c}{gmv}/{c}{vendas}"),
+        ('gmv', "[R$] GMV (VENDAS × TICKET)", 'calc', "={c}{vendas}*{c}{ticket}", FMT_BRL, 'sum', 'in'),
+        ('comissao', "[%] COMISSÃO SOBRE O GMV", 'link', 'comissao', FMT_PCT1, 'div:receita/gmv', 'proj'),
+        ('receita', "[R$] RECEITA DA AGÊNCIA (GMV × COMISSÃO)", 'calc', "={c}{gmv}*{c}{comissao}", FMT_BRL, 'sum', "{c}{gmv}*{c}{comissao}"),
+        ('margem', "[%] MARGEM DE CONTRIBUIÇÃO", 'link', 'margem', FMT_PCT0, 'div:mc/receita', 'proj'),
+        # Um bloco financeiro só, todo consolidado (realizado onde existe). As linhas puramente projetadas
+        # viraram intermediárias ocultas: mostrar as duas versões dava o mesmo nome a dois números diferentes.
+        ('sec', "FINANCEIRO · RESULTADO (REALIZADO ONDE EXISTE, PROJETADO À FRENTE)", 'financeiro'),
+        ('mc', "[R$] RESULTADO MC PROJETADO (INTERMEDIÁRIA)", 'calc', "={c}{receita}*{c}{margem}", FMT_BRL, 'sum', "{c}{receita}*{c}{margem}"),
+        ('midia_cons', "[R$] MÍDIA CONSOLIDADA (INTERMEDIÁRIA)", 'calc', "=IF({HAS}=0,{c}{midia},{r}{midia})", FMT_BRL, 'sum', '""'),
+        ('receita_cons', "[R$] RECEITA", 'calc', "=IF({HAS}=0,{c}{receita},{r}{receita})", FMT_BRL, 'sum', '""'),
+        ('custo_cons', "[R$] CUSTO TOTAL (FEE V4 + MÍDIA)", 'calc', "=IF({HAS}=0,{c}{custo},{r}{custo})", FMT_BRL, 'sum', '""'),
+        ('mc_cons', "[R$] RESULTADO MC (RECEITA × MARGEM)", 'calc', "=IF({HAS}=0,{c}{mc},{r}{mc})", FMT_BRL, 'sum', '""'),
+        ('resultado_cons', "[R$] RESULTADO LÍQUIDO DO MÊS", 'calc', "={c}{mc_cons}-{c}{custo_cons}", FMT_BRL, 'sum', '""'),
+        ('cum_cons', "[R$] RESULTADO ACUMULADO", 'cum', 'resultado_cons', FMT_BRL, 'last', '""'),
+        ('custo_acum_cons', "[R$] CUSTO ACUMULADO", 'cum', 'custo_cons', FMT_BRL, 'last', '""'),
+        ('cresc_receita', "[%] CRESCIMENTO DA RECEITA (MÊS ANTERIOR)", 'calcf', ('=""', '=IFERROR({c}{receita_cons}/{p}{receita_cons}-1,"")'), FMT_PCT1, 'avg', '""'),
+        ('sec', "FINANCEIRO · QUANTO FALTA PARA ZERAR O MÊS", 'financeiro'),
+        ('fat_be', "[R$] RECEITA NECESSÁRIA PARA ZERAR O MÊS", 'calc',
+         "=IFERROR({c}{custo_cons}*{c}{receita_cons}/{c}{mc_cons},IFERROR({c}{custo_cons}*{c}{receita}/{c}{mc},0))", FMT_BRL, 'sum', '""'),
+        ('vendas_be', "[QNTD] VENDAS NECESSÁRIAS PARA ZERAR O MÊS", 'calc',
+         "=IFERROR(ROUNDUP({c}{fat_be}*{c}{vendas}/{c}{receita},0),0)", FMT_INT, 'sum', '""'),
+        ('gap_be', "[R$] SOBRA / FALTA CONTRA O NECESSÁRIO", 'calc', "={c}{receita_cons}-{c}{fat_be}", FMT_BRL, 'sum', '""'),
+        ('sec', "FINANCEIRO · EFICIÊNCIA E RETORNO", 'financeiro'),
+        ('roas', "[X] ROAS (RECEITA ÷ MÍDIA)", 'calc', "=IFERROR({c}{receita_cons}/{c}{midia_cons},0)", FMT_X, 'div:receita_cons/midia_cons', '""'),
+        ('roas_be', "[X] ROAS DE BREAKEVEN (RECEITA NECESSÁRIA ÷ MÍDIA)", 'calc', "=IFERROR({c}{fat_be}/{c}{midia_cons},0)", FMT_X, 'div:fat_be/midia_cons', '""'),
+        ('mc_midia', "[R$] RETORNO DOS ANÚNCIOS APÓS A MARGEM (MC − MÍDIA)", 'calc', "={c}{mc_cons}-{c}{midia_cons}", FMT_BRL, 'sum', '""'),
+        ('roi_midia', "[X] RETORNO DA MÍDIA APÓS A MARGEM (MC ÷ MÍDIA)", 'calc', "=IFERROR({c}{mc_cons}/{c}{midia_cons},0)", FMT_X, 'div:mc_cons/midia_cons', '""'),
+        ('roi_mes', "[X] RETORNO POR R$ 1 INVESTIDO NO MÊS (MC ÷ CUSTO)", 'calc', "=IFERROR({c}{mc_cons}/{c}{custo_cons},0)", FMT_X, 'div:mc_cons/custo_cons', '""'),
+        ('roi_projeto', "[X] RETORNO ACUMULADO POR R$ 1 INVESTIDO", 'calc',
+         "=IFERROR(({c}{cum_cons}-{P_acum0}+{c}{custo_acum_cons})/{c}{custo_acum_cons},0)", FMT_X, 'last', '""'),
         ('flag', "ACUMULADO ≥ 0?  (1 = SIM)", 'calc', "=IF({c}{cum_cons}>=0,1,0)", '0', 'sum', '""'),
         ('flag_mes', "MÊS NO AZUL?  (1 = SIM)", 'calc', "=IF({c}{resultado_cons}>=0,1,0)", '0', 'sum', '""'),
         ('flag_cont', "NO AZUL DAQUI ATÉ O FIM?  (1 = SIM)", 'calc', "=IF(COUNTIF({c}{flag_mes}:{L}{flag_mes},0)=0,1,0)", '0', 'sum', '""'),
       ],
       bold_rows={'resultado_cons', 'cum_cons', 'receita', 'receita_cons', 'gmv'}, espelho=['resultado_cons', 'receita_cons', 'cum_cons'],
-      signed_rows=['resultado', 'roi_mes', 'cum', 'resultado_cons', 'cum_cons', 'roi_projeto', 'cresc_receita', 'mc_midia', 'roi_midia'], cum_key='cum_cons',
+      signed_rows=['resultado_cons', 'cum_cons', 'cresc_receita', 'mc_midia', 'gap_be'],
+      x_rows=['roi_mes', 'roi_midia', 'roi_projeto'], cum_key='cum_cons',
+      # intermediárias e flags: as fórmulas e os cartões dependem delas, o cliente não precisa vê-las
+      hidden_rows=['mc', 'midia_cons', 'flag', 'flag_mes', 'flag_cont'],
       kpis=is_kpis,
       meta=lambda ctx, m: meta_block(ctx, m, p['target'], 'gmv', 'ticket', 'vendas', 'custo_cons', 'cum_cons', 'margem', comissao_key='comissao', acum0_key='acum0'),
-      metodologia=p.get('metodologia'), metodologia_fim=p.get('metodologia_fim'), historico=p.get('historico'), pilot_ref=p.get('pilot_ref'),
+      metodologia=p.get('metodologia'), metodologia_fim=p.get('metodologia_fim'), historico=p.get('historico'), legado=p.get('legado'), pilot_ref=p.get('pilot_ref'),
       real_prefill=p.get('real_prefill'), month_labels=p.get('month_labels'), envelope=p.get('envelope'), base_ref=p.get('base_ref'),
       charts=[
         dict(type='growth', title="Receita e crescimento mês a mês", bars='receita_cons', line='cresc_receita'),
@@ -336,12 +387,12 @@ def ecommerce_config(p):
     if usa_margem: prem += [("margem", p.get('margem_label', "Margem de contribuição"), pr['margem'], FMT_PCT1)]
     if margem_info is not None: prem += [("margem_info", "Margem de contribuição (informativa, fora do resultado)", margem_info, FMT_PCT1)]
     if share: prem += [("base_nao_midia", "Faturamento mensal fora da mídia V4 (base, R$)", pr['base_nao_midia'], FMT_BRL)]
-    prem += [("lag", "Lag comercial (fração dos pedidos no mês do clique)", pr['lag'], FMT_PCT0),
+    prem += [("lag", "Ciclo de venda: % dos pedidos que fecha ainda no mês do clique", pr['lag'], FMT_PCT0),
              ("acum0", "Acumulado inicial (déficit já existente, negativo)", pr['acum0'], FMT_BRL),
              ("dias", "Dias do mês (budget médio/dia)", pr['dias'], '0')]
 
     mets = [
-      ('sec', "INVESTIMENTO"),
+      ('sec', "INVESTIMENTO · O QUE A OPERAÇÃO CUSTA POR MÊS", 'investimento'),
       ('fee', "[R$] FEE MENSAL", 'link', 'fee', FMT_BRL, 'sum', 'in'),
       ('midia', "[R$] VERBA DE MÍDIA", 'linkf', ("={P_midia1}", "=IF({P_teto}>0,MIN({p}{midia}*(1+{P_cresc}),{P_teto}),{p}{midia}*(1+{P_cresc}))"), FMT_BRL, 'sum', 'in'),
       ('custo_mes', "[R$] CUSTO V4 + MÍDIA", 'calc', "={c}{fee}+{c}{midia}", FMT_BRL, 'sum', "{c}{fee}+{c}{midia}"),
@@ -350,7 +401,7 @@ def ecommerce_config(p):
     if split:
         mets += [
           ('share_meta', "[%] PARTICIPAÇÃO DO META NA VERBA", 'link', 'share_meta', FMT_PCT1, 'div:verba_meta/midia', "{c}{verba_meta}/{c}{midia}"),
-          ('sec', "TRÁFEGO PAGO · GOOGLE"),
+          ('sec', "MARKETING · TRÁFEGO PAGO · GOOGLE", 'marketing'),
           ('verba_google', "[R$] VERBA GOOGLE", 'calc', "={c}{midia}*(1-{c}{share_meta})", FMT_BRL, 'sum', 'in'),
           lever('cpm', "[R$] CPM GOOGLE", FMT_BRL2, 'div1000:verba_google/impress', "{c}{verba_google}/{c}{impress}*1000"),
           ('impress', "[QNTD] IMPRESSÕES GOOGLE", 'calc', "=IFERROR({c}{verba_google}/{c}{cpm}*1000,0)", FMT_INT, 'sum', 'in'),
@@ -359,16 +410,16 @@ def ecommerce_config(p):
           ('cpc', "[R$] CPC GOOGLE", 'calc', "=IFERROR({c}{verba_google}/{c}{cliques},0)", FMT_BRL2, 'div:verba_google/cliques', "{c}{verba_google}/{c}{cliques}"),
           lever('connect', "[%] CONNECT RATE", FMT_PCT0, 'div:sessoes_google/cliques', "{c}{sessoes_google}/{c}{cliques}"),
           ('sessoes_google', "[QNTD] SESSÕES - GOOGLE", 'calc', "={c}{cliques}*{c}{connect}", FMT_INT, 'sum', 'in'),
-          ('sec', "TRÁFEGO PAGO · META"),
+          ('sec', "MARKETING · TRÁFEGO PAGO · META", 'marketing'),
           ('verba_meta', "[R$] VERBA META", 'calc', "={c}{midia}*{c}{share_meta}", FMT_BRL, 'sum', "{c}{midia}-{c}{verba_google}"),
           lever('cps_meta', "[R$] CUSTO POR SESSÃO META", FMT_BRL2, 'div:verba_meta/sessoes_meta', "{c}{verba_meta}/{c}{sessoes_meta}"),
           ('sessoes_meta', "[QNTD] SESSÕES - META", 'calc', "=IFERROR({c}{verba_meta}/{c}{cps_meta},0)", FMT_INT, 'sum', 'in'),
-          ('sec', "SESSÕES DO SITE"),
+          ('sec', "MARKETING · SESSÕES DO SITE", 'marketing'),
           ('sessoes_pago', "[QNTD] SESSÕES PAGAS (GOOGLE + META)", 'calc', "={c}{sessoes_google}+{c}{sessoes_meta}", FMT_INT, 'sum', "{c}{sessoes_google}+{c}{sessoes_meta}"),
         ]
     else:
         mets += [
-          ('sec', "TRÁFEGO PAGO"),
+          ('sec', "MARKETING · TRÁFEGO PAGO", 'marketing'),
           lever('cpm', "[R$] CPM", FMT_BRL2, 'div1000:midia/impress', "{c}{midia}/{c}{impress}*1000"),
           ('impress', "[QNTD] IMPRESSÕES", 'calc', "=IFERROR({c}{midia}/{c}{cpm}*1000,0)", FMT_INT, 'sum', 'in'),
           lever('ctr', "[%] CTR", FMT_PCT2, 'div:cliques/impress', "{c}{cliques}/{c}{impress}"),
@@ -381,7 +432,7 @@ def ecommerce_config(p):
       org_row,
       ('sessoes_total', "[QNTD] SESSÕES - TOTAL DO SITE" if funil_pago else "[QNTD] SESSÕES - TOTAL", 'calc', "={c}{sessoes_pago}+{c}{sessoes_org}", FMT_INT, 'sum', "{c}{sessoes_pago}+{c}{sessoes_org}"),
       ('custo_sessao_geral', "[R$] CUSTO POR SESSÃO PAGA" if funil_pago else "[R$] CUSTO POR SESSÃO", 'calc', "=IFERROR({c}{midia}/{c}{" + base_ses + "},0)", FMT_BRL2, 'div:midia/' + base_ses, "{c}{midia}/{c}{" + base_ses + "}"),
-      ('sec', "FUNIL E-COMMERCE · TRÁFEGO PAGO" if funil_pago else "FUNIL E-COMMERCE"),
+      ('sec', "VENDAS · FUNIL E-COMMERCE · TRÁFEGO PAGO" if funil_pago else "VENDAS · FUNIL E-COMMERCE", 'vendas'),
       lever('s_vi', "[%] SESSÃO PAGA → VIEW ITEM" if funil_pago else "[%] SESSÃO → VIEW ITEM", FMT_PCT0, 'div:view_item/' + base_ses, "{c}{view_item}/{c}{" + base_ses + "}"),
       ('view_item', "[QNTD] VIEW ITEM", 'calc', "={c}{" + base_ses + "}*{c}{s_vi}", FMT_INT, 'sum', 'in'),
       ('custo_vi', "[R$] CUSTO POR VIEW ITEM", 'calc', "=IFERROR({c}{midia}/{c}{view_item},0)", FMT_BRL2, 'div:midia/view_item', "{c}{midia}/{c}{view_item}"),
@@ -392,8 +443,8 @@ def ecommerce_config(p):
       ('ic', "[QNTD] INITIATE CHECKOUT", 'calc', "={c}{cart}*{c}{cart_ic}", FMT_INT, 'sum', 'in'),
       ('custo_ic', "[R$] CUSTO POR CHECKOUT", 'calc', "=IFERROR({c}{midia}/{c}{ic},0)", FMT_BRL2, 'div:midia/ic', "{c}{midia}/{c}{ic}"),
       lever('ic_ped', "[%] CHECKOUT → PEDIDO", FMT_PCT0, 'div:pedidos/ic', "{c}{pedidos}/{c}{ic}"),
-      ('pedidos_ger', "[QNTD] PEDIDOS GERADOS NO MÊS (ANTES DO LAG)", 'calc', "={c}{ic}*{c}{ic_ped}", FMT_INT, 'sum', '""'),
-      ('pedidos', "[QNTD] PEDIDOS", 'calcf', ("={c}{pedidos_ger}*{P_lag}", "={c}{pedidos_ger}*{P_lag}+{p}{pedidos_ger}*(1-{P_lag})"), FMT_INT, 'sum', 'in'),
+      ('pedidos_ger', "[QNTD] PEDIDOS ORIGINADOS PELOS CHECKOUTS DO MÊS", 'calc', "={c}{ic}*{c}{ic_ped}", FMT_INT, 'sum', '""'),
+      ('pedidos', "[QNTD] PEDIDOS FECHADOS NO MÊS", 'calcf', ("={c}{pedidos_ger}*{P_lag}", "={c}{pedidos_ger}*{P_lag}+{p}{pedidos_ger}*(1-{P_lag})"), FMT_INT, 'sum', 'in'),
       ('custo_pedido', "[R$] CUSTO POR PEDIDO", 'calc', "=IFERROR({c}{midia}/{c}{pedidos},0)", FMT_BRL2, 'div:midia/pedidos', "{c}{midia}/{c}{pedidos}"),
       lever('ticket_ped', "[R$] TICKET MÉDIO DO PEDIDO", FMT_BRL2, 'div:receita_captada/pedidos', "{c}{receita_captada}/{c}{pedidos}"),
       ('receita_captada', "[R$] RECEITA ATRIBUÍDA À MÍDIA V4", 'calc', "={c}{pedidos}*{c}{ticket_ped}", FMT_BRL, 'sum', 'in'),
@@ -408,7 +459,7 @@ def ecommerce_config(p):
           ('receita_fat', "[R$] RECEITA FATURADA NO MÊS", 'calc', "={c}{vendas}*{c}{ticket_fat}", FMT_BRL, 'sum', 'in'),
           ('tx_venda', "[%] TAXA CONV. E-COM (VENDA)", 'calc', "=IFERROR({c}{vendas}/{c}{" + base_ses + "},0)", FMT_PCT2, 'div:vendas/' + base_ses, "{c}{vendas}/{c}{" + base_ses + "}"),
         ]
-    mets += [('sec', "RESULTADO · REALIZADO ONDE EXISTE, PROJETADO À FRENTE")]
+    mets += [('sec', "RESULTADO · REALIZADO ONDE EXISTE, PROJETADO À FRENTE", 'resultado')]
     if usa_margem:
         mets += [
           ('margem', "[%] MARGEM DE CONTRIBUIÇÃO", 'link', 'margem', FMT_PCT1, 'div:mc/' + rec, 'proj'),
@@ -417,17 +468,26 @@ def ecommerce_config(p):
     if margem_info is not None:
         mc_info_row = ('mc_info', "[R$] MC INFORMATIVA (RECEITA × MARGEM INFORMATIVA, FORA DO RESULTADO)", 'calc', "={c}{receita_cons}*{P_margem_info}", FMT_BRL, 'sum', '""')
     base_res = 'mc' if usa_margem else rec
+    res_cons = 'mc_cons' if usa_margem else 'receita_cons'   # o que sobra da receita antes do fee e da mídia
     mets += [
       ('receita_cons', "[R$] RECEITA CONSOLIDADA", 'calc', "=IF({HAS}=0,{c}{" + rec + "},{r}{" + rec + "})", FMT_BRL, 'sum', '""'),
       ('midia_cons', "[R$] MÍDIA CONSOLIDADA", 'calc', "=IF({HAS}=0,{c}{midia},{r}{midia})", FMT_BRL, 'sum', '""'),
       ('custo_cons', "[R$] CUSTO CONSOLIDADO (FEE + MÍDIA)", 'calc', "=IF({HAS}=0,{c}{custo_mes},{r}{custo_mes})", FMT_BRL, 'sum', '""'),
-      ('resultado_cons', "[R$] RESULTADO LÍQUIDO DO MÊS", 'calc', "=IF({HAS}=0,{c}{" + base_res + "},{r}{" + base_res + "})-{c}{custo_cons}", FMT_BRL, 'sum', '""'),
+    ] + ([('mc_cons', "[R$] RESULTADO MC CONSOLIDADO", 'calc', "=IF({HAS}=0,{c}{mc},{r}{mc})", FMT_BRL, 'sum', '""')] if usa_margem else []) + [
+      ('resultado_cons', "[R$] RESULTADO LÍQUIDO DO MÊS", 'calc', "={c}{" + res_cons + "}-{c}{custo_cons}", FMT_BRL, 'sum', '""'),
       ('cum_cons', "[R$] RESULTADO ACUMULADO", 'cum', 'resultado_cons', FMT_BRL, 'last', '""'),
       ('cresc_receita', "[%] CRESCIMENTO DA RECEITA (MÊS ANTERIOR)", 'calcf', ('=""', '=IFERROR({c}{receita_cons}/{p}{receita_cons}-1,"")'), FMT_PCT1, 'avg', '""'),
-      ('roas_cons', "ROAS DO MÊS", 'calc', "=IFERROR({c}{receita_cons}/{c}{midia_cons},0)", FMT_X, 'div:receita_cons/midia_cons', '""'),
-      ('roi_mes', "[%] ROI DO MÊS", 'calc', "=IFERROR({c}{resultado_cons}/{c}{custo_cons},0)", FMT_PCT1, 'div:resultado_cons/custo_cons', '""'),
+      ('roas_cons', "[X] ROAS DO MÊS", 'calc', "=IFERROR({c}{receita_cons}/{c}{midia_cons},0)", FMT_X, 'div:receita_cons/midia_cons', '""'),
+      ('fat_be', "[R$] RECEITA NECESSÁRIA PARA ZERAR O MÊS", 'calc',
+       ("=IFERROR({c}{custo_cons}*{c}{receita_cons}/{c}{mc_cons},IFERROR({c}{custo_cons}/{c}{margem},0))" if usa_margem else "={c}{custo_cons}"),
+       FMT_BRL, 'sum', '""'),
+      ('vendas_be', "[QNTD] PEDIDOS NECESSÁRIOS PARA ZERAR O MÊS" if not usa_venda else "[QNTD] VENDAS NECESSÁRIAS PARA ZERAR O MÊS", 'calc',
+       "=IFERROR(ROUNDUP({c}{fat_be}*{c}{" + vol + "}/{c}{" + rec + "},0),0)", FMT_INT, 'sum', '""'),
+      ('gap_be', "[R$] SOBRA / FALTA CONTRA O NECESSÁRIO", 'calc', "={c}{receita_cons}-{c}{fat_be}", FMT_BRL, 'sum', '""'),
+      ('roi_mes', "[X] RETORNO POR R$ 1 INVESTIDO NO MÊS", 'calc', "=IFERROR({c}{" + res_cons + "}/{c}{custo_cons},0)", FMT_X, 'div:' + res_cons + '/custo_cons', '""'),
       ('custo_acum', "[R$] CUSTO ACUMULADO", 'cum', 'custo_cons', FMT_BRL, 'last', '""'),
-      ('roi_projeto', "[%] ROI DO PROJETO (ACUMULADO)", 'calc', "=IFERROR({c}{cum_cons}/{c}{custo_acum},0)", FMT_PCT1, 'last', '""'),
+      ('roi_projeto', "[X] RETORNO ACUMULADO POR R$ 1 INVESTIDO", 'calc',
+       "=IFERROR(({c}{cum_cons}-{P_acum0}+{c}{custo_acum})/{c}{custo_acum},0)", FMT_X, 'last', '""'),
       ('flag', "ACUMULADO ≥ 0?  (1 = SIM)", 'calc', "=IF({c}{cum_cons}>=0,1,0)", '0', 'sum', '""'),
       ('flag_mes', "MÊS NO AZUL?  (1 = SIM)", 'calc', "=IF({c}{resultado_cons}>=0,1,0)", '0', 'sum', '""'),
       ('flag_cont', "NO AZUL DAQUI ATÉ O FIM?  (1 = SIM)", 'calc', "=IF(COUNTIF({c}{flag_mes}:{L}{flag_mes},0)=0,1,0)", '0', 'sum', '""'),
@@ -435,7 +495,7 @@ def ecommerce_config(p):
     if margem_info is not None: mets += [mc_info_row]
     if share:
         mets += [
-          ('sec', "PARTICIPAÇÃO DA MÍDIA NO FATURAMENTO DA LOJA"),
+          ('sec', "PARTICIPAÇÃO DA MÍDIA NO FATURAMENTO DA LOJA", 'financeiro'),
           ('fat_total', "[R$] FATURAMENTO TOTAL DA LOJA", 'mixed', p['fat_total_cells'], FMT_BRL, 'sum', '""'),
           ('cresc_fat_total', "[%] CRESCIMENTO DO FATURAMENTO TOTAL (MÊS ANTERIOR)", 'calcf', ('=""', '=IFERROR({c}{fat_total}/{p}{fat_total}-1,"")'), FMT_PCT1, 'avg', '""'),
           ('share_midia', "[%] PARTICIPAÇÃO DA MÍDIA V4 NO FATURAMENTO", 'calc', "=IFERROR({c}{receita_cons}/{c}{fat_total},0)", FMT_PCT1, 'div:receita_cons/fat_total', '""'),
@@ -452,8 +512,8 @@ def ecommerce_config(p):
         if share:
             out += [("PARTICIPAÇÃO DA MÍDIA · MÊS 1", f"=IFERROR(INDEX({ctx.rng('share_midia')},1,1),0)", FMT_PCT1, "receita atribuída ÷ faturamento da loja"),
                     (f"PARTICIPAÇÃO DA MÍDIA · MÊS {ctx.n}", f"=IFERROR(INDEX({ctx.rng('share_midia')},1,{ctx.n}),0)", FMT_PCT1, "onde a mídia chega no fim do período")]
-        out += [("ROI DO PROJETO", f"=IFERROR({ctx.tot('resultado_cons')}/{ctx.tot('custo_cons')},0)", FMT_PCT1, "acumulado no período"),
-                pb['azul'], pb['payback'], pb['exposicao']]
+        out += [("RETORNO POR R$ 1 INVESTIDO", f"=IFERROR({ctx.tot(res_cons)}/{ctx.tot('custo_cons')},0)", FMT_X, "1,0x = o período se paga"),
+                pb['azul'], pb['payback']]
         return out[:10]
 
     charts = [
@@ -465,6 +525,10 @@ def ecommerce_config(p):
         charts += [dict(type='line', title="Participação da mídia V4 no faturamento da loja", series=[('share_midia', RED, False)], y_fmt='0%')]
     charts += [dict(type='funnel', title="Funil e-commerce · acumulado no período")]
 
+    if float(pr.get('lag', 1.0)) >= 0.999:   # o ciclo fecha tudo no mês: "originados" seria cópia de "fechados"
+        prem = [x for x in prem if x[0] != 'lag']
+        mets = [('pedidos', "[QNTD] PEDIDOS FECHADOS NO MÊS", 'calc', "={c}{ic}*{c}{ic_ped}", FMT_INT, 'sum', 'in') if m[0] == 'pedidos'
+                else m for m in mets if m[0] != 'pedidos_ger']
     if p.get('verba_plano'):  # plano de verba mês a mês: cada mês é editável, crescimento e teto saem
         prem = [x for x in prem if x[0] not in ('cresc', 'teto')]
         mets = [('midia', "[R$] VERBA DE MÍDIA", 'input', Ln(p['verba_plano'], n), FMT_BRL, 'sum', 'in') if m[0] == 'midia' else m for m in mets]
@@ -474,11 +538,12 @@ def ecommerce_config(p):
       sheet=p['sheet'], title=p['title'], subtitle=p['subtitle'], meta_line=p['meta_line'], footer=p['footer'],
       premises=prem, budget_day=('midia1', 'dias'), acum0_key='acum0', metrics=mets, n_months=n,
       bold_rows={'receita_captada', 'receita_fat', 'receita_cons', 'resultado_cons', 'cum_cons', 'share_midia', 'fat_total'},
-      signed_rows=['resultado_cons', 'cum_cons', 'roi_mes', 'roi_projeto', 'cresc_receita', 'cresc_fat_total'], cum_key='cum_cons',
+      signed_rows=['resultado_cons', 'cum_cons', 'cresc_receita', 'cresc_fat_total', 'gap_be'],
+      x_rows=['roi_mes', 'roi_projeto'], cum_key='cum_cons',
       kpis=kpis,
       meta=lambda ctx, m: meta_block(ctx, m, p['target'], rec, 'ticket_ped' if not usa_venda else 'ticket_fat', vol, 'custo_cons', 'cum_cons',
                                      'margem' if usa_margem else None, acum0_key='acum0'),
-      metodologia=p.get('metodologia'), metodologia_fim=p.get('metodologia_fim'), historico=p.get('historico'), pilot_ref=p.get('pilot_ref'), base_ref=p.get('base_ref'),
+      metodologia=p.get('metodologia'), metodologia_fim=p.get('metodologia_fim'), historico=p.get('historico'), legado=p.get('legado'), pilot_ref=p.get('pilot_ref'), base_ref=p.get('base_ref'),
       real_prefill=p.get('real_prefill'), month_labels=p.get('month_labels'), envelope=p.get('envelope'),
       charts=charts, funnel=funnel,
     )
@@ -522,14 +587,14 @@ DEMO_EC = dict(
 
 # ===================================================================== premissas.json -> config
 HIST_ROWS = {
-  "inside_sales": [("Fee V4", FMT_BRL), ("Plano de Mídia Mês", FMT_BRL), ("Investimento", FMT_BRL), ("Impressões", FMT_INT), ("Cliques", FMT_INT), ("Leads", FMT_INT),
+  "inside_sales": [("Fee V4", FMT_BRL), ("Plano de Mídia Mês", FMT_BRL), ("Investimento", FMT_BRL), ("Impressões", FMT_INT), ("Cliques", FMT_INT), ("Visitas", FMT_INT), ("Leads", FMT_INT),
                    ("Conexões", FMT_INT), ("MQLs", FMT_INT), ("SQLs", FMT_INT), ("Vendas", FMT_INT), ("Faturamento V4", FMT_BRL), ("Ticket Médio", FMT_BRL2), ("Gross Margin", FMT_PCT1)],
   "ecommerce": [("Fee V4", FMT_BRL), ("Plano de Mídia Mês", FMT_BRL), ("Investimento", FMT_BRL), ("Investimento Google", FMT_BRL), ("Investimento Meta", FMT_BRL),
                 ("Impressões", FMT_INT), ("Cliques", FMT_INT), ("Sessões Google", FMT_INT), ("Sessões Meta", FMT_INT), ("Sessões", FMT_INT), ("Sessões Orgânicas", FMT_INT), ("Sessões Gerais", FMT_INT),
                 ("Add to Cart", FMT_INT), ("Check Out", FMT_INT), ("Transações Captada", FMT_INT), ("Receita Captada", FMT_BRL), ("Ticket Médio", FMT_BRL2), ("Gross Margin", FMT_PCT1)],
 }
 PREFILL = {  # métrica do template <- rótulo lido da fonte
-  "inside_sales": {'fee': "Fee V4", 'midia': "Investimento", 'impress': "Impressões", 'cliques': "Cliques", 'visitas_pagas': "Cliques", 'leads': "Leads",
+  "inside_sales": {'fee': "Fee V4", 'midia': "Investimento", 'impress': "Impressões", 'cliques': "Cliques", 'visitas_pagas': "Visitas", 'leads': "Leads",
                    'mqls': "MQLs", 'leads_con': "Conexões", 'mql_con': "MQLs", 'sqls': "SQLs", 'vendas': "Vendas", 'gmv': "Faturamento V4"},
   "ecommerce": {'fee': "Fee V4", 'midia': "Investimento", 'impress': "Impressões", 'cliques': "Cliques", 'sessoes_pago': "Sessões", 'view_item': "Sessões",
                 'cart': "Add to Cart", 'ic': "Check Out", 'pedidos': "Transações Captada", 'receita_captada': "Receita Captada"},
@@ -567,9 +632,9 @@ def month_labels(det, hist, inicio_contrato=None, n=12):
     chaves = [f"{MESES[(i + k) % 12]}/{ano + (i + k) // 12}" for k in range(n)]
     return labels, chaves, origem
 
-def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contrato=None, marca=None,
+def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contrato=None,
                           faturamento_total=None, base_nao_midia=None, margem_informativa=None, sem_etapa_venda=False, extra_met=None,
-                          conexao_so_lead=False):
+                          conexao_so_lead=False, legado_path=None):
     d = json.load(open(path, encoding='utf-8'))
     pc, det, v = d['premissas_confirmadas'], d['detectado'], d['veredito']
     tx = det['taxas_efetivas']; t = tx['taxas']
@@ -609,6 +674,9 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
         meses = [{'rotulo': _rotulo(h['mes'], h['ano']), 'status': h['status'], 'janela': _chave(h['mes'], h['ano']) in jan,
                   'referencia': _chave(h['mes'], h['ano']) == ref, 'pre': ini is not None and i < ini} for i, h in enumerate(hist)][:24]
         linhas = [(lab, fmt, [h.get(lab) for h in hist][:24]) for lab, fmt in HIST_ROWS[modelo] if any(h.get(lab) is not None for h in hist)]
+        if pc.get('connect_rate') and modelo == 'inside_sales':   # visitas não vieram da fonte: foram calculadas a partir dos cliques
+            linhas = [(f"Visitas (calculadas: cliques × connect rate de {float(pc['connect_rate']):.0%})", fmt, v) if lab == "Visitas" else (lab, fmt, v)
+                      for lab, fmt, v in linhas]
         hr = {x['mes']: x for x in d.get('historico_resultado') or []}
         if hr:
             linhas.append(("Resultado (receita − fee − mídia)" if float(pc['margem']) >= 0.999 else "Resultado (MC − fee − mídia)", FMT_BRL,
@@ -616,12 +684,38 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
         nota = f"Contrato com a V4 desde {inicio_contrato}: os meses anteriores ficam fora da janela de taxas, do mês de referência e do resultado do projeto." if inicio_contrato else None
         historico = {'meses': meses, 'linhas': linhas, **({'nota': nota} if nota else {})}
 
+    # --- legado: o que uma projeção anterior prometeu, mês a mês, contra o realizado que a fonte registra.
+    # O realizado sai do histórico completo da fonte (inclusive meses anteriores ao Mês 1 da projeção).
+    legado = None
+    if legado_path:
+        lg = json.load(open(legado_path, encoding='utf-8'))
+        ml = (lg.get('meses') or [])[:12]
+        if not ml: sys.exit("--legado: o JSON não tem 'meses'.")
+        por_mes = {_chave(h['mes'], h['ano']): h for h in (d.get('historico') or [])}
+        fmt_de = dict(HIST_ROWS[modelo])
+        ordem = [lab for lab, _ in HIST_ROWS[modelo] if any(lab in (m.get('projetado') or {}) for m in ml)]
+        ordem += [lab for m in ml for lab in (m.get('projetado') or {}) if lab not in ordem]
+        meses_lg, linhas_lg = [{'rotulo': _rotulo(m['mes'], m['ano']), 'status': m.get('status', '')} for m in ml], []
+        for lab in ordem:
+            proj = [(m.get('projetado') or {}).get(lab) for m in ml]
+            real = [(por_mes.get(_chave(m['mes'], m['ano'])) or {}).get(lab) for m in ml]
+            ating = [(r / p_ if (r is not None and p_) else None) for r, p_ in zip(real, proj)]
+            f = fmt_de.get(lab, FMT_INT)
+            linhas_lg += [(f"{lab} · prometido", f, proj), (f"{lab} · realizado", f, real, 'sub'),
+                          (f"{lab} · atingimento", FMT_PCT1, ating, 'ating')]
+        legado = {'meses': meses_lg, 'linhas': linhas_lg,
+                  **({'titulo': lg['titulo']} if lg.get('titulo') else {}), **({'nota': lg['nota']} if lg.get('nota') else {})}
+
     # --- realizado pré-preenchido em todos os meses já vividos
     prefill = {}
     for k, h in realizados.items():
         linha = {mk: h.get(src) for mk, src in PREFILL[modelo].items()}
         if modelo == 'inside_sales':
             linha['organicas'] = 0
+            if pc.get('connect_rate'):
+                linha.pop('visitas_pagas', None)          # visitas calculadas (cliques × taxa), não medidas: não viram realizado
+            elif linha.get('visitas_pagas') is not None and h.get("Cliques"):
+                linha['visitas_pagas'] = min(linha['visitas_pagas'], h["Cliques"])   # visita paga nunca passa do clique
             if "Conexões" in (det.get('etapas_ausentes_na_fonte') or []):
                 linha.pop('mql_con', None); linha.pop('leads_con', None)
             elif conexao_so_lead:
@@ -643,7 +737,7 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
 
     pilot_ref = {'header': "PILOTO", 'status': v['status'],
                  'valores': {5: v.get('vendas_necessarias_mes_alvo'), 6: v.get('vendas_projetadas_mes_alvo'), 7: v.get('gap_vendas')}}
-    ordem = ['cpm'] + (['ctr', 'clique_lead', 'lead_mql', 'mql_sql', 'sql_venda'] if modelo == 'inside_sales'
+    ordem = ['cpm'] + (['ctr', 'connect', 'visita_lead', 'clique_lead', 'lead_mql', 'conexao', 'conexao_sql', 'mql_sql', 'sql_venda'] if modelo == 'inside_sales'
                        else ['custo_sessao_meta', 'ctr', 'clique_sessao', 'sessao_cart', 'cart_checkout', 'checkout_trans']) + ['ticket']
     fmt_of = lambda k: FMT_BRL2 if k in ('cpm', 'ticket', 'custo_sessao_meta') else FMT_PCT1
     mercado = [env[k]['rotulo'] for k in ordem if k in env and env[k].get('alvo_mercado')]
@@ -720,12 +814,19 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
             con_lead, conex = 1.0, "a fonte não tem a linha Conexões: conexão lead 100% (informativa)"
         sem_conexao = "Conexões" in (det.get('etapas_ausentes_na_fonte') or [])
         conexao_so_lead = conexao_so_lead and not sem_conexao
-        assum = ("leads vêm direto dos cliques (a planilha padrão não mede landing page, então connect e visitas não aparecem); "
-                 + ("a fonte não tem a linha Conexões, então o funil segue MQL → SQL; " if sem_conexao else
-                    f"a linha Conexões da fonte conta leads conectados: {conex}; MQLs conectados não são medidos, então a conexão MQL fica em branco "
-                    "para preencher e o funil segue MQL → SQL; " if conexao_so_lead else f"{conex}; conexão MQL 100%; ")
+        # connect rate só entra quando existe: a fonte traz a linha de visitas na página, ou o usuário informou --connect-rate.
+        # Em formulário nativo (sem landing page) a linha seria 100% fixo e some, e o lead vem direto do clique.
+        sem_lp = 'connect' not in env
+        assum = (("leads vêm direto dos cliques (não há landing page medida: o formulário é nativo ou a fonte não traz a linha de visitas); " if sem_lp
+                  else f"cliques viram visitas na página pelo connect rate ({env['connect']['atual']:.0%} na janela"
+                       + (", informado manualmente porque a fonte não tem a linha de visitas" if pc.get('connect_rate') else "")
+                       + ") e a conversão da página transforma visita em lead; ")
+                 + ("a fonte não tem a linha Conexões, então não há conexão medida e o funil segue lead → MQL → SQL; " if sem_conexao else
+                    "a oportunidade (SQL) sai de quem o time conectou, tenha sido marcado MQL ou não — todo MQL já é um lead, então há uma linha "
+                    "só de conexão; o MQL fica no bloco de marketing como qualidade do lead, fora da conta do funil; ")
                  + "dias do mês 30; taxas e ticket seguem a rampa do piloto, mês a mês, nas células amarelas.")
-        prem = dict(fee=pc['fee'], midia=pc['midia_mensal'], comissao=pc['comissao'], margem=pc['margem'], connect=1.0, organicas=0,
+        prem = dict(fee=pc['fee'], midia=pc['midia_mensal'], comissao=pc['comissao'], margem=pc['margem'],
+                    connect=min(env['connect']['atual'] or 1.0, 1.0) if not sem_lp else 1.0, organicas=0,
                     con_lead=con_lead, con_mql=1.0, cresc=cresc, teto=teto, lag=lag, acum0=acum0, dias=30)
         saz_ = pc.get('sazonalidade') or {}
         mult_cpm = (list(saz_.get('cpm') or []) + [1.0] * n)[:n]
@@ -733,14 +834,24 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
         cpm_base, sql_base = col('cpm'), col('sql_venda')
         cpm_usado = [c * m if c is not None else None for c, m in zip(cpm_base, mult_cpm)]
         sql_usado = [min(v * m, 1.0) if v is not None else None for v, m in zip(sql_base, mult_dem)]   # a demanda do mês entra na taxa usada
-        monthly = dict(cpm=cpm_usado, ctr=col('ctr'), conv_lp=col('clique_lead'), lead_mql=col('lead_mql'), mql_sql=col('mql_sql'), sql_venda=sql_usado, ticket=col('ticket'))
+        # conexão na cadeia: quem vira SQL é quem o time falou (MQL ou não). Só existe com a linha Conexões na fonte.
+        atendimento = 'conexao' in env
+        monthly = dict(cpm=cpm_usado, ctr=col('ctr'), lead_mql=col('lead_mql'), sql_venda=sql_usado, ticket=col('ticket'),
+                       conv_lp=col('clique_lead') if sem_lp else col('visita_lead'),
+                       mql_sql=col('conexao_sql') if atendimento else col('mql_sql'))
         title, rotulo = "Projeção Inside Sales", "Inside Sales"
         propria = float(pc['comissao']) >= 0.999 and not pc.get('crm')
-        formulas = ("Impressões = Mídia ÷ CPM × 1.000 · Cliques = Impressões × CTR · Leads = Cliques × (Clique → Lead) · Vendas = SQLs × (SQL → Venda), com lag · "
+        formulas = ("Impressões = Mídia ÷ CPM × 1.000 · Cliques = Impressões × CTR · "
+                    + ("Leads = Cliques × (Clique → Lead) · " if sem_lp else
+                       "Visitas = Cliques × Connect rate · Leads = Visitas × (Visita → Lead) · ")
+                    + ("Conexões = Leads × Conexão · SQLs = Conexões × (Conexão → SQL) · " if 'conexao' in env
+                       else "MQLs = Leads × (Lead → MQL) · SQLs = MQLs × (MQL → SQL) · ")
+                    + "Vendas = SQLs × (SQL → Venda)" + ("" if lag >= 0.999 else ", com o ciclo de venda") + " · "
                     + ("Faturamento = Vendas × Ticket · Resultado MC = Faturamento × Margem · " if propria else
                        "GMV = Vendas × Ticket · Receita = GMV × Comissão · Resultado MC = Receita × Margem · ")
-                    + "Resultado do mês = MC − (Fee + Mídia) · Payback = 1º mês com acumulado ≥ 0.")
-        extra = dict(sem_lp=True, sem_conexao=sem_conexao, conexao_so_lead=conexao_so_lead)
+                    + "Resultado do mês = MC − (Fee + Mídia) · Receita necessária = Custo ÷ Margem · Payback = 1º mês com acumulado ≥ 0.")
+        extra = dict(sem_lp=sem_lp, sem_conexao=sem_conexao, conexao_so_lead=conexao_so_lead, atendimento=atendimento,
+                     connect_mensal=None if sem_lp else col('connect'))
     else:
         if sp:
             assum = (f"Funil pago: carrinho, checkout e pedido correm só sobre as sessões pagas (Google + Meta); as sessões não pagas "
@@ -781,6 +892,16 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
                      rotulo_org="[QNTD] SESSÕES - NÃO PAGAS" if sp else "[QNTD] SESSÕES - ORGÂNICO")
 
     metodologia = [
+      ("COMO LER A ABA DE PROJEÇÃO", [
+        "A tarja colorida da esquerda diz a que bloco cada linha pertence: INVESTIMENTO (o que a operação custa), MARKETING (da verba ao lead), "
+        "VENDAS (do lead à receita), FINANCEIRO (resultado e payback) e RESULTADO (realizado onde existe, projetado à frente).",
+        "O prefixo do nome diz a unidade: [R$] dinheiro, [%] taxa, [QNTD] quantidade e [X] múltiplo. Em [X], 1,00x significa que o "
+        "período se pagou — abaixo disso fica vermelho, a partir disso fica verde.",
+        "As alavancas são as linhas com o rótulo e os meses em amarelo (amarelo-claro = puxa a premissa geral do topo da aba). "
+        "São as únicas que você edita; o resto é fórmula. A coluna Realizado, em vermelho-claro, é onde o mês fechado é preenchido.",
+        "A linha \"necessário para zerar o mês\" é o 0 a 0 daquele mês isolado (custo ÷ margem). Ela não recupera déficit de meses "
+        "anteriores — isso está no bloco Meta de breakeven, no topo da aba de projeção.",
+      ]),
       ("VEREDITO E LEITURA", [f"{v['status']} para a meta de {rot_mes(mes_alvo)} (M{mes_alvo}). "
                               + "Considerando o realizado dos meses já vividos e a projeção à frente: "
                               + (f"no azul de forma contínua a partir de {rot_mes(azul_cont)} (M{azul_cont}); " if azul_cont else f"nenhum mês fica no azul de forma contínua ({nunca}); ")
@@ -863,12 +984,12 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
         metodologia.append((titulo, conteudo))
     if obs: metodologia.append(("OBSERVAÇÕES", list(obs)))
 
-    p = dict(sheet=rotulo, title=title, verba_plano=verba_plano, sazonalidade=pc.get('sazonalidade'), cpm_crescimento=pc.get('cpm_crescimento'), con_lead_mensal=col('con_lead') if any(col('con_lead')) else None, organico=pc.get('organico'), crm=pc.get('crm'), fee_plano=pc.get('fee_plano'),
+    p = dict(sheet=rotulo, title=title, legado=legado, verba_plano=verba_plano, sazonalidade=pc.get('sazonalidade'), cpm_crescimento=pc.get('cpm_crescimento'), con_lead_mensal=(col('conexao') if any(col('conexao')) else (col('con_lead') if any(col('con_lead')) else None)), organico=pc.get('organico'), crm=pc.get('crm'), fee_plano=pc.get('fee_plano'),
              subtitle=(f"{esc(cliente)}   ·   Cenário {esc(cenario)}   ·   {labels[0]} a {labels[-1]}   ·   Meta de breakeven: {rot_mes(mes_alvo)}   ·   {v['status']}"
                        f"   ·   no azul a partir de: {rot_mes(azul_cont) if azul_cont else nunca}"
                        f"   ·   acumulado zera: {rot_mes(zera) if zera else nunca}"),
              meta_line=f"Atualizado em {{today}}   ·   Fonte: planilha de indicadores (aba {esc(det.get('aba'))})" + (" e GA4" if ga4.get('meses') else "") + f"   ·   Janela das taxas: {esc(', '.join(janela))}   ·   Detalhes na aba Premissas",
-             footer=f"Projeção {rotulo} · {cliente}" + (f" · {marca}" if marca else ""), prem=prem, monthly=monthly, target=mes_alvo,
+             footer=f"Projeção {rotulo} · {cliente}", prem=prem, monthly=monthly, target=mes_alvo,
              metodologia=metodologia, historico=historico, pilot_ref=pilot_ref, base_ref=base_ref, n_months=n,
              real_prefill=prefill, month_labels=labels, envelope=envelope, metodologia_fim=[tuple(x) for x in xm.get('fim', [])], **extra)
     return (inside_sales_config if modelo == 'inside_sales' else ecommerce_config)(p), d
@@ -905,7 +1026,6 @@ def main():
     ap.add_argument('--out', help="caminho do xlsx gerado")
     ap.add_argument('--cliente', help="nome do cliente para título e rodapé")
     ap.add_argument('--cenario', default="Realista")
-    ap.add_argument('--marca', help="nome da agência no rodapé da planilha (ex.: sua agência)")
     ap.add_argument('--inicio-contrato', help="mês/ano em que o cliente entrou na V4 (ex.: agosto/2026); o Mês 1 passa a ser esse mês")
     ap.add_argument('--faturamento-total', help='faturamento total da loja por mês: "agosto/2026=143309.07,setembro/2026=82148.21"')
     ap.add_argument('--base-nao-midia', type=float, help='faturamento mensal fora da mídia V4 (base para projetar o total); calculado dos meses fechados se omitido')
@@ -917,13 +1037,15 @@ def main():
                     help='cenário extra em outra aba do mesmo arquivo: "premissas.json|Nome da aba|Nome do cenário|metodologia_extra.json" (repetível; os dois últimos campos são opcionais)')
     ap.add_argument('--conexao-so-lead', action='store_true',
                     help="inside sales: a linha Conexões da fonte conta só leads conectados; a conexão MQL fica em branco para preencher (sem taxa suposta)")
+    ap.add_argument('--legado', help='JSON com o que uma projeção ANTERIOR prometia, para a aba Premissas mostrar projetado × realizado: '
+                                     '{"titulo": "...", "nota": "...", "meses": [{"mes": "janeiro", "ano": 2026, "projetado": {"Vendas": 23, "Faturamento V4": 119600}}]}')
     a = ap.parse_args()
     wb = Workbook()
     if a.premissas:
         if not a.modelo: sys.exit("--premissas exige --modelo inside_sales|ecommerce")
-        cfg, d = config_from_premissas(a.premissas, a.modelo, a.cliente, a.cenario, a.obs, a.inicio_contrato, a.marca,
+        cfg, d = config_from_premissas(a.premissas, a.modelo, a.cliente, a.cenario, a.obs, a.inicio_contrato,
                                       a.faturamento_total, a.base_nao_midia, a.margem_informativa, a.sem_etapa_venda, a.metodologia_extra,
-                                      a.conexao_so_lead)
+                                      a.conexao_so_lead, a.legado)
         ws = wb.active; ws.title = cfg['sheet']
         info = build_sheet(ws, cfg, LOGO)
         abas_info = [(ws, info, cfg['sheet'])]
@@ -932,7 +1054,7 @@ def main():
             path2, aba2 = partes[0], partes[1]
             cen2 = partes[2] if len(partes) > 2 and partes[2] else a.cenario
             met2 = partes[3] if len(partes) > 3 and partes[3] else None
-            cfg2, _ = config_from_premissas(path2, a.modelo, a.cliente, cen2, a.obs, a.inicio_contrato, a.marca, a.faturamento_total, a.base_nao_midia,
+            cfg2, _ = config_from_premissas(path2, a.modelo, a.cliente, cen2, a.obs, a.inicio_contrato, a.faturamento_total, a.base_nao_midia,
                                             a.margem_informativa, a.sem_etapa_venda, met2, a.conexao_so_lead)
             cfg2['sheet'], cfg2['title'] = aba2, f"{cfg2['title']} · {aba2}"
             ws2 = wb.create_sheet(); ws2.title = aba2

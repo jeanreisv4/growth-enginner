@@ -27,8 +27,8 @@ import pandas as pd
 # A primeira etapa é sempre o investimento; a última é o volume que gera receita.
 MODELOS = {
     "inside_sales": {
-        "etapas": ["Investimento", "Impressões", "Cliques", "Leads", "Conexões", "MQLs", "SQLs", "Vendas"],
-        "opcionais": ["Conexões"],  # se a fonte não tiver a linha, a etapa sai da cadeia (nada é inventado)
+        "etapas": ["Investimento", "Impressões", "Cliques", "Visitas", "Leads", "Conexões", "MQLs", "SQLs", "Vendas"],
+        "opcionais": ["Visitas", "Conexões"],  # se a fonte não tiver a linha, a etapa sai da cadeia (nada é inventado)
         "receita": "Faturamento V4",
         "ticket": "Ticket Médio",
     },
@@ -50,6 +50,10 @@ SINONIMOS = {
     "Transações Captada": ["Transações Captada", "Vendas Captados V4", "Transações", "Pedidos (captado)", "Purchase"],
     "Check Out": ["Check Out", "Initiate Checkout", "Checkout"],
     "Conexões": ["Conexões", "Conexões (manual)"],
+    # visitas na landing page (connect rate = visitas ÷ cliques); sem essa linha o funil vai do clique direto ao lead.
+    # Só rótulos inequívocos de LP: "Sessões*" é do bloco GA4 e conta o site inteiro, o que capturaria a linha errada.
+    "Visitas": ["Visitas", "Visitas LP", "Visitas na LP", "Visitas na Página de Destino",
+                "Visualizações da Página de Destino", "Visualizações da página de destino"],
     "Sessões Orgânicas": ["Sessões Orgânicas", "Sessões Organicas", "Sessões - Orgânico"],
     "Sessões Gerais": ["Sessões Gerais", "Sessões Totais"],
 }
@@ -64,7 +68,8 @@ MESES_NORM = [unicodedata.normalize("NFKD", m).encode("ascii", "ignore").decode(
 MIN_EVENTOS = 30  # abaixo disso a taxa da etapa é sinalizada como amostra pequena
 RAMPA_ATE = None    # mês em que a rampa chega ao alvo (--rampa-ate); sem isso, o mês-alvo
 REALIZADO = {}      # {mês da projeção: resultado realizado}: meses já vividos entram pelo realizado, como na linha consolidada da planilha
-ORGANICO = None     # {'visitas': [por mês a partir do M1], 'conversao': taxa}: leads orgânicos (SEO) somados aos pagos antes de lead → MQL
+ORGANICO = None     # {'visitas': [por mês a partir do M1], 'conversao': taxa, 'origem': str, 'metrica': str}:
+                    # leads orgânicos (SEO, social, indicação) somados aos pagos antes de lead → MQL
 CRM = None          # recompra e reativação da base (inside sales); ver crm_json no --help
 VOL_REAL = {}       # {mês da projeção: {"Leads", "Vendas"}} realizados, para a base do CRM andar com o que aconteceu
 FEE_PLANO = None    # fee mês a mês (--fee-plano); ex.: fee sobe quando entra o CRM
@@ -165,6 +170,8 @@ def ler_historico(df, modelo, ga4=None):
     cols = colunas_de_mes(df)
     hoje = date.today()
     dados = {}
+    cfg.setdefault("etapas_todas", list(cfg["etapas"]))   # cadeia completa; "etapas" é o que sobra depois das opcionais ausentes
+    cfg["etapas"] = list(cfg["etapas_todas"])
     for rot in cfg["etapas"] + [cfg["receita"], cfg["ticket"]] + list(LINHAS_FIXAS.values()) + EXTRAS.get(modelo, []):
         s = serie(df, rot, cols)
         if s is not None:
@@ -181,7 +188,7 @@ def ler_historico(df, modelo, ga4=None):
     faltando = [e for e in faltando if e not in ausentes_ok]
     if faltando and not (modelo == "ecommerce" and set(faltando) <= {"Add to Cart", "Check Out"}):
         sys.exit(f"Linhas ausentes na aba para o modelo {modelo}: {faltando}")
-    cfg["etapas"] = [e for e in cfg["etapas"] if e not in ausentes_ok]
+    cfg["etapas"] = [e for e in cfg["etapas_todas"] if e not in ausentes_ok]
     cfg["etapas_ausentes"] = ausentes_ok
 
     # E-commerce: carrinho e checkout pagos raramente existem na fonte; quando as linhas diretas não têm dado e o bloco GA4 (site inteiro)
@@ -312,12 +319,66 @@ def taxas_efetivas(meses, modelo, janela, incluir_corrente=False):
 # ----------------------------------------------------------------------------- envelope histórico e rampa
 MIN_DEN = 5  # meses com menos eventos no denominador não entram no "melhor mês"
 
+def _guardar_visitas(meses, a):
+    """Decide se a etapa Visitas entra na cadeia do inside sales. Ela só entra quando o connect rate é mensurável:
+    a fonte tem a linha com dado em toda a janela e visitas ≤ cliques. Fora disso o funil volta a clique → lead,
+    porque travar a taxa em 100% (ou em zero) encolheria o funil projetado sem que ninguém percebesse.
+    Com --connect-rate e sem a linha na fonte, as visitas são sintetizadas (cliques × taxa) e marcadas como tal."""
+    cfg, avisos = MODELOS["inside_sales"], []
+    win = janela_meses(meses, a.janela, a.incluir_corrente)
+    tem_linha = "Visitas" in cfg["etapas"]
+    if tem_linha:
+        cli = sum((m.get("Cliques") or 0) for m in win)
+        vis = sum((m.get("Visitas") or 0) for m in win)
+        furos = [f"{m['mes']}/{m['ano']}" for m in win if (m.get("Cliques") or 0) > 0 and not (m.get("Visitas") or 0) > 0]
+        motivo = None
+        if vis <= 0 or furos:
+            motivo = (f"a linha de visitas está vazia em {', '.join(furos)}" if furos else "a linha de visitas está zerada na janela")
+        elif vis > cli:
+            motivo = (f"a fonte dá {vis / cli:.0%} de visitas sobre os cliques (mais visitas do que cliques), o que significa que a página "
+                      f"também recebe tráfego de outra origem e o denominador não é comparável")
+        if motivo:
+            cfg["etapas"] = [e for e in cfg["etapas"] if e != "Visitas"]
+            cfg["etapas_ausentes"] = sorted(set(cfg.get("etapas_ausentes", []) + ["Visitas"]))
+            for m in meses:
+                m.pop("Visitas", None)
+            avisos.append(f"Connect rate não entra na projeção: {motivo}. O funil volta a clique → lead, medido direto na fonte; "
+                          f"informe a taxa com --connect-rate se quiser a etapa de visitas.")
+            tem_linha = False
+    if a.connect_rate is not None and not tem_linha:
+        # tem landing page, mas a fonte não traz a linha utilizável: o connect rate informado cria a etapa
+        # (visitas = cliques × taxa) e a conversão da página passa a ser leads ÷ visitas, não leads ÷ cliques
+        for m in meses:
+            m["Visitas"] = (m.get("Cliques") or 0) * a.connect_rate
+        cfg["etapas"] = [e for e in cfg["etapas_todas"] if e not in [x for x in cfg.get("etapas_ausentes", []) if x != "Visitas"]]
+        cfg["etapas_ausentes"] = [e for e in cfg.get("etapas_ausentes", []) if e != "Visitas"]
+        cfg["visitas_sinteticas"] = True
+        avisos.append(f"Connect rate de {a.connect_rate:.0%} informado manualmente: a fonte não tem a linha de visitas da página. "
+                      f"As visitas do histórico são calculadas (cliques × taxa), não medidas, e a conversão da página é medida sobre elas.")
+    elif a.connect_rate is not None and tem_linha:
+        sys.exit("--connect-rate: a fonte já tem a linha de visitas, então o connect rate é medido, não informado. "
+                 "Para sobrescrever a taxa medida use --fixar connect=VALOR.")
+    return avisos
+
+
 def alavancas(modelo):
-    """Alavancas da rampa, na ordem da cadeia: (chave, rótulo, numerador, denominador). CPM e ticket têm tratamento próprio.
-    'Conexões' fica fora da cadeia projetada (é informativa): lead → MQL usa MQLs ÷ Leads, mesmo produto das duas taxas."""
+    """Alavancas da rampa, na ordem da cadeia: (chave, rótulo, numerador, denominador). CPM e ticket têm tratamento próprio."""
     if modelo == "inside_sales":
-        return [("ctr", "Impressões → Cliques", "Cliques", "Impressões"), ("clique_lead", "Cliques → Leads", "Leads", "Cliques"),
-                ("lead_mql", "Leads → MQLs", "MQLs", "Leads"), ("mql_sql", "MQLs → SQLs", "SQLs", "MQLs"), ("sql_venda", "SQLs → Vendas", "Vendas", "SQLs")]
+        # com a linha de visitas na fonte (ou com --connect-rate), o clique vira visita e a visita vira lead;
+        # sem ela, o elo é o clique → lead de sempre, sem inventar connect rate
+        if "Visitas" in MODELOS["inside_sales"]["etapas"]:
+            meio = [("connect", "Cliques → Visitas (connect rate)", "Visitas", "Cliques"), ("visita_lead", "Visitas → Leads", "Leads", "Visitas")]
+        else:
+            meio = [("clique_lead", "Cliques → Leads", "Leads", "Cliques")]
+        # Quem vira oportunidade é quem o time conectou, tenha sido marcado MQL ou não: a linha Conexões é a etapa real.
+        # O MQL é qualificação de marketing (critério do formulário) e fica fora da multiplicação, como informativa.
+        # Sem a linha Conexões na fonte não há como medir conexão: o funil volta a lead → MQL → SQL.
+        if "Conexões" in MODELOS["inside_sales"]["etapas"]:
+            fim = [("conexao", "Leads → Conexões (lead ou MQL)", "Conexões", "Leads"),
+                   ("conexao_sql", "Conexões → SQLs", "SQLs", "Conexões")]
+        else:
+            fim = [("lead_mql", "Leads → MQLs", "MQLs", "Leads"), ("mql_sql", "MQLs → SQLs", "SQLs", "MQLs")]
+        return [("ctr", "Impressões → Cliques", "Cliques", "Impressões")] + meio + fim + [("sql_venda", "SQLs → Vendas", "Vendas", "SQLs")]
     if split(modelo):
         return [("ctr", "Impressões → Cliques (Google)", "Cliques", "Impressões"), ("clique_sessao", "Cliques → Sessões Google (connect)", "Sessões Google", "Cliques"),
                 ("sessao_cart", "Sessões pagas → Add to Cart", "Add to Cart", "Sessões"), ("cart_checkout", "Add to Cart → Check Out", "Check Out", "Add to Cart"),
@@ -325,6 +386,17 @@ def alavancas(modelo):
     return [("ctr", "Impressões → Cliques", "Cliques", "Impressões"), ("clique_sessao", "Cliques → Sessões", "Sessões", "Cliques"),
             ("sessao_cart", "Sessões → Add to Cart", "Add to Cart", "Sessões"), ("cart_checkout", "Add to Cart → Check Out", "Check Out", "Add to Cart"),
             ("checkout_trans", "Check Out → Transações Captada", "Transações Captada", "Check Out")]
+
+
+def informativas(modelo):
+    """Taxas medidas e mostradas na planilha, mas fora da multiplicação do funil (não geram volume)."""
+    if modelo == "inside_sales" and "Conexões" in MODELOS["inside_sales"]["etapas"]:
+        return [("lead_mql", "Leads → MQLs (qualidade do lead)", "MQLs", "Leads")]
+    return []
+
+
+def todas_alavancas(modelo):
+    return alavancas(modelo) + informativas(modelo)
 
 
 def _mediana(xs):
@@ -337,6 +409,10 @@ def _mediana(xs):
 
 def _rot(m): return f"{m['mes']}/{m['ano']}"
 
+def _rs(v):
+    """R$ no padrão brasileiro, para os textos que o cliente lê na aba Premissas."""
+    return "R$ " + f"{v:,.0f}".replace(",", "·").replace(".", ",").replace("·", ".")
+
 def _levers_do_mes(m, modelo):
     """Alavancas observadas em um mês (None quando o denominador não existe)."""
     lv = {}
@@ -345,7 +421,7 @@ def _levers_do_mes(m, modelo):
     if split(modelo):
         sm = m.get("Sessões Meta") or 0
         lv["custo_sessao_meta"] = (m.get("Investimento Meta") or 0) / sm if sm else None
-    for key, _, num_, den_ in alavancas(modelo):
+    for key, _, num_, den_ in todas_alavancas(modelo):
         d = m.get(den_) or 0
         lv[key] = ((m.get(num_) or 0) / d) if d else None
     rec, vendas = MODELOS[modelo]["receita"], MODELOS[modelo]["etapas"][-1]
@@ -392,7 +468,7 @@ def envelope(meses, modelo, janela, desde=None, incluir_corrente=False):
                                     "melhor": best[0], "melhor_mes": best[1], "referencia": ref_lv.get("custo_sessao_meta"), "sentido": "menor"}
         iv = sum((m.get("Investimento") or 0) for m in win)
         env["_split"] = {"participacao_meta_na_verba": im / iv if iv else 0.0}
-    for key, label, num_, den_ in alavancas(modelo):
+    for key, label, num_, den_ in todas_alavancas(modelo):
         serie = [((m.get(num_) or 0) / m[den_], _rot(m)) for m in periodo if (m.get(den_) or 0) >= MIN_DEN]
         best = max(serie, key=lambda x: x[0]) if serie else (None, None)
         env[key] = {"rotulo": label, "atual": agg(win, num_, den_) or 0.0, "mediana": _mediana([v for v, _ in serie]),
@@ -411,6 +487,15 @@ def envelope(meses, modelo, janela, desde=None, incluir_corrente=False):
         if e["atual"] is not None and alvo is not None:
             alvo = min(alvo, e["atual"]) if e["sentido"] == "menor" else max(alvo, e["atual"])
         e["alvo"] = alvo
+    # Teto histórico de receita: o melhor mês FECHADO da fonte (parcial não conta). Serve de trava de sanidade —
+    # uma projeção que pede muito mais do que o cliente já entregou alguma vez precisa dizer com que verba.
+    rec_key = MODELOS[modelo]["receita"]
+    serie_rec = [(m.get(rec_key) or 0, _rot(m), m.get("Investimento") or 0) for m in fechados if (m.get(rec_key) or 0) > 0]
+    if serie_rec:
+        melhor = max(serie_rec, key=lambda x: x[0])
+        env["_teto_receita"] = {"receita": melhor[0], "mes": melhor[1], "midia": melhor[2], "meses_fechados": len(fechados)}
+    else:
+        env["_teto_receita"] = None
     env["_referencia"] = {"mes": _rot(ref), "motivo": ref_motivo, "periodo": [_rot(m) for m in periodo]}
     return env
 
@@ -422,7 +507,7 @@ def K_rampa(mes_alvo):
 def curva_alavancas(env, modelo, alpha, K, horizonte, ticket_manual=None):
     """Valor de cada alavanca mês a mês: rampa linear do atual até atual + alpha·(alvo − atual), atingindo o alvo em M{K}.
     alvo = mediana do período comparável (nunca pior que o atual); alpha = 1 percorre todo o caminho."""
-    chaves = ["cpm"] + [k for k, *_ in alavancas(modelo)] + ["ticket"] + (["custo_sessao_meta"] if split(modelo) else [])
+    chaves = ["cpm"] + [k for k, *_ in todas_alavancas(modelo)] + ["ticket"] + (["custo_sessao_meta"] if split(modelo) else [])
     linhas = []
     for t in range(1, horizonte + 1):
         f = min(t, K) / K if K > 0 else 1.0
@@ -463,8 +548,8 @@ def projetar_curva(levers, modelo, fee, midia, margem, comissao, acumulado_inici
         saz_c = SAZ["cpm"][t - 1] if SAZ and t <= len(SAZ["cpm"]) else 1.0
         vol = midia_g / (lv["cpm"] * saz_c) * 1000 if lv["cpm"] else 0.0
         volumes = {"Impressões": vol}
-        for key, _, num_, _ in cadeia:
-            if ORGANICO and key == "lead_mql":   # SEO: visitas orgânicas × conversão entram como leads, junto com os pagos
+        for key, _, num_, den_ in cadeia:
+            if ORGANICO and den_ == "Leads":   # orgânico: entradas × conversão entram como leads, junto com os pagos
                 vis = ORGANICO["visitas"][min(t, len(ORGANICO["visitas"])) - 1]
                 lo = vis * ORGANICO["conversao"]
                 volumes["Leads pagos"], volumes["Visitas orgânicas"], volumes["Leads orgânicos"] = vol, vis, lo
@@ -581,6 +666,24 @@ def veredito(env, modelo, fee, midia, margem, comissao, mes_alvo, horizonte, acu
     v["acumulado_zera_em"] = next((l["mes"] for l in longo if l["acumulado"] >= 0), None)
     v["horizonte"] = horizonte
     v["mes_referencia"] = env["_referencia"]["mes"]; v["mes_referencia_motivo"] = env["_referencia"]["motivo"]
+    # Trava de sanidade: a projeção do mês-alvo contra o melhor mês que o cliente já entregou.
+    # O teto é de receita, não de capacidade: se a verba subiu, passar dele é legítimo — por isso o alerta diz as duas coisas.
+    tr = env.get("_teto_receita") or {}
+    v["teto_receita_historico"], v["teto_receita_mes"] = tr.get("receita"), tr.get("mes")
+    v["alerta_teto_receita"] = None
+    if tr.get("receita"):
+        alvo = next((l for l in cenario if l["mes"] == mes_alvo), None)
+        rec_alvo = (alvo or {}).get("receita_total", (alvo or {}).get("receita", 0))
+        mult = rec_alvo / tr["receita"] if tr["receita"] else 0
+        v["teto_receita_multiplo"] = round(mult, 2)
+        if mult > 1.2:
+            mid = (alvo or {}).get("midia", 0); mid_teto = tr.get("midia") or 0
+            verba = (f"com {mid / mid_teto:.1f}x a verba daquele mês" if mid_teto and mid > mid_teto * 1.05
+                     else (f"com a mesma verba" if mid_teto and mid <= mid_teto * 1.05 else ""))
+            frouxo = " O histórico tem poucos meses fechados, então o teto é frágil." if tr.get("meses_fechados", 0) < 4 else ""
+            v["alerta_teto_receita"] = (f"a projeção pede {_rs(rec_alvo)} no mês-alvo, {mult:.1f}x o melhor mês já realizado "
+                                        f"({_rs(tr['receita'])} em {tr['mes']}){', ' + verba if verba else ''}."
+                                        f" Diga de onde vem a diferença antes de apresentar.{frouxo}")
     v["leitura"] = leitura(v, env, mes_alvo, horizonte)
     return v, {"base": base, "cheio": cheio, "cenario": cenario, "alpha": alpha_usado}
 
@@ -657,6 +760,10 @@ def leitura(v, env, mes_alvo, horizonte):
     txt += f" Evidência de que o nível é atingível: {ref['motivo']}."
     if v["alavanca_com_mais_folga_no_historico"]:
         txt += f" A alavanca com mais folga até a mediana é {v['alavanca_com_mais_folga_no_historico']} ({v['folga_por_alavanca'][v['alavanca_com_mais_folga_no_historico']]}x)."
+    if v.get("teto_receita_historico"):
+        txt += f" Melhor mês já realizado: {_rs(v['teto_receita_historico'])} em {v['teto_receita_mes']}."
+    if v.get("alerta_teto_receita"):
+        txt += " Trava de sanidade: " + v["alerta_teto_receita"]
     return txt
 
 
@@ -677,31 +784,34 @@ def main():
     p.add_argument("--horizonte", type=int, default=12)
     p.add_argument("--acumulado-inicial", type=float, default=0.0, help="déficit já acumulado (negativo)")
     p.add_argument("--crescimento-midia", type=float, default=0.0, help="crescimento mensal da verba de mídia (0.10 = +10%%/mês)")
-    p.add_argument("--connect-rate", type=float, help="sobrescreve a taxa clique -> sessão/visita (ex.: 0.90) quando a fonte não permite medi-la")
+    p.add_argument("--connect-rate", type=float, help="connect rate (cliques -> visitas na página; ex.: 0.80) quando o cliente tem landing page mas a fonte não traz a linha de visitas")
     p.add_argument("--fee-historico", type=float, help="fee real do contrato nos meses da fonte, quando a linha Fee V4 da planilha está errada (ex.: 6901)")
     p.add_argument("--rampa-ate", type=int, help="mês em que as alavancas chegam ao alvo da rampa (padrão: o mês-alvo); use quando a meta fica depois do fim da rampa")
     p.add_argument("--inicio", help="mês/ano do Mês 1 da projeção (padrão: o mês corrente da fonte); igual ao --inicio-contrato do gerador")
-    p.add_argument("--organico-visitas", help="inside sales: visitas orgânicas (SEO) por mês a partir do Mês 1, separadas por vírgula; depois do último valor, repete")
-    p.add_argument("--organico-conversao", type=float, default=None, help="conversão visita orgânica → lead (ex.: 0.0615 = taxa clique → lead atual)")
+    p.add_argument("--organico-visitas", help="inside sales: entradas orgânicas por mês a partir do Mês 1, separadas por vírgula; depois do último valor, repete")
+    p.add_argument("--organico-conversao", type=float, default=None, help="conversão da entrada orgânica → lead (ex.: 0.0615 = taxa clique → lead atual)")
+    p.add_argument("--organico-origem", default="SEO", help="de onde vem o tráfego orgânico: SEO, social orgânico, indicação... (entra no rótulo das linhas)")
+    p.add_argument("--organico-metrica", default="visitas orgânicas",
+                   help="o que é contado na entrada do funil orgânico: 'visitas orgânicas' (site), 'cliques no link da bio' (social), 'conversas iniciadas'...")
     p.add_argument("--crm", help="inside sales: JSON com o CRM (início, ticket, taxas de recompra/cross-sell/e-mail/reativação, base inicial e coortes)")
     p.add_argument("--fee-plano", help="fee mês a mês a partir do Mês 1, separado por vírgula (ex.: 6901,9901 quando o CRM entra no fee); repete o último")
     p.add_argument("--verba-plano", help="verba mês a mês separada por vírgula, a partir do Mês 1 (ex.: 2000,4000,5000,5000); substitui crescimento e teto")
     p.add_argument("--midia-teto", type=float, help="teto da verba mensal; o crescimento para ao atingir esse valor")
     p.add_argument("--lag", type=float, default=1.0, help="fração das vendas no mês do lead (1 = sem lag)")
     p.add_argument("--definicao-breakeven", default="margem de contribuição cobrindo fee + mídia", help="texto da definição usada; mude só com o usuário ciente (ex.: receita atribuída cobrindo fee + mídia)")
-    p.add_argument("--incluir-corrente", action="store_true", help="inclui o mês corrente (parcial) na janela de taxas e no período de referência; só quando o usuário pedir")
+    p.add_argument("--incluir-corrente", action="store_true", help="inclui o mês corrente (parcial) na janela de taxas e no período de referência; só quando usuário pedir")
     p.add_argument("--desde", help="primeiro mês fechado comparável (ex.: maio/2026); limita o período de referência da rampa")
     p.add_argument("--alvo", action="append", default=[], metavar="ALAVANCA=VALOR",
                    help="alvo da rampa vindo de benchmark de mercado, quando o histórico não basta (ex.: sql_venda=0.25); "
                         "a rampa vai do atual até esse valor no mês-alvo; nunca pior que o atual; o alerta fica registrado. "
-                        "Inside sales com Conexões na fonte aceita conexao=0.69 (leads contatados): leads → MQLs sobe na mesma proporção")
+                        "Inside sales aceita conexao=0.69 (atendimento): com a linha Conexões na fonte é etapa da cadeia; sem ela, sobe leads → MQLs na mesma proporção")
     p.add_argument("--cpm-crescimento", type=float, help="crescimento mensal do CPM base pela saturação do público (ex.: 0.03 = +3%%/mês a partir do Mês 2); premissa do usuário")
     p.add_argument("--cpm-teto", type=float, help="teto do CPM base com o crescimento (ex.: mediana do mercado)")
     p.add_argument("--cpm-crescimento-ate", type=int, help="último mês em que o CPM base cresce (ex.: o mês em que a verba para de subir); depois fica estável")
     p.add_argument("--sazonalidade-demanda", help="multiplicador de vendas mês a mês a partir do Mês 1, ex.: 1,1,1.3,1.15 (Black Friday em novembro); depois da lista, 1")
     p.add_argument("--sazonalidade-cpm", help="multiplicador de CPM mês a mês a partir do Mês 1, ex.: 1,1,1.25,1; depois da lista, 1")
     p.add_argument("--fixar", action="append", default=[], metavar="ALAVANCA=VALOR",
-                   help="fixa uma alavanca (atual e alvo) quando o histórico mistura campanhas diferentes; ex.: clique_lead=0.0615. Chaves: cpm, ctr, clique_lead, lead_mql, mql_sql, sql_venda, ticket (inside sales); cpm, ctr, clique_sessao, sessao_cart, cart_checkout, checkout_trans, ticket, custo_sessao_meta (e-commerce)")
+                   help="fixa uma alavanca (atual e alvo) quando o histórico mistura campanhas diferentes; ex.: clique_lead=0.0615. Chaves: cpm, ctr, clique_lead (ou connect e visita_lead, quando há linha de visitas), lead_mql, mql_sql, sql_venda, ticket (inside sales); cpm, ctr, clique_sessao, sessao_cart, cart_checkout, checkout_trans, ticket, custo_sessao_meta (e-commerce)")
     p.add_argument("--ga4", help="resumo mensal do GA4 (saída do ga4_resumo.py): separa Google e Meta e mede carrinho e checkout do pago")
     p.add_argument("--out", default="premissas.json")
     a = p.parse_args()
@@ -716,7 +826,8 @@ def main():
     if a.organico_visitas:
         if a.modelo != "inside_sales" or a.organico_conversao is None:
             sys.exit("--organico-visitas vale para inside sales e exige --organico-conversao")
-        ORGANICO = {"visitas": [float(x) for x in a.organico_visitas.split(",") if x.strip()], "conversao": a.organico_conversao}
+        ORGANICO = {"visitas": [float(x) for x in a.organico_visitas.split(",") if x.strip()], "conversao": a.organico_conversao,
+                    "origem": a.organico_origem, "metrica": a.organico_metrica}
     if a.verba_plano:
         VERBA_PLANO = [float(x) for x in a.verba_plano.split(",") if x.strip()]
         a.midia = VERBA_PLANO[0]
@@ -728,12 +839,16 @@ def main():
     df = carregar(a.fonte, a.aba)
     ga4 = json.load(open(a.ga4, encoding="utf-8")) if a.ga4 else None
     meses, _ = ler_historico(df, a.modelo, ga4)
+    avisos = []
+    if a.modelo == "inside_sales":
+        avisos += _guardar_visitas(meses, a)
     if a.fee_historico is not None:   # a linha Fee V4 da fonte diverge do contrato: vale o fee informado em todo o histórico
         for m in meses:
             if m.get(LINHAS_FIXAS["fee"]) is not None:
                 m[LINHAS_FIXAS["fee"] + " (fonte)"] = m[LINHAS_FIXAS["fee"]]
                 m[LINHAS_FIXAS["fee"]] = a.fee_historico
     tx = taxas_efetivas(meses, a.modelo, a.janela, a.incluir_corrente)
+    tx["alertas"] += avisos
     if a.fee_historico is not None:
         fonte = sorted({m.get(LINHAS_FIXAS["fee"] + " (fonte)") for m in meses if m.get(LINHAS_FIXAS["fee"] + " (fonte)")})
         tx["alertas"].append(f"Fee da fonte ({', '.join(f'R$ {x:,.0f}' for x in fonte)}) substituído por R$ {a.fee_historico:,.0f}, o fee do contrato informado pelo usuário, em todo o histórico.")
@@ -782,11 +897,12 @@ def main():
             tx["alertas"].append(f"M{t} ({m['mes']}/{m['ano']}{', parcial' if m['status'] == 'corrente' else ''}) entra pelo realizado: resultado de R$ {REALIZADO[t]:,.0f}.")
     if split(a.modelo):  # a divisão da verba fica constante na projeção (premissa comercial editável no template)
         MODELOS[a.modelo]["participacao_meta"] = env["_split"]["participacao_meta_na_verba"]
-    if a.connect_rate is not None:
-        chave = "clique_sessao" if a.modelo == "ecommerce" else "clique_lead"
+    if a.connect_rate is not None and a.modelo == "ecommerce":
+        chave = "clique_sessao"
         if chave in env:
             for campo in ("atual", "mediana", "melhor", "referencia", "alvo"):
                 if env[chave].get(campo) is not None: env[chave][campo] = a.connect_rate
+            env[chave]["fixada"] = True
             tx["taxas"][env[chave]["rotulo"]] = a.connect_rate
             tx["alertas"].append(f"{env[chave]['rotulo']}: taxa informada manualmente ({a.connect_rate:.0%}); "
                                  f"a fonte não permite medi-la porque a linha de cliques não soma todos os canais.")
@@ -804,8 +920,9 @@ def main():
     conexao = None   # (conexão atual, lead → MQL atual) quando a conexão tem alvo de mercado
     for item in a.alvo:   # benchmark de mercado como alvo da rampa (histórico curto demais para dar a mediana)
         chave, valor = item.split("=", 1); chave = chave.strip(); valor = float(valor)
-        if chave == "conexao":
-            # leads contatados: o MQL vem do lead conectado, então lead → MQL sobe na proporção da conexão e o resto do funil fica igual
+        if chave == "conexao" and "conexao" not in env:
+            # fonte sem a linha Conexões: não há etapa de atendimento para receber o alvo, então ele sobe o lead → MQL
+            # na mesma proporção, que é o elo seguinte do funil, e o resto fica igual
             con = tx["taxas"].get("Leads → Conexões")
             if a.modelo != "inside_sales" or not con:
                 sys.exit("--alvo conexao exige inside sales com a linha Conexões na fonte")
@@ -851,6 +968,7 @@ def main():
                                   "realizado_usado": {str(k): round(x, 2) for k, x in REALIZADO.items()},
                                   "regra_taxas": (f"janela de {a.janela} mês(es) fechado(s)" + (" + mês corrente parcial" if a.incluir_corrente else "") + ", ponderada por volume; rampa até a mediana do período comparável")},
         "detectado": detectado, "historico": meses, "historico_resultado": hist_result,
+        "teto_receita": env.get("_teto_receita"),
         "envelope": {k: e for k, e in env.items() if not k.startswith("_")},
         "split": ({"participacao_meta_na_verba": env["_split"]["participacao_meta_na_verba"]} if split(a.modelo) else None),
         "rampa": {"alpha": cen["alpha"], "crescimento_midia": a.crescimento_midia, "midia_teto": a.midia_teto, "connect_rate": a.connect_rate, "midia_teto": a.midia_teto, "atinge_alvo_em": K_rampa(a.mes_alvo), "mes_referencia": env["_referencia"]["mes"], "motivo": env["_referencia"]["motivo"],
