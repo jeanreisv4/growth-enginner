@@ -5,7 +5,7 @@ description: Projeção de breakeven de mídia paga a partir do histórico do cl
 
 # Projeção de breakeven
 
-**Versão 7.4 (23/09/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
+**Versão 7.7 (24/09/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
 
 A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não espera o usuário lembrar o que precisa informar. A segunda é a execução automática: com as premissas confirmadas, ela roda o piloto, dá o veredito e preenche o template, sem etapa manual.
 
@@ -106,6 +106,20 @@ A etapa só entra quando o connect rate é **mensurável**: a linha tem dado em 
 - **Taxas atuais** = média ponderada por volume do último quarter fechado (3 meses). A janela só muda com pedido explícito (`--janela N`). O mês corrente não entra na janela por conta própria: ele aparece como projeção, com o realizado ao lado. Só entra na janela com pedido explícito (`--incluir-corrente`), marcado como parcial.
 - **Etapa com menos de 30 eventos na origem ou 10 no destino** recebe alerta de amostra frágil e é reportada como hipótese.
 - **Nenhuma taxa de etapa passa de 100%.** Taxa acima disso significa denominador subcontado na fonte (outro canal, outra plataforma). Ela é travada com alerta e a causa é explicada ao usuário.
+
+**Economia unitária: MC1, CAC permitido e as três camadas de breakeven**
+- A margem que este documento usa é a **MC1** (margem de contribuição, ou margem pré-CAC): receita líquida menos CMV menos despesas variáveis de venda. Não é lucro líquido, não é lucro bruto. Quando houver DRE, **leia a MC1 dele em vez de aceitar uma estimativa** — e confira o que está dentro do CMV, porque overhead de fábrica mal alocado derruba a MC1 sem que nada tenha piorado de verdade.
+- **CAC permitido (allowable CAC) = MC1 × ticket.** É o teto de gasto por venda antes de a transação dar prejuízo. A **folga de aquisição** é o permitido dividido pelo real.
+- **Três camadas de breakeven, e elas não se substituem.** Sempre dizer qual está sendo usada:
+  1. **Transação** — `ROAS = 1 / MC1`. A mídia se paga, ignorando o fee.
+  2. **Contrato** — `ROAS = (fee + verba) / MC1 / verba`. O contrato inteiro se paga. **É esta que a projeção usa.**
+  3. **Empresa** — `ROAS = (fee + verba + fixas) / MC1 / verba`. A mídia sozinha tira a empresa do vermelho. Quando esta dá um número absurdo, a conclusão é que **o problema da empresa não é solúvel por mídia** — e isso é um achado, não uma desculpa.
+- **MC1 em porcentagem não decide viabilidade; MC1 × ticket decide.** Uma MC1 de 17,8% num ticket de R$ 3.143 dá R$ 559 de CAC permitido; uma de 40% num ticket de R$ 80 dá R$ 32. A de margem menor tem 17x mais espaço. Nunca condenar um canal pela margem percentual sozinha.
+- **Nada disso é linear ao longo de um caminho, só num ponto.** Três curvaturas a declarar sempre que alguém usar esses números para decidir verba:
+  - o **ROAS exigido cai** conforme a verba sobe, porque o fee dilui — isso é exato, a assíntota é `1/MC1`;
+  - o **ROAS entregue cai** conforme a verba sobe, por saturação de público — isso é premissa, e a verba ótima é absurdamente sensível a ela (na indústria de plásticos, de R$ 5 mil a R$ 146 mil conforme o expoente);
+  - a **MC1 muda com o ticket** (pedido grande costuma vir com desconto), então o CAC permitido cresce menos que proporcional.
+- **Para medir a saturação é preciso variar a verba de propósito.** Histórico com verba estável (a indústria de plásticos variou 1,4x no ano) não permite ajustar a curva, e nenhum modelo substitui o teste. Dizer isso em vez de entregar uma verba ótima falsamente precisa.
 
 **Trava de sanidade: a projeção contra o melhor mês real**
 - O piloto calcula o **melhor mês fechado de receita** da fonte e compara com a receita projetada no mês-alvo. Quando a projeção pede **mais de 1,2x** esse mês, sai um alerta com o múltiplo e com a verba dos dois meses, e ele entra no texto do veredito na aba Premissas.

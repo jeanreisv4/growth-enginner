@@ -347,7 +347,7 @@ def inside_sales_config(p):
       real_prefill=p.get('real_prefill'), month_labels=p.get('month_labels'), payback_estendido=p.get('payback_estendido'), envelope=p.get('envelope'), base_ref=p.get('base_ref'),
       charts=[
         dict(type='growth', title="Receita e crescimento mês a mês", bars='receita_cons', line='cresc_receita'),
-        dict(type='line', title="Resultado acumulado mês a mês", series=[('cum_cons', GREEN, False)], y_fmt=FMT_BRL),
+        dict(type='line', title="Resultado acumulado mês a mês", series=[('cum_cons', GREEN, False)], y_fmt=FMT_BRL, estender=True),
         dict(type='payback', title="Curva de payback"),
         dict(type='funnel', title="Funil de conversão · acumulado no período"),
       ],
@@ -524,7 +524,7 @@ def ecommerce_config(p):
 
     charts = [
       dict(type='growth', title="Receita da mídia e crescimento mês a mês", bars='receita_cons', line='cresc_receita'),
-      dict(type='line', title="Resultado acumulado mês a mês", series=[('cum_cons', GREEN, False)], y_fmt=FMT_BRL),
+      dict(type='line', title="Resultado acumulado mês a mês", series=[('cum_cons', GREEN, False)], y_fmt=FMT_BRL, estender=True),
       dict(type='payback', title="Curva de payback"),
     ]
     if share:

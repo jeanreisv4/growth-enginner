@@ -426,11 +426,17 @@ def build_sheet(ws, cfg, logo_path):
             put(f'{col}{PB0}', (cfg.get('month_labels') or [f"M{k+1}"] * len(SUPC))[k], font(8, False, GRAY), al=CENTER, sheet=sup)
             put(f'{col}{PB0+1}', f"=MAX({MAIN}{PROJ[k]}{R[cum_key]},0)", font(8, False, GRAY), fmt=FMT_BRL, al=RIGHT, sheet=sup)
             put(f'{col}{PB0+2}', f"=MIN({MAIN}{PROJ[k]}{R[cum_key]},0)", font(8, False, GRAY), fmt=FMT_BRL, al=RIGHT, sheet=sup)
+        # linha contínua (sem o corte positivo/negativo): é dela que o gráfico "Resultado acumulado mês a mês"
+        # lê quando o acumulado ainda está negativo na última coluna da tabela.
+        put(f'B{PB0+3}', "Acumulado contínuo", font(8, False, GRAY), al=LEFT, sheet=sup)
+        for k, col in enumerate(SUPC):
+            put(f'{col}{PB0+3}', f"={MAIN}{PROJ[k]}{R[cum_key]}", font(8, False, GRAY), fmt=FMT_BRL, al=RIGHT, sheet=sup)
         for j, (rot, ac) in enumerate(zip(PBX['rotulos'], PBX['acumulado'])):
             col = get_column_letter(3 + len(SUPC) + j)
             put(f'{col}{PB0}', rot, font(8, False, GRAY), al=CENTER, sheet=sup)
             put(f'{col}{PB0+1}', max(ac, 0), font(8, False, GRAY), fmt=FMT_BRL, al=RIGHT, sheet=sup)
             put(f'{col}{PB0+2}', min(ac, 0), font(8, False, GRAY), fmt=FMT_BRL, al=RIGHT, sheet=sup)
+            put(f'{col}{PB0+3}', ac, font(8, False, GRAY), fmt=FMT_BRL, al=RIGHT, sheet=sup)
     put(f'B{F0-1}', "Funil acumulado projetado · 12 meses", font(8, True, GRAY), al=LEFT, sheet=sup)
     put(f'C{F0-1}', "Volume", font(8, True, GRAY), al=RIGHT, sheet=sup); put(f'D{F0-1}', "Conv. etapa", font(8, True, GRAY), al=RIGHT, sheet=sup)
     for i, (lab, key) in enumerate(FUNNEL):
@@ -443,6 +449,10 @@ def build_sheet(ws, cfg, logo_path):
     put(f'B{CH_TITLE}', "04 · GRÁFICOS", font(9, True, RED))
     put(f'B{CH_TITLE+1}', "Leem a projeção da seção 03 e acompanham qualquer alteração nas premissas.", font(9, False, GRAY, True))
     cats = Reference(sup, min_col=3, max_col=2 + n, min_row=S_MONTH, max_row=S_MONTH)
+    # quando o acumulado ainda é negativo na última coluna, os gráficos marcados com 'estender' passam a ler
+    # a série que vai até o mês do payback, em vez de parar sem cruzar o zero.
+    NX = n + len(PBX['rotulos']) if PBX else n
+    cats_ext = Reference(sup, min_col=3, max_col=2 + NX, min_row=PB0, max_row=PB0) if PBX else cats
     CW, CHH = 18.5, 8.6
     def grid(ax):
         ax.delete = False
@@ -453,15 +463,18 @@ def build_sheet(ws, cfg, logo_path):
         return ch
     def line_chart(sp):
         ch = LineChart(); ch.title = sp['title']; ch.height = CHH; ch.width = CW; ch.legend.position = 'b'
+        estende = bool(sp.get('estender') and PBX and len(sp['series']) == 1)
         for key, color, dash in sp['series']:
-            ch.add_data(Reference(sup, min_col=2, max_col=2 + n, min_row=M[key], max_row=M[key]), from_rows=True, titles_from_data=True)
+            linha = PB0 + 3 if estende else M[key]
+            larg = NX if estende else n
+            ch.add_data(Reference(sup, min_col=2, max_col=2 + larg, min_row=linha, max_row=linha), from_rows=True, titles_from_data=True)
         for s, (key, color, dash) in zip(ch.series, sp['series']):
             s.smooth = False
             s.graphicalProperties.line.solidFill = color; s.graphicalProperties.line.width = 22000
             if dash: s.graphicalProperties.line.dashStyle = 'sysDash'
             s.marker.symbol = 'circle'; s.marker.size = 5
             s.marker.graphicalProperties = GraphicalProperties(solidFill=color, ln=LineProperties(solidFill=color))
-        ch.set_categories(cats); grid(ch.x_axis); grid(ch.y_axis)
+        ch.set_categories(cats_ext if estende else cats); grid(ch.x_axis); grid(ch.y_axis)
         ch.y_axis.numFmt = NumFmt(formatCode=sp['y_fmt'], sourceLinked=False)
         return finish(ch)
     def payback_chart(sp):

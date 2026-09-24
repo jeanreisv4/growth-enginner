@@ -67,6 +67,8 @@ MESES_PT = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho",
 MESES_NORM = [unicodedata.normalize("NFKD", m).encode("ascii", "ignore").decode() for m in MESES_PT]  # "marco" casa com "março" normalizado
 MIN_EVENTOS = 30  # abaixo disso a taxa da etapa é sinalizada como amostra pequena
 RAMPA_ATE = None    # mês em que a rampa chega ao alvo (--rampa-ate); sem isso, o mês-alvo
+RAMPA_DESDE = 1     # mês em que a rampa COMEÇA (--rampa-desde). Serve para tabela que já contém meses vividos:
+                    # sem isso a melhora é distribuída desde o M1 e aparece como se já tivesse acontecido no passado.
 REALIZADO = {}      # {mês da projeção: resultado realizado}: meses já vividos entram pelo realizado, como na linha consolidada da planilha
 ORGANICO = None     # {'visitas': [por mês a partir do M1], 'conversao': taxa, 'origem': str, 'metrica': str}:
                     # leads orgânicos (SEO, social, indicação) somados aos pagos antes de lead → MQL
@@ -515,7 +517,10 @@ def curva_alavancas(env, modelo, alpha, K, horizonte, ticket_manual=None):
     chaves = ["cpm"] + [k for k, *_ in todas_alavancas(modelo)] + ["ticket"] + (["custo_sessao_meta"] if split(modelo) else [])
     linhas = []
     for t in range(1, horizonte + 1):
-        f = min(t, K) / K if K > 0 else 1.0
+        # rampa linear de RAMPA_DESDE até K. Antes do início ela não andou nada — é isso que mantém os meses
+        # já vividos na taxa de hoje em vez de mostrá-los como se a recuperação estivesse em curso.
+        d = max(1, RAMPA_DESDE)
+        f = 1.0 if K <= d else min(max((t - d + 1) / (K - d + 1), 0.0), 1.0)
         row = {}
         for k in chaves:
             e = env[k]
@@ -793,6 +798,8 @@ def main():
     p.add_argument("--connect-rate", type=float, help="connect rate (cliques -> visitas na página; ex.: 0.80) quando o cliente tem landing page mas a fonte não traz a linha de visitas")
     p.add_argument("--fee-historico", type=float, help="fee real do contrato nos meses da fonte, quando a linha Fee V4 da planilha está errada (ex.: 6901)")
     p.add_argument("--rampa-ate", type=int, help="mês em que as alavancas chegam ao alvo da rampa (padrão: o mês-alvo); use quando a meta fica depois do fim da rampa")
+    p.add_argument("--rampa-desde", type=int, default=1,
+                   help="mês em que a rampa COMEÇA (padrão 1). Use quando a tabela já contém meses vividos: sem isso a melhora aparece distribuída desde o Mês 1, como se parte dela já tivesse ocorrido")
     p.add_argument("--inicio", help="mês/ano do Mês 1 da projeção (padrão: o mês corrente da fonte); igual ao --inicio-contrato do gerador")
     p.add_argument("--organico-visitas", help="inside sales: entradas orgânicas por mês a partir do Mês 1, separadas por vírgula; depois do último valor, repete")
     p.add_argument("--organico-conversao", type=float, default=None, help="conversão da entrada orgânica → lead (ex.: 0.0615 = taxa clique → lead atual)")
@@ -822,13 +829,14 @@ def main():
     p.add_argument("--out", default="premissas.json")
     a = p.parse_args()
 
-    global VERBA_PLANO, RAMPA_ATE, ORGANICO, CRM, FEE_PLANO, SAZ, CPM_CRESC
+    global VERBA_PLANO, RAMPA_ATE, RAMPA_DESDE, ORGANICO, CRM, FEE_PLANO, SAZ, CPM_CRESC
     if a.crm:
         if a.modelo != "inside_sales": sys.exit("--crm vale para inside sales")
         CRM = json.load(open(a.crm, encoding="utf-8"))
     if a.fee_plano:
         FEE_PLANO = [float(x) for x in a.fee_plano.split(",") if x.strip()]
     RAMPA_ATE = a.rampa_ate
+    RAMPA_DESDE = a.rampa_desde or 1
     if a.organico_visitas:
         if a.modelo != "inside_sales" or a.organico_conversao is None:
             sys.exit("--organico-visitas vale para inside sales e exige --organico-conversao")
@@ -970,7 +978,7 @@ def main():
         "premissas_confirmadas": {"fee": a.fee, "midia_mensal": a.midia, "margem": a.margem, "comissao": a.comissao,
                                   "ticket": ticket, "mes_alvo": a.mes_alvo, "horizonte": a.horizonte,
                                   "lag": a.lag, "acumulado_inicial": a.acumulado_inicial, "crescimento_midia": a.crescimento_midia, "midia_teto": a.midia_teto, "connect_rate": a.connect_rate,
-                                  "definicao_breakeven": a.definicao_breakeven, "fixadas": a.fixar, "alvos_mercado": a.alvo, "verba_plano": VERBA_PLANO, "sazonalidade": SAZ, "cpm_crescimento": list(CPM_CRESC) if CPM_CRESC else None, "rampa_ate": K_rampa(a.mes_alvo), "inicio": a.inicio, "organico": ORGANICO, "fee_historico": a.fee_historico, "crm": CRM, "fee_plano": FEE_PLANO,
+                                  "definicao_breakeven": a.definicao_breakeven, "fixadas": a.fixar, "alvos_mercado": a.alvo, "verba_plano": VERBA_PLANO, "sazonalidade": SAZ, "cpm_crescimento": list(CPM_CRESC) if CPM_CRESC else None, "rampa_ate": K_rampa(a.mes_alvo), "rampa_desde": RAMPA_DESDE, "inicio": a.inicio, "organico": ORGANICO, "fee_historico": a.fee_historico, "crm": CRM, "fee_plano": FEE_PLANO,
                                   "realizado_usado": {str(k): round(x, 2) for k, x in REALIZADO.items()},
                                   "regra_taxas": (f"janela de {a.janela} mês(es) fechado(s)" + (" + mês corrente parcial" if a.incluir_corrente else "") + ", ponderada por volume; rampa até a mediana do período comparável")},
         "detectado": detectado, "historico": meses, "historico_resultado": hist_result,
