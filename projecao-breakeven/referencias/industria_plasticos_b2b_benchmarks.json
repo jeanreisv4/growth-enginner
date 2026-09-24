@@ -1,0 +1,529 @@
+{
+ "titulo": "Benchmarks · indústria de plásticos e utensílios, B2B para varejo e atacado (Brasil)",
+ "levantado_em": "22/09/2026",
+ "perfil": "Indústria de plásticos do Nordeste vendendo B2B para varejo, atacado, distribuidor e supermercado (exige CNPJ). Ticket R$ 2.700 a R$ 3.200, ciclo curto (mediana de 6 dias). Meta Ads + Google Ads, LP institucional e formulário nativo.",
+ "nota_tabela": "Cada linha passou por um verificador adversarial que abriu as URLs e checou número, segmento e data. Onde a verificação corrigiu o pesquisador, vale o número corrigido. 'sem benchmark confiável' significa que nenhuma fonte com metodologia declarada cobre a etapa — nesse caso a taxa do cliente é mantida, não estimada.",
+ "linhas": [
+  {
+   "premissa": "CPM (custo por mil impressões) — Meta Ads + Google Ads, Brasil, para B2B industrial / atacado-distribuição / bens de consumo não duráveis",
+   "atual_do_cliente": "R$ 23,14 — média ponderada de jun+jul+ago/2026, blended Meta Ads + Google Ads",
+   "veredito": "na media",
+   "faixa_mercado": "R$ 16,82 a R$ 37,98 (Meta/Facebook, Brasil e América Latina, meados de 2026, convertido a USD/BRL 5,0977). Centro da faixa: R$ 17,64 (mediana Brasil de 13 meses) a R$ 26,51 (IG Feed LATAM no trimestre exato). Para Google Ads no Brasil: sem benchmark confiável.",
+   "taxa_utilizada": "BASE: R$ 23,14 — CONFIRMADO, sem ajuste. É o número mais defensável e o raciocínio para não aplicar desconto de Nordeste nem prêmio de B2B está correto.\n\nTETO: rebaixar R$ 34,46 de \"teto de estresse\" para \"sensibilidade externa\", com a ressalva de que é a mediana all-industries de um painel do qual a indústria de plásticos comprovadamente divergiu 33% para baixo nos mesmos meses — não é o patamar para onde ela converge. Exigir R$ 34,46 é assumir +48,9% de CPM sem mecanismo ligado à verba da própria conta.\n\nTETO PRINCIPAL RECOMENDADO para o cenário de verba +15%/mês: drift sobre o próprio realizado, chegand",
+   "verificacao": "confirmada",
+   "justificativa": "Abri as 5 URLs. Todas carregaram e TODOS os números citados conferem literalmente na fonte. Refiz também todas as conversões USD→BRL a 5,0977 e batem até o centavo (3,46→17,64; 6,76→34,46; 7,45→37,98; 5,20→26,51; 3,30→16,82). O câmbio de 5,0977 é exatamente a média de 6 meses publicada pela Wise hoje (spot atual 5,110, então as conversões são levemente conservadoras). Nenhum número foi inventado.\n\nO QUE SE SUSTENTA (e é o essencial):\n1. A BASE R$ 23,14 está correta e bem fundamentada. Confirmei o motivo declarado: o Superads cobre \"All industries in Brazil\" como agregado único, sem nenhum corte por vertical nem por região interna do Brasil; os dois Emplifi são LATAM por setor (e-commerce e entretenimento), não Brasil-B2B. Logo não existe mesmo base para aplicar desconto de Nordeste nem prêmio de B2B. Usar o realizado da própria cliente é a decisão certa.\n2. O uso do WordStream/SEJ como R",
+   "fontes": [
+    {
+     "nome": "Superads — Facebook Ads CPM Benchmarks in Brazil",
+     "url": "https://www.superads.ai/facebook-ads-costs/cpm-cost-per-mille/brazil",
+     "valor": "Mediana Brasil US$ 3,46 (~R$ 17,64) na janela de 13 meses. Por mês: jul/2025 US$ 4,03; ago/2025 US$ 1,77 (mínima); jan/2026 US$ 3,13; abr/2026 US$ 2,37; mai/2026 US$ 5,96; jun/2026 US$ 7,45 (máxima, ~R$ 37,98); jul/2026 US$ 6,76 (~R$ 34,46). Mediana global no mesmo período: US$ 20,59 — o Brasil roda ~83% abaixo.",
+     "periodo": "jul/2025 a jul/2026 (página declara cobertura set/2025–ago/2026; ago/2026 não publicado)",
+     "segmento": "Facebook/Meta Ads, Brasil, TODAS as indústrias. Não há corte por vertical, nem B2B, nem industrial, nem região.",
+     "amostra": "Mais de US$ 3 bilhões em investimento agregado em Facebook Ads, de milhares de contas anonimizadas que usam a Superads. Valores são mediana entre campanhas."
+    },
+    {
+     "nome": "Emplifi — Latin America Social Media Benchmarks: eCommerce Q2 2026",
+     "url": "https://emplifi.io/resources/q2-2026-ecommerce-latin-america-benchmarks/",
+     "valor": "CPM por posicionamento, e-commerce LATAM: Facebook Feed US$ 3,70 (~R$ 18,86); Instagram Feed US$ 5,20 (~R$ 26,51); Instagram Stories US$ 4,80 (~R$ 24,47); Facebook Reels US$ 3,30 (~R$ 16,82); Instagram Reels US$ 3,70 (~R$ 18,86). Agregado do setor e-commerce: US$ 2,30. Agregado região inteira, todas as indústrias: US$ 0,70.",
+     "periodo": "01/04/2026 a 30/06/2026 (Q2 2026) — sobrepõe dois dos três meses da apuração da indústria de plásticos",
+     "segmento": "Meta (Facebook + Instagram), marcas de e-commerce na América Latina. Aproximação: é e-commerce/B2C latino-americano, não B2B industrial brasileiro.",
+     "amostra": "1.188 páginas de marca no Facebook e 679 perfis de marca no Instagram na América Latina. Base proprietária Emplifi, mais de 20.000 marcas, coleta trimestral."
+    },
+    {
+     "nome": "Emplifi — Latin America Social Media Benchmarks: Entertainment Q2 2026",
+     "url": "https://emplifi.io/resources/q2-2026-entertainment-latin-america-benchmarks/",
+     "valor": "CPM por posicionamento LATAM: Facebook Feed US$ 3,10 (~R$ 15,80); Facebook Reels US$ 3,37; Instagram Reels US$ 3,20; Instagram Feed US$ 3,48; Instagram Stories US$ 3,74 (~R$ 19,07). Agregado região inteira, todas as indústrias: US$ 0,74. Serve como segundo ponto de calibragem do mesmo trimestre com amostra maior.",
+     "periodo": "01/04/2026 a 30/06/2026 (Q2 2026)",
+     "segmento": "Meta (Facebook + Instagram), marcas de entretenimento na América Latina. Vertical distante da indústria de plásticos — usado só para confirmar o patamar do CPM de feed em LATAM no trimestre.",
+     "amostra": "2.348 páginas de marca no Facebook e 2.309 perfis de marca no Instagram na América Latina."
+    },
+    {
+     "nome": "Wise — Histórico da taxa USD/BRL (usado para converter todos os benchmarks em dólar)",
+     "url": "https://wise.com/us/currency-converter/usd-to-brl-rate/history",
+     "valor": "Média dos últimos seis meses até 22/09/2026: 1 USD = 5,0977 BRL. Máxima do período 5,3155 (22/03/2026), mínima 4,8869 (12/05/2026).",
+     "periodo": "mar/2026 a set/2026",
+     "segmento": "Câmbio comercial USD/BRL. Toda conversão de USD para BRL nesta pesquisa usou 5,0977.",
+     "amostra": "n/a"
+    },
+    {
+     "nome": "WordStream by LocaliQ / Search Engine Journal — Google Ads Benchmarks 2026 (10ª edição)",
+     "url": "https://www.searchenginejournal.com/what-is-a-good-ctr-for-google-ads/492785/",
+     "valor": "SEM CPM. O estudo publica apenas CTR, CPC médio, taxa de conversão e CPL por indústria — não divulga custo por mil impressões. Listado aqui justamente para registrar que o benchmark mais citado de Google Ads não responde a pergunta de CPM.",
+     "periodo": "abr/2025 a mar/2026",
+     "segmento": "Milhares de campanhas de Google Ads e Microsoft Ads em 20 indústrias. Geografia não declarada (predominantemente EUA).",
+     "amostra": "\"thousands of Google Ads and Microsoft Ads campaigns across 20 industries\" — número exato de contas e volume de investimento não divulgados."
+    }
+   ],
+   "descartados": [
+    "Trafius — 'CPM Médio no Facebook e Meta Ads Brasil 2026' e 'Benchmark de CPM no Brasil em 2026 por Nicho' (trafius.com.br). Publica tabela de CPM por 12 segmentos em reais (inclusive 'SaaS/Software B2B R$ 30–55'). Abri a página: a única frase de método é 'os valores refletem dados agregados do mercado brasileiro em 2026'. Sem fonte identificada, sem amostra, sem período do estudo, sem autor. É a origem da maior parte dos números que circulam em português.",
+    "ViniEnsina — 'CPM Médio no Meta Ads Brasil 2026' e '48 Estatísticas de Custo no Brasil' (viniensina.com.br). Não descartada por má-fé — o autor declara que removeu de propósito os benchmarks de CPM/CPC/CPA porque 'saíram benchmarks genéricos sem amostra reproduzível', e afirma que a página é curadoria editorial sem pesquisa amostral própria. Resultado: não há número de CPM para citar.",
+    "AdManage — 'Facebook CPM Benchmarks by Industry' (admanage.ai). Fonte do número 'Manufacturing US$ 2,40, o CPM mais barato de todas as indústrias' que circula em vários sites. Sem metodologia declarada, sem amostra, sem geografia. A tabela é internamente incoerente (Manufacturing US$ 2,40 ao lado de IT Services US$ 42,17) e a linguagem '$3B+ in Facebook ad spend' é idêntica à da Superads, indicando republicação de base de terceiro sem atribuição.",
+    "Web Tonic — 'Manufacturing Facebook & Meta Ads Statistics 2026' (webtonic.io). Só repete o US$ 2,40 da AdManage, com citação explícita. Fonte de segunda mão.",
+    "Trendtrack — 'Meta ad spend by industry 2025' (trendtrack.io). Não cobre o Brasil. Compila WordStream, Triple Whale, Madgicx, Lebesgue e Enhencer sem amostra própria.",
+    "Lebesgue — 'Facebook Ads CPM by Country 2026' (lebesgue.io). Traz Brasil em US$ 2,63 (~R$ 13,41), o que é direcionalmente coerente com a Superads, mas a página não declara amostra, não declara período exato e não define o recorte (Shopify? todo e-commerce?). Sem isso não sustenta uma linha de projeção.",
+    "AdAmigo — 'Meta Ads CPM & CPC Benchmarks by Country 2026' (adamigo.ai). Brasil US$ 4,20. A própria página diz que são 'projections for 2026 based on industry benchmarks and late 2025 data'. Projeção, não medição, e sem fonte primária.",
+    "Adligator — 'Meta Ads CPM by Country 2026' (adligator.com). Brasil US$ 2,50–4,00 no Facebook e US$ 3,50–5,50 no Instagram. Consolida 40+ países sem citar de onde vem um único número.",
+    "Store Growers — '27 Google Ads Benchmarks 2026' e 'YouTube Ads Benchmarks 2026' (storegrowers.com). O US$ 3,53 de CPM de YouTube é atribuído genericamente à WordStream, sem período nem amostra; a página de YouTube mistura faixas da Strike Social, inBeat e Adzoola de 2023–2025 sem metodologia declarada. Nenhum corte por país.",
+    "Fluxnote e UpGrowth — 'YouTube CPM Brazil 2026' (US$ 1,5 a 1,64). Métrica errada: medem RPM/receita de criador de conteúdo, não custo pago pelo anunciante. Não são comparáveis ao CPM de mídia da indústria de plásticos.",
+    "Statista — 'Social Media Advertising Brazil' e 'Google Ads average monthly CPC in Brazil by industry'. A primeira não tem CPM e os valores estão atrás de paywall; a segunda é CPC (fonte Semrush, dez/2024), não CPM, e também paywall. Nenhuma categoria industrial/atacado visível.",
+    "Intent Marketing, Atrio Marketing, Maximizy, Get-Ryze, Nefi Marketing (resultados de busca em português). Repetem as mesmas faixas R$ 8–45 sem fonte primária. Não abri uma a uma depois de constatar que as três primeiras páginas brasileiras auditadas não tinham amostra nem fonte.",
+    "AFIRMAÇÃO ESPECÍFICA DESCARTADA — 'o leilão do Nordeste é até 3x mais barato que o do Sudeste'. Aparece com frequência em blogs brasileiros de SEO, todos sem metodologia. Não encontrei nenhuma fonte com amostra declarada que publique CPM por região do Brasil. Ou seja: não há base documental para dar desconto regional ao benchmark da indústria de plásticos."
+   ]
+  },
+  {
+   "premissa": "CTR de link (Meta Ads + Google Ads) — indústria de plásticos: 2,62% (media ponderada jun+jul+ago/2026, ~R$ 6.000/mes)",
+   "atual_do_cliente": "2,62% de CTR de link, numero MISTURADO (Meta + Google somados). Nao consegui separar os dois canais nos dados que vieram no briefing — isso importa muito, porque os benchmarks de mercado sao por canal e os dois canais tem patamares completamente diferentes (Meta ~1,4%-2,6%, Google Search ~6,6%). Pela aritmetica do proprio briefing (R$ 6.000 / CPM R$ 23,14 = ~259 mil impressoes/mes), o volume de impressoes e quase todo Meta: Google Search em CPC industrial no Brasil nao entrega esse volume de impressao com a fatia de verba que sobra. Entao o 2,62% e, na pratica, um numero de Meta com um pouco de Google dentro.",
+   "veredito": "acima do mercado",
+   "faixa_mercado": "Meta Ads, recorte industrial (EUA): 1,36% (campanhas de trafego) a 2,08% (campanhas de lead). Meta Ads, media de todos os setores: 1,71% trafego / 2,59% lead (edicao 2025) e 2,70% lead (edicao 2026). Google Ads rede de pesquisa, recorte industrial (EUA): 6,57%, contra media geral de 6,64%. Resumindo a faixa que de fato se aplica ao mix da indústria de plásticos: 1,36% a 2,70%.",
+   "taxa_utilizada": "2,62% — mantido, sem alteração na projeção. Para sensibilidade: NÃO use 2,70%. Esse número não foi verificado por leitura direta (wordstream.com devolve 403 para mim também) e nenhum dos 5 espelhos que abri reproduz a linha de CTR da edição 2026 do estudo Meta. Na edição que EU consegui ler, a média de todos os setores em lead é 2,59% — abaixo do que a indústria de plásticos já faz. Ou seja: não existe nenhum número de mercado com fonte verificada acima de 2,62% aplicável ao mix dela. O único valor verificado acima disso é 6,57% (Google Ads rede de pesquisa, Industrial & Commercial), e ele só vale para a f",
+   "verificacao": "confirmada",
+   "justificativa": "CONFERI AS FONTES UMA A UMA. O \"não mexer\" se sustenta, mas o ARGUMENTO que o pesquisador usou para justificá-lo está parcialmente errado e não deve ir para a reunião do jeito que está.\n\nO QUE ABRI E BATE (leitura direta):\n1. localiq.com/blog/facebook-advertising-benchmarks — CONFIRMADO ao pé da letra: Industrial & Commercial 2,08% (lead) e 1,36% (tráfego); Business Services 1,38% (tráfego, e de fato não aparece na tabela de lead); média de todos os setores 2,59% lead / 1,71% tráfego. Fonte primária (é a própria publicadora do estudo), última atualização 24/10/2025. RESSALVA: a página NÃO declara período dos dados nem amostra — o pesquisador foi honesto ao dizer isso.\n2. theedigital.com/blog/google-ads-benchmarks — CONFIRMADO: Industrial & Commercial 6,57%, média geral 6,64%, período abril/2025 a março/2026, 13.474 campanhas de busca nos EUA, 23 setores, MEDIANAS para conter outliers. Me",
+   "fontes": [
+    {
+     "nome": "WordStream by LocaliQ — Facebook Advertising Benchmarks (lido em localiq.com, atualizado 24/10/2025)",
+     "url": "https://localiq.com/blog/facebook-advertising-benchmarks/",
+     "valor": "Industrial & Commercial: 2,08% (campanhas de lead) e 1,36% (campanhas de trafego). Business Services: 1,38% (trafego). Media de todos os setores: 2,59% lead / 1,71% trafego.",
+     "periodo": "Edicao publicada em 24/10/2025. A propria pagina NAO declara o periodo dos dados; excertos do relatorio indicam abril/2024 a junho/2025",
+     "segmento": "Industrial & Commercial — o recorte mais proximo de industria B2B disponivel na base; EUA; campanhas de geracao de lead e de trafego no Facebook/Instagram",
+     "amostra": "A pagina nao declara. Excertos do relatorio original citam ~1.180 campanhas nos EUA. Trato a amostra como NAO confirmada por leitura direta"
+    },
+    {
+     "nome": "Hawky.ai — Facebook Ads Benchmarks by Industry (reproduz a tabela WordStream e credita a fonte)",
+     "url": "https://hawky.ai/blog/facebook-ads-benchmarks",
+     "valor": "Industrial and Commercial: 2,08% de CTR em campanhas de lead. Media de todos os setores em lead: 2,59%. Media de trafego: 1,71%.",
+     "periodo": "Credita explicitamente 'WordStream 2025 Facebook Ads Benchmarks'",
+     "segmento": "Industrial and Commercial, campanhas de geracao de lead no Meta; EUA (implicito)",
+     "amostra": "Nao informada. Uso esta fonte apenas como CONFIRMACAO CRUZADA do numero 2,08%, que bate exatamente com o que li no LocaliQ — nao como fonte independente"
+    },
+    {
+     "nome": "WordStream by LocaliQ — 2026 Google Ads Benchmarks (lido em TheeDigital, que declara a metodologia do estudo)",
+     "url": "https://www.theedigital.com/blog/google-ads-benchmarks",
+     "valor": "Industrial & Commercial: 6,57%. Business Services: 6,10%. Media de todos os setores: 6,64%. (Comparacao: e-commerce 8,28%, servicos juridicos 5,87%.)",
+     "periodo": "abril/2025 a marco/2026",
+     "segmento": "Industrial & Commercial, rede de PESQUISA (Google Ads + Microsoft Ads), EUA, medianas",
+     "amostra": "13.474 campanhas de busca nos EUA, 23 setores. Relatorio usa mediana para limitar o efeito de outliers"
+    },
+    {
+     "nome": "ALM Corp — Google Ads Benchmarks 2026 (segunda leitura do mesmo estudo WordStream, para conferir os numeros)",
+     "url": "https://almcorp.com/blog/google-ads-benchmarks-2026/",
+     "valor": "Industrial & Commercial: 6,57%. Business Services: 6,10%. Media geral: 6,64% em 2026 contra 6,66% em 2025.",
+     "periodo": "abril/2025 a marco/2026 (estudo WordStream 2026)",
+     "segmento": "Industrial & Commercial, rede de pesquisa, EUA",
+     "amostra": "Nao repete a amostra. Serve como CONFIRMACAO: dois sites independentes reproduzem 6,57% e 6,10% do mesmo estudo. Precisei desta rota porque wordstream.com devolve HTTP 403 e nao consegui ler a pagina original"
+    },
+    {
+     "nome": "WordStream — Facebook Ads Benchmarks 2026 (edicao nova; NAO consegui abrir, HTTP 403)",
+     "url": "https://www.wordstream.com/blog/facebook-ads-benchmarks-2026",
+     "valor": "Media de todos os setores em campanhas de lead subiu para 2,70% (alta de 4,25% sobre os 2,59% do ano anterior). Topo: Physicians and Surgeons 4,18%, Real Estate 4,17%, Furniture 3,78%.",
+     "periodo": "Edicao 2026 (o estudo irmao de busca cobre abr/2025 a mar/2026)",
+     "segmento": "Meta Ads, campanhas de geracao de lead, todos os setores, EUA",
+     "amostra": "NAO VERIFICADO POR LEITURA DIRETA. A pagina bloqueia acesso (403); li estes numeros apenas em excertos de resultado de busca. A linha 'Industrial & Commercial' da edicao 2026 eu NAO consegui ver — por isso o benchmark do segmento que uso continua sendo o 2,08% da edicao anterior"
+    }
+   ],
+   "descartados": [
+    "Databox — Facebook Ads Benchmarks by Industry (databox.com/fb-ads-benchmarks-by-industry): dados de marco/2023, sem tamanho de amostra, sem geografia declarada e sem dizer se e CTR de link ou de todos os cliques. Velho e sem metodologia.",
+    "eDialog — O que e CTR no Google Ads (edialog.com.br): publica 3,17% na Busca e 0,46% no Display como se fosse atual. Sao os numeros do WordStream de 2016, sem data no texto. Dado reciclado apresentado como corrente.",
+    "Trafius — CPC e CPM medio no Meta Ads Brasil 2026 (trafius.com.br): nao publica CTR nenhum, so faixas de CPC/CPM. Sem amostra, sem periodo, sem fonte primaria. Segmentos cobertos sao e-commerce, SaaS, infoproduto, servicos locais e imoveis — nada de industria, atacado ou bens de consumo.",
+    "Vini Ensina — 48 estatisticas de custo Meta Ads Brasil 2026 (viniensina.com.br): nenhum numero de CTR para o Brasil. O proprio autor escreve que 'nao existe um benchmark oficial unico e confiavel' e recomenda usar o historico da propria conta.",
+    "MasterPlan AI — Benchmarks de Midia 2026 (blog.masterplanai.com.br): tem uma tabela 'CTR Medio por Canal e Setor (Brasil 2026)', mas a fonte declarada e 'dados consolidados agregados de mercado', sem amostra e sem fonte primaria. E os setores sao e-commerce, SaaS B2B, imoveis, servicos locais, infoprodutos, automotivo, fintech e saude — nao ha industria, atacado nem bens de consumo.",
+    "42 Agency — B2B Google Ads Benchmarks 2026 (intel.42agency.com): declara 1,30% de CTR na Busca, mas sem tamanho de amostra e sem geografia, e a base e a carteira propria de clientes B2B SaaS/tech, nao industria. Alem disso 1,30% na rede de pesquisa e implausivel contra todas as outras fontes (6,6%), o que sugere metrica diferente ou mistura pesada de Display/PMax.",
+    "Web Tonic — Manufacturing Facebook & Meta Ads Statistics (webtonic.io): o numero citado (CTR industrial B2B de 1,3% para 4,3%) vem de um estudo de caso de terceiro (Digivonk), sem amostra, sem periodo e sem geografia. Anedota, nao benchmark.",
+    "Visible Factors, Kreativa Group e TheeDigital (pagina de Facebook) — agregam WordStream sem metodologia propria e, no caso da Kreativa, com faixa inventada de 0,85%-1,2% sem fonte. Usei TheeDigital SOMENTE para a pagina de Google Ads, onde ela declara amostra e periodo do estudo original.",
+    "Digital Applied — Facebook Ads Benchmarks 2026 (digitalapplied.com): diz agregar WordStream, Databox, Revealbot e 'dados anonimizados de agencia' sem numero de campanhas nem geografia. Agregador de agregadores.",
+    "Lebesgue — Facebook Benchmarks by Industry (lebesgue.io): zero metodologia divulgada (sem amostra, sem periodo, sem geografia, sem definicao de CTR) e as categorias sao de e-commerce DTC, irrelevantes para B2B industrial.",
+    "Ryze AI — Facebook Ads CTR Benchmarks by Industry 2026 (get-ryze.ai): tem alguma metodologia (2.400+ campanhas, 500M+ impressoes, Q4/2025 a Q2/2026, EUA/UK/Canada/Australia), mas mistura dados proprios com Lebesgue, WordStream e Triple Whale, e nao tem linha industrial nem de business services. Ficaria so com 'Retail 1,59%', que e o setor do CLIENTE da indústria de plásticos, nao o dela.",
+    "XYZ Lab — Meta Ads e Google Ads Benchmarks in Brazil (xyzlab.com): seria a fonte mais interessante por ser recorte Brasil, mas as tres variacoes de URL que tentei devolveram HTTP 404. Nao consegui ler numero nenhum, entao nao cito nada de la.",
+    "Conversion — Google Ads Benchmarks 2024 (conversion.com.br): e traducao do estudo WordStream 2024 (17 mil campanhas, abr/2023 a mar/2024). Derivada e superada pela edicao 2026 que ja estou usando.",
+    "Triple Whale — Facebook Ad Benchmarks by Industry (triplewhale.com): HTTP 403, nao consegui abrir. Nao cito numero que nao li."
+   ]
+  },
+  {
+   "premissa": "Clique → lead (landing page de 7 campos + formulário nativo do Meta), B2B industrial / atacado no Brasil — incluindo o efeito do número de campos do formulário",
+   "atual_do_cliente": "6,55% de clique → lead (média ponderada jun+jul+ago/2026), numa operação que mistura LP institucional com formulário de 7 campos e Instant Form nativo do Meta",
+   "veredito": "acima do mercado",
+   "faixa_mercado": "3,3% a 9,3% — sendo 3,29% a 3,91% a faixa brasileira de mídia paga (Leadster, indústria e mercado geral), 6,2% a 6,6% a referência de landing page dedicada (Unbounce) e 8,20% a 9,34% a faixa americana de \"Industrial & Commercial\" (LocaliQ/WordStream, search e Meta lead ads)",
+   "taxa_utilizada": "6,55% — manter travado no cenário-base, confirmado. Duas correções: (1) trocar a sensibilidade de teto de 8,20% (LocaliQ Search) por 9,8% (RD Station, Engenharia e Indústria Geral, Brasil, dados de 2025) — o LocaliQ é agência sem amostra e sem janela de coleta divulgadas, reprovado pelos próprios critérios do pedido, enquanto o RD é brasileiro, com corte de indústria e fresco; rotular explicitamente como visitas→leads de todas as origens em LP de oferta de conteúdo, e só como sensibilidade. (2) Reescrever a faixa de mercado como 3,3% a 9,8% e declarar que as duas referências brasileiras de ind",
+   "verificacao": "confirmada",
+   "justificativa": "VEREDITO: o \"valor defensável\" de 6,55% travado SE SUSTENTA, mas por um motivo mais forte do que o pesquisador deu, e com dois dos três argumentos dele enfraquecidos e um erro de citação.\n\nABRI AS 12 FONTES. Confirmado ao pé da letra:\n- Leadster 2025 (Indústria e Fabricação): mediana 3,81%, Meta Ads 3,34%, Google Ads 3,29%, orgânica 3,09%, direto 2,11%, desktop Google Ads 5,83%, mobile Meta Ads 3,57%, 140 empresas. Tudo bate.\n- Leadster 2026 (geral): mediana 3,07%, alta 7,90%, baixa 1,02%, Meta Ads 3,91%, Google Ads 3,41%, IA generativa 7,80%; 2.425 sites / 173 mi de acessos / 3,4 mi de leads; dados de 2025, publicado 06/07/2026. Bate.\n- RD Station (benchmarks): 11% média de LP no Brasil, Engenharia e Indústria Geral 9,8%, Varejo 10,7%, Consultoria 9,1%, Telecom 3,3%, formulários = 71% das conversões, 1,3 bi de conversões, dados 2025, publicado 04/08/2026. Bate.\n- LocaliQ Facebook: Indus",
+   "fontes": [
+    {
+     "nome": "Leadster — Panorama de Geração de Leads no Brasil 2025, capítulo Indústria e Fabricação",
+     "url": "https://leadster.com.br/panorama-de-geracao-de-leads-no-brasil-2025/conteudo/industria-e-fabricacao/",
+     "valor": "Mediana do segmento 3,81% (vs. média geral 3,72%). Por canal: Meta Ads 3,34% (+12,46% vs. 2024), Google Ads 3,29% (+10,77%), Busca Orgânica 3,09%, Acesso Direto 2,11%. Desktop: Google Ads 5,83%; Mobile: Meta Ads 3,57%",
+     "periodo": "2024–2025",
+     "segmento": "Indústria e Fabricação, Brasil — acesso (sessão) → lead, segmentado por canal de origem",
+     "amostra": "140 empresas do segmento"
+    },
+    {
+     "nome": "Leadster — Panorama de Geração de Leads no Brasil 2026",
+     "url": "https://leadster.com.br/blog/panorama-geracao-de-leads-2026/",
+     "valor": "Mediana geral do Brasil 3,07% (alta performance 7,90%, baixa 1,02%). Por canal: IA Generativa 7,80%, Meta Ads 3,91%, Google Ads 3,41%, Busca Orgânica 2,39%, Acesso Direto 1,74%",
+     "periodo": "dados coletados ao longo de 2025",
+     "segmento": "Mercado brasileiro geral, 17 segmentos — acessos → leads",
+     "amostra": "2.425 sites, 173 milhões de acessos, 3,4 milhões de leads"
+    },
+    {
+     "nome": "RD Station — Dados RD Station: métricas de Marketing, Vendas e Atendimento",
+     "url": "https://www.rdstation.com/blog/marketing/dados-rd-station-benchmarks/",
+     "valor": "Taxa média de conversão em Landing Pages no Brasil: 11%. Engenharia e Indústria Geral: 9,8%. Varejo: 10,7%. Consultoria 9,1%. Telecomunicações 3,3% (pior). Formulários respondem por 71% das conversões totais",
+     "periodo": "dados de 2025; artigo publicado em 04/08/2026",
+     "segmento": "Landing pages de clientes RD Station no Brasil — visitas → leads, TODAS as origens de tráfego (não só mídia paga)",
+     "amostra": "1,3 bilhão de conversões de leads na base RD Station Marketing"
+    },
+    {
+     "nome": "RD Station — Taxa de conversão de Landing Page: o que é considerada boa",
+     "url": "https://www.rdstation.com/blog/marketing/taxa-de-conversao-landing-pages/",
+     "valor": "Média de 19,90% em LPs da base. Medianas por setor: E-commerce 26,8%, Educação 24,2%, Tecnologia 18,4%, Serviços Financeiros 13,8%, Consultoria 13,5%, Software 12,9%, Imóveis 12,1%, Marketing 11,2%, Saúde e Estética 10,1%, Agronegócio 9,8%",
+     "periodo": "recorte de novembro de 2021; artigo atualizado em 03/12/2024",
+     "segmento": "Landing pages RD Station, Brasil — visitas → leads (critério: páginas com +100 visitas e ≥1 conversão). Não há categoria indústria/atacado",
+     "amostra": "19.909 landing pages, 18.424.339 visitas, 3.666.028 leads únicos"
+    },
+    {
+     "nome": "LocaliQ / WordStream — Facebook Advertising Benchmarks",
+     "url": "https://localiq.com/blog/facebook-advertising-benchmarks/",
+     "valor": "Campanhas de leads: Industrial & Commercial 9,34% de taxa de conversão; média geral entre setores 7,72% (contra 8,67% no ano anterior); Furniture 3,77%",
+     "periodo": "artigo atualizado em 24/10/2025; janela de coleta não divulgada",
+     "segmento": "Industrial & Commercial, EUA — clique no anúncio Meta → conversão em campanhas de geração de leads (majoritariamente Instant Form nativo)",
+     "amostra": "não divulgada ('milhares de contas de clientes')"
+    },
+    {
+     "nome": "LocaliQ / WordStream — Search Advertising Benchmarks",
+     "url": "https://localiq.com/blog/search-advertising-benchmarks/",
+     "valor": "Industrial & Commercial: taxa de conversão 8,20% e CPL US$ 75,19; média geral 8,18%; Business Services 4,85%; Furniture 2,99%",
+     "periodo": "artigo atualizado em 01/06/2026; janela de coleta não divulgada",
+     "segmento": "Industrial & Commercial, EUA — Google Ads + Microsoft Ads, clique → conversão. ATENÇÃO: 'lead' aqui inclui ligação telefônica, chat, e-mail e formulário, o que infla o número frente ao clique→lead da indústria de plásticos",
+     "amostra": "não divulgada ('milhares de campanhas de clientes')"
+    },
+    {
+     "nome": "Unbounce — Conversion Benchmark Report",
+     "url": "https://unbounce.com/conversion-benchmark-report/",
+     "valor": "Mediana geral de 6,6% entre setores (faixa 3,8% a 12,3%). No recorte B2B: 'commercial and professional service providers' mediana 6,2%; SaaS 3,8%",
+     "periodo": "últimos 12 meses anteriores à publicação do relatório",
+     "segmento": "Landing pages dedicadas, mercado majoritariamente EUA/Canadá — visitantes → conversão. É a referência mais próxima estruturalmente da LP da indústria de plásticos (não tem corte para indústria/atacado)",
+     "amostra": "41.000+ landing pages, 464 milhões de visitantes únicos, 57 milhões de conversões"
+    },
+    {
+     "nome": "Unbounce — B2B conversion rate optimization: 2025 strategies & benchmarks",
+     "url": "https://unbounce.com/conversion-rate-optimization/b2b-conversion-rates/",
+     "valor": "Confirma os cortes B2B do relatório: SaaS 6,6% geral / 3,8% SaaS / 6,2% prestadores de serviço comercial e profissional. Não traz recorte para indústria, atacado ou distribuição",
+     "periodo": "publicado em 2025",
+     "segmento": "B2B, landing pages — visitas → conversão",
+     "amostra": "mesmo dataset do Conversion Benchmark Report (41 mil LPs / 57 mi de conversões)"
+    },
+    {
+     "nome": "HubSpot — Which Types of Form Fields Lower Landing Page Conversions?",
+     "url": "https://blog.hubspot.com/blog/tabid/6307/bid/6746/which-types-of-form-fields-lower-landing-page-conversions.aspx",
+     "valor": "Análise de +40.000 landing pages de clientes: a taxa de conversão cai conforme aumentam os campos, mas cai 'levemente' (slightly). Campos de texto de uma linha quase não derrubam a conversão; MÚLTIPLOS textareas têm 'efeito depressivo poderoso'; múltiplos dropdowns também se associam a conversão menor. NÃO publica tabela de conversão por número de campos",
+     "periodo": "artigo atualizado em 06/06/2025; janela de coleta não declarada",
+     "segmento": "Landing pages de clientes HubSpot (B2B majoritário) — visitas → conversão, efeito do número e do TIPO de campo",
+     "amostra": "mais de 40.000 landing pages"
+    },
+    {
+     "nome": "Zuko Analytics (Formisimo) — Form Performance Benchmarking",
+     "url": "https://www.zuko.io/benchmarking/form-performance",
+     "valor": "Relação negativa entre número de perguntas e taxa de conclusão ('the more questions, the lower average completion rate'), e a inclinação é mais forte em starter→completion do que em view→completion. Os valores por faixa de campos não são publicados",
+     "periodo": "dados de 2025",
+     "segmento": "Formulários web instrumentados pela Zuko, multi-setor (não há corte industrial/atacado/B2B) — view→completion e starter→completion",
+     "amostra": "93.022.997 sessões de formulário rastreadas"
+    },
+    {
+     "nome": "Zuko Analytics — Form Abandonment Data by Industry Sector",
+     "url": "https://www.zuko.io/benchmarking/industry-benchmarking",
+     "valor": "Starter→completion por setor: Forex 72,38%, Charity 61,84%, Travel 61,58%, Data Service 61,00%, Financial Services 60,75%, Insurance 56,79%, Ecommerce 54,28%, Gambling 53,87%, Software 53,53%, Education 52,75%, Healthcare 49,87%, Telecoms 47,68%, Misc 46,51%, Automotive 46,18%, Utilities 44,38%, Property 40,86%, Media 36,07%",
+     "periodo": "dados de 2025",
+     "segmento": "Multi-setor internacional. NÃO existe corte para indústria, atacado, distribuição ou B2B — por isso entra só como evidência sobre campos, não como benchmark da etapa",
+     "amostra": "93.022.997 sessões de formulário"
+    },
+    {
+     "nome": "Formstack — The 2015 Form Conversion Report (PDF, lido na íntegra)",
+     "url": "https://assets-global.website-files.com/5eff9c5e4dba181f8aa2d1e0/5f3970fe6c68f2c8481aebf3_Formstack_Form_Conversion_Report_2015__1_.pdf",
+     "valor": "Conversão média e número médio de campos, por tipo de formulário: Lead Gen 17% com 11 campos; Contato 1% com 4 campos; Survey 14% com 22 campos; Contest 35% com 10 campos; Event Registration 11% com 15 campos; Order/Payment 9% com 22 campos; Donation 7% com 9 campos. Conclusão explícita do relatório: o tipo de formulário pesa mais que o número de campos ('the type of form you use matters. A lot.'). Contra-exemplo direto ao mito de 'menos campos = mais conversão': o formulário mais curto da base (contato, 4 campos) é o que menos converte (1%)",
+     "periodo": "2º relatório anual, dados de 2014–2015",
+     "segmento": "Formulários mobile-responsive em 10 setores (saúde, varejo/e-commerce, governo, religioso, tecnologia etc.) — visitantes do formulário → submissões. Outliers de tráfego removidos em 3 setores",
+     "amostra": "mais de 650.000 usuários de formulário anonimizados"
+    }
+   ],
+   "descartados": [
+    "neilpatel.com/marketing-stats/conversion-rate-by-form-fields/ — a tabela mais citada da internet (1 campo 18,2%, 2 campos 13,0%, 3 campos 11,5%, 4 campos 9,9%, 'análise de 404 landing pages'). O site devolve HTTP 403 tanto no WebFetch quanto no curl: não consegui LER o número na fonte, só em resumos de terceiros. Regra da casa: não cito o que não abri.",
+    "cxl.com/blog/reduce-form-fields/ (Michael Aagaard) — teste em que REDUZIR campos DERRUBOU a conversão em 14%. Seria o contraponto mais interessante, mas o CXL devolve 403; só existe no resumo do Venture Harbour, sem amostra nem data. Fica de fora (o mesmo ponto está coberto, com metodologia, pela Formstack).",
+    "brixongroup.com — 'cada campo adicional reduz a conversão em 4,1% (HubSpot 2024)' e 'mais de 5 campos = -30% no B2B (MarketingSherpa Research Institute 2024)'. Mais de 50 estatísticas numéricas e ZERO links ou citações formais; nenhum dos dois estudos citados existe de forma localizável. Fábrica de números.",
+    "unbounce.com/conversion-rate-optimization/how-to-optimize-contact-forms/ — origem do famoso 'campo de telefone derruba 5% da conversão', do caso ImageScape (11→4 campos, +120%) e do 'Expedia removeu 1 campo e ganhou US$ 12 milhões'. Artigo de 11/04/2013, sem uma única citação, com os números vindos de um infográfico do QuickSprout. Sem metodologia e repetindo outra fonte: descartado nos dois critérios.",
+    "Tabela viral de conversão por número de campos (23,1% com 3 campos / 17,0% com 5 / 11,4% com 7) — reproduzida em dezenas de blogs. Não tem fonte reproduzível; nenhum estudo original foi localizado. É a tabela que provavelmente apareceria se eu tivesse respondido de memória.",
+    "Blogs de 'landing page statistics 2026' (digitalapplied.com, foundrycro.com, landerlab.io, bloggingwizard.com, growthstackblog, adamigo.ai, serpsculpt, marketingltb, involve.me) — amostra não divulgada, janela de medição não declarada, sem atribuição por número, agregando fornecedores não nomeados e conflitando entre si linha a linha apesar de alegarem as mesmas fontes.",
+    "Conteúdo brasileiro de SEO sobre o tema (blog.datastone.com.br, pontidigital.com.br, ekmdigital.com.br, blog.analisandoferramentas.com.br, creativehut.com.br, fabiofemaciel.com.br) — faixas do tipo '2% a 5% no B2B' e 'cada campo adicional reduz 10% da conversão' sem amostra, sem período e sem metodologia; tradução de fontes estrangeiras.",
+    "mundodomarketing.com.br — traz 'Meta Ads lidera na Indústria com 4,97%' no Panorama 2026 da Leadster. É jornalismo repetindo a fonte primária, e a página do segmento Indústria na edição 2026 da própria Leadster retorna 404. Não consegui confirmar na fonte, então uso o número verificado da edição 2025 (3,34% Meta Ads) e não esse.",
+    "Chili Piper — 2025 Benchmark Report on Demo Form Conversion Rates (4 milhões de submissões, base majoritariamente B2B, publicado em 18/02/2025). Metodologia declarada e amostra boa, mas mede formulário enviado → reunião agendada (66,7% dos qualificados), não clique → lead. É benchmark de outra etapa do funil.",
+    "Ruler Analytics (5,13% de conversão) — mistura ligações telefônicas com envios de formulário e divide tudo por sessões, e depois é republicado por aí como se fosse taxa de formulário. Denominador incompatível com a métrica da indústria de plásticos.",
+    "Unbounce Conversion Benchmark Report 2021 (44 mil LPs, 33 mi de conversões) — os cortes por número de campos e por setor estão atrás de formulário de download; a página pública não traz os números. Não consegui ler, não cito.",
+    "ruleranalytics via Google Translate e findstack.com/resources/landing-page-statistics — agregadores sem data de coleta e sem metodologia própria."
+   ]
+  },
+  {
+   "premissa": "Lead → MQL (qualificação de marketing) em B2B",
+   "atual_do_cliente": "33,25% (média ponderada de jun+jul+ago/2026)",
+   "veredito": "na media",
+   "faixa_mercado": "26% a 40% — piso em Manufacturing 26% e canais pagos 29-30% (First Page Sage, EUA); teto em Meta Ads 39,7% e Google Ads 40,1% (Leadster, Brasil). Os 33,25% da indústria de plásticos caem quase no meio exato dessa faixa.",
+   "taxa_utilizada": "37,0%",
+   "verificacao": "confirmada",
+   "justificativa": "CONFERÊNCIA: abri as 4 URLs. Todos os números citados estão lá, verbatim. Nada inventado.\n\n- First Page Sage: média geral 31%; Manufacturing 26%, Industrial IoT 22%, Construction 17%, B2B SaaS 39%; canais: indicação 56%, SEO 41%, social 30%, PPC 29%. \"Last updated August 1, 2025\". Confirma o viés: \"clients skew about 70% B2B\" e \"as we are primarily an SEO agency, that channel is more heavily represented\". NÃO declara tamanho de amostra. Confirmei também que NÃO existe linha de atacado/distribuição/bens de consumo.\n- Leadster (panorama): Orgânico 44,51%, Google Ads 40,08%, Meta Ads 39,72%, mercado 42,90%. Amostra 2.425 sites / 173,6 mi acessos / 3,4 mi leads. \"Atualizado em 19 de junho de 2026\". Achado novo: o recorte \"Indústria e Fabricação\" tem n=140 sites e traz só conversão de site (3,85%, melhor canal Meta Ads 4,97%) — confirmado que NÃO há qualificação por segmento.\n- Leadster (blog",
+   "fontes": [
+    {
+     "nome": "First Page Sage — Lead-to-MQL Conversion Rate Benchmarks by Industry & Channel",
+     "url": "https://firstpagesage.com/reports/lead-to-mql-conversion-rate-benchmarks-by-industry-channel-fc/",
+     "valor": "Média geral todas as indústrias: 31%. Por indústria: Manufacturing 26%, Industrial IoT 22%, Construction 17%, B2B SaaS 39%. Por canal: indicação 56%, SEO/orgânico 41%, redes sociais 30%, paid search (PPC) 29%.",
+     "periodo": "Última atualização declarada: 01/08/2025. Base construída sobre ~10 anos de clientes da agência.",
+     "segmento": "B2B multissetorial, base majoritariamente EUA. Linhas que encaixam na indústria de plásticos: Manufacturing (26%) e os canais pagos (29-30%). NÃO tem linha de atacado, distribuição ou bens de consumo não duráveis.",
+     "amostra": "NÃO INFORMADA. A página só declara 'clientes da agência de marketing', com viés admitido por eles: ~70% B2B e sobre-representação de SEO por serem primariamente agência de SEO. Metodologia descrita apenas como segmentar os dados e remover outliers."
+    },
+    {
+     "nome": "Leadster — Panorama de Geração de Leads no Brasil 2026 (4ª edição)",
+     "url": "https://leadster.com.br/panorama-geracao-de-leads/",
+     "valor": "Leads com score alto (4-5 numa escala 0-5): mercado geral 42,90%; Orgânico 44,51%; Google Ads 40,08%; Meta Ads 39,72%; LinkedIn Ads 35,1%. Segmento 'Indústria e Fabricação': taxa de conversão de site 3,85% (esse recorte NÃO traz qualificação por segmento).",
+     "periodo": "Dados de 2025, publicado em jun/jul de 2026.",
+     "segmento": "Brasil, todos os segmentos, com recorte POR CANAL. É a fonte mais aderente que achei porque mede exatamente os dois canais que a indústria de plásticos usa (Meta Ads + Google Ads) e é dado brasileiro.",
+     "amostra": "2.425 sites, 173,6 milhões de acessos, 3,4 milhões de leads gerados."
+    },
+    {
+     "nome": "Leadster Blog — Geração de Leads no Brasil: Panorama 2026 em dados",
+     "url": "https://leadster.com.br/blog/panorama-geracao-de-leads-2026/",
+     "valor": "Confirma a tabela por canal: 42,9% dos leads do mercado são qualificados (score 4-5); Orgânico 44,5%, IA generativa 40,2%, Google Ads 40,1%, Meta Ads 39,7%, LinkedIn Ads 35,1%.",
+     "periodo": "Dados de 2025, publicado em 06/07/2026.",
+     "segmento": "Brasil, multissegmento, recorte por canal de aquisição. Entrada de corroboração — li as duas páginas para confirmar que os números batem.",
+     "amostra": "Mesma base: 2.425 sites, 173 milhões de acessos, 3,4 milhões de leads."
+    },
+    {
+     "nome": "Meetime — Inside Sales Benchmark Brasil (via 8 principais métricas de prospecção)",
+     "url": "https://meetime.com.br/blog/sales-engagement/metricas-de-prospreccao/",
+     "valor": "Lead → oportunidade: inbound 23%, outbound 17%.",
+     "periodo": "Estudo publicado em 2023, atualizado em julho de 2024.",
+     "segmento": "Vendas B2B no Brasil. ATENÇÃO: é uma ETAPA DIFERENTE (lead → oportunidade/reunião, que equivale mais ou menos ao lead → SQL da indústria de plásticos). Uso só como checagem cruzada, não como benchmark direto de lead→MQL. A indústria de plásticos hoje faz lead→SQL de 19,33%, abaixo dos 23%.",
+     "amostra": "A página específica não informa. Outras edições do estudo citam de 236 a 1.370 empresas respondentes, com mix enviesado: 27% Software/Cloud/SaaS e 85% Sudeste/Sul — ou seja, pouco aderente a uma indústria do Nordeste."
+    }
+   ],
+   "descartados": [
+    "Ruler Analytics — Conversion Rate Benchmarks 2026: ABRI E CONFERI. Não mede lead→MQL em lugar nenhum; mede sessão→conversão (média 5,13%, 110 mi de sessões, 5 mi de conversões). Várias páginas atribuem os '31% de lead→MQL' ao Ruler — é atribuição FALSA. Descartado como fonte desta etapa e sinalizado como contaminação de citação.",
+    "Landbase — 35 Lead Qualification Statistics: agregador puro, sem dado próprio. Os 31% são citação literal do First Page Sage, e o 13% de MQL→SQL vem do MetricHQ. Não conta como fonte independente; usar seria contar o First Page Sage duas vezes.",
+    "Zeliq — B2B Conversion Rates by Industry: apresenta a faixa 20-40% como 'orientation bands', sem estudo de origem, sem amostra, sem período. A própria tabela por indústria do artigo não tem coluna de lead→MQL. Editorial, não pesquisa.",
+    "Little Bird Marketing — Benchmarks for Your Lead Generation Funnel: dá '20-30%' para lead→MQL sem nenhuma atribuição de fonte, ano ou amostra. Cita FirstPageSage e Gartner em OUTRAS métricas, mas não nessa.",
+    "RD Station — Panorama / Dados RD Station 2026: fonte brasileira boa e grande (1,3 bilhão de conversões de leads analisadas), mas NÃO publica a etapa lead→MQL. Publica conversão de landing page (média 11%) e oportunidade→venda no CRM (2,2% a 33,2%). Fora do escopo desta etapa — descartada aqui, mas vale para outras etapas do funil.",
+    "cufinder, prospeo, serpsculpt, saleshive, martal, data-mania, prooflytics, demandgeninsider, spotmkt, Data Stone: conjunto de páginas de SEO que reciclam o mesmo 31% (e variações inventadas), sem metodologia, sem amostra, sem data primária, várias com números internamente contraditórios. Descartadas em bloco.",
+    "SiriusDecisions / Forrester — Demand Waterfall: é o framework que CRIOU o termo MQL e seria a fonte mais autoritativa possível, mas os percentuais de benchmark estão atrás de paywall da Forrester. Não consegui ler o número na fonte, então não uso — não vou citar de memória.",
+    "Meta Business Help Center — Sobre os tipos de formulários instantâneos: tentei abrir para confirmar na PRÓPRIA Meta o trade-off entre 'mais volume' e 'maior intenção'. A página não renderiza conteúdo por fetch (só o título). Cito o mecanismo abaixo sem número e não conto como fonte."
+   ]
+  },
+  {
+   "premissa": "MQL -> SQL (aceite pelo comercial) em B2B. indústria de plásticos: 58,15% — confere com o historico (jun+jul+ago/2026 = 58+106+75 = 239 SQLs sobre 49+169+193 = 411 MQLs, arquivo clientes/<cliente>/historico_2026.csv).",
+   "atual_do_cliente": "58,15% (media ponderada jun+jul+ago/2026). Mes a mes em 2026: jan 46,9% | fev 101,4% | mar 87,0% | abr 149,1% | mai 60,8% | jun 118,4% | jul 62,7% | ago 38,9% | set 8,0% (parcial). Em fev, abr e jun o numero de SQLs e MAIOR que o de MQLs, ou seja, as duas etapas nao sao contadas sobre a mesma coorte no NectarCRM.",
+   "veredito": "acima do mercado",
+   "faixa_mercado": "42% de aceite medio (Forrester/SiriusDecisions), com 85% como alvo quando marketing e vendas alinham a definicao de lead; no Brasil, 23% a 31% dos leads trabalhados pela pre-venda viram oportunidade (Meetime ISBB). Quando o \"MQL\" e apenas o formulario preenchido (definicao da First Page Sage), a mesma etapa aparece entre 10% e 26% — Manufacturing 16%, Heavy Equipment 23%, Transportation & Logistics 19%.",
+   "taxa_utilizada": "Projetar pelo composto lead->SQL = 19,3% (jun+jul+ago), fixo, sem melhoria — unica leitura que nao depende da contagem de MQL. Se a etapa precisar aparecer isolada: MQL->SQL = 50,0% fixo (jul+ago, meses aritmeticamente coerentes), com lead->MQL = 37,8%, nao o par 33,25% / 58,15%. Teto de upside, se o cliente exigir: 62,7% (julho), nao 70%.",
+   "verificacao": "corrigida na verificação",
+   "justificativa": "A DIRECAO se sustenta (nao prometer ganho nesta etapa na projecao), mas o NUMERO e a RAZAO nao. Tres problemas, em ordem de gravidade.\n\n1) A base de 58,15% esta contaminada. O pesquisador identificou que SQL > MQL em 3 dos 9 meses (fev 101,4%, abr 149,1%, jun 118,4%) mas nao percebeu que JUNHO ESTA DENTRO da propria janela jun+jul+ago que define o baseline. Tirando junho: jul+ago = 181 SQL / 362 MQL = exatamente 50,0%. Os 58,15% estao inflados por um mes com MQL subcontado. Outras leituras: 9 meses = 70,2%; 9 meses excluindo os incoerentes = 49,1%; excluindo incoerentes e setembro parcial = 57,5%. Um numero que varia de 49% a 70% conforme a janela nao e \"fixo\" defensavel.\n\n2) A fonte-ancora mede outra coisa, e o texto dela diz isso. Abri o Wayback (curl; WebFetch bloqueia web.archive.org) e as quatro citacoes conferem literalmente: \"sales accepted 42 percent of the leads sourced by marke",
+   "fontes": [
+    {
+     "nome": "Forrester (ex-SiriusDecisions) — \"Measuring the Impact of Successful Sales Handoffs\", Terry Flaherty, VP Principal Analyst",
+     "url": "http://web.archive.org/web/20231202082044/https://www.forrester.com/blogs/measuringtheimpactofsuccessfulsaleshandoffs/",
+     "valor": "Sales Accepted Lead: \"sales accepted 42 percent of the leads sourced by marketing\". Alvo: \"When marketing, teleservices and sales are aligned on lead definition, the SAL rate should be at or above 85 percent\". Tambem: 72% das empresas pesquisadas tinham etapa formal de SAL; quem tem a etapa gera 9,3 negocios fechados por 1.000 inquiries contra 4,6 de quem nao tem.",
+     "periodo": "Publicado em 21/06/2016; dados da pesquisa apresentada no Summit de 2016. URL original www.forrester.com/blogs/measuringtheimpactofsuccessfulsaleshandoffs/ hoje responde 404 — li a copia arquivada de 02/12/2023 no Wayback Machine.",
+     "segmento": "B2B geral (EUA/global). Pesquisa sobre as fases inferiores do Demand Waterfall apresentada na sessao \"The Revenue Stream: Completing the Demand Waterfall\" do SiriusDecisions Summit. E a unica fonte que mede exatamente o aceite do lead pelo comercial, que e a etapa da indústria de plásticos.",
+     "amostra": "Nao informada. O texto diz \"72 percent of the surveyed companies\" sem revelar o n."
+    },
+    {
+     "nome": "Meetime — Inside Sales Benchmark Brasil 2021, 5a edicao (PDF integral hospedado na Biblioteca Sebrae)",
+     "url": "https://bibliotecas.sebrae.com.br/chronus/ARQUIVOS_CHRONUS/bds/bds.nsf/d1b610935f6b287105fdd7789a58772c/$File/31648.pdf",
+     "valor": "Pagina 28: \"Em operacoes que fazem Inbound, os SDRs abordam em media 95 leads e convertem 29 oportunidades por mes, resultando em uma taxa de conversao de 31%. Ja nas operacoes derivadas do Outbound, os SDRs abordam em media 78 leads e convertem 13 oportunidades por mes, a uma taxa de conversao de 17%.\" Pagina 29, etapa seguinte: \"A taxa media de conversao de oportunidades em clientes foi de 17%, comparado com 18% do ano anterior.\"",
+     "periodo": "Dados referentes ao ano de 2020; estudo publicado em 2021.",
+     "segmento": "B2B brasileiro, operacoes de Inside Sales. Composicao declarada: 27% Software/Cloud/SaaS, 10% Tecnologia, 8% Consultoria, 4% Industria e manufatura, 4% Varejo. Sudeste e Sul = 85% dos respondentes. E aproximacao: o denominador e \"leads abordados pelo SDR\", nao \"MQL\" — mais largo que o MQL da indústria de plásticos.",
+     "amostra": "236 empresas (\"Neste ano, 236 empresas responderam a pesquisa\", pagina 4)."
+    },
+    {
+     "nome": "Meetime — \"8 principais metricas de prospeccao para se acompanhar\" (numero da edicao mais recente do ISBB, publicado pela propria dona do estudo)",
+     "url": "https://meetime.com.br/blog/sales-engagement/metricas-de-prospreccao/",
+     "valor": "\"O ultimo Benchmark apontou uma media de 17% em outbound e 23% em inbound.\" Definicao da metrica na propria pagina: leads que viraram reunioes agendadas dividido pelo total de leads finalizados (ganhos + perdidos).",
+     "periodo": "Publicado em 03/03/2023, atualizado em 01/07/2024. A pagina nao diz de qual edicao do ISBB vem o numero; a edicao 2022 teve 1.371 empresas respondentes, segundo https://meetime.com.br/blog/podcast/destaques-do-inside-sales-benchmark-brasil-2022/ (publicado em abril/2022), que tambem traz \"25% dos melhores respondentes convertem 39% dos leads outbound em oportunidades qualificadas\".",
+     "segmento": "B2B brasileiro, pre-venda/SDR. Mesma ressalva de denominador da linha acima.",
+     "amostra": "Nao informada nesta pagina. Viés declarado: a Meetime vende software de prospeccao e mede operacoes que usam a propria plataforma, entao ha selecao para cima."
+    },
+    {
+     "nome": "First Page Sage — \"MQL to SQL Conversion Rate By Industry: 2026 Report\"",
+     "url": "https://firstpagesage.com/seo-blog/mql-to-sql-conversion-rate-by-industry/",
+     "valor": "Manufacturing 16% | Heavy Equipment 23% | Industrial IOT 18% | Transportation & Logistics 19% | eCommerce 23% | Construction 12% | Engineering 11% | B2B SaaS 13%. Faixa total do relatorio: 10% (Legal Services, Real Estate) a 26% (Business Insurance, HVAC).",
+     "periodo": "Dados de clientes coletados entre 2019 e 2025; pagina atualizada em 23/12/2025.",
+     "segmento": "25+ setores, base de clientes propria (EUA). E aproximacao para a indústria de plásticos por DEFINICAO, nao por setor: aqui MQL = \"contato que indicou intencao de compra (preencheu formulario ou mandou e-mail) e tem capacidade de pagar\" — ou seja, o LEAD da indústria de plásticos, nao o MQL dela; e SQL = validado por um vendedor E com reuniao marcada. Por isso o numero comparavel da indústria de plásticos nesta fonte e o composto lead->SQL de 19,3%, nao os 58,15%.",
+     "amostra": "Nao informada. O relatorio diz \"client data\" e \"25+ industries\" sem revelar o n — e o motivo de eu nao usar essa fonte como ancora principal."
+    }
+   ],
+   "descartados": [
+    "marqeu.com/demand-waterfall-conversion-rates — abri: cita \"industry reports cite averages ranging from 13% to 40%\" sem nomear fonte, sem periodo e sem amostra; o proprio texto diz que nao existe taxa 'boa' universal. Sem metodologia.",
+    "umbrex.com/resources/company-analysis/sales/sales-accepted-lead-rate — abri: da faixas atraentes para a etapa exata (SAL 60-85%, inbound de alta intencao 75-90%), mas sem data de publicacao, sem fonte externa e sem metodologia; e benchmark proprio de consultoria. Nao da para citar numa reuniao.",
+    "insightsalesglobal.com/br/blog/como-calcular-taxa-de-conversao-em-vendas — abri: da 15% de media e 30%-40% de 'saudavel' sem nomear a fonte de nenhum numero e sem amostra.",
+    "data-mania.com/blog/mql-to-sql-conversion-rate-benchmarks-2025 — abri: e agregador. Citacoes numeradas [1] a [6] (UserPilot, AgencyAnalytics, FirstPageSage, Alore, Powered by Search) sem hyperlink, sem metodologia propria, sem numero para industria. So repete a First Page Sage.",
+    "marketone.com/articles/sirius-decisions-demand-waterfall-explained-pt-2 — abri: traz 85% / 50% / 15% de MQL->SQL por origem, mas e relato retrospectivo da experiencia da autora em UMA empresa de software (n=1), de 08/11/2015, e a propria autora diz que nao mediam SAL na epoca.",
+    "siriuscrm.com.br/anuario (Anuario do Vendedor B2B Brasileiro 2026) — abri: dado proprio e brasileiro (127 empresas, jan/2025 a mar/2026) e traz Distribuicao/Atacado com 35%, o que e tentador para a indústria de plásticos — mas mede taxa de fechamento (lead->cliente), nao MQL->SQL. Etapa errada.",
+    "leadster.com.br / agendor.com.br — Panorama de Geracao de Leads no Brasil 2025 — abri: amostra grande e real (2.861 sites, 3,7 milhoes de leads, 167 milhoes de visitas) e tem 'Industria e Fabricacao' com 3,81%, mas mede visitante->lead. Etapa errada (serve para o clique->lead, nao para este).",
+    "botaihub.com.br/vendas/benchmark-pre-venda-brasil-meetime-custo-por-reuniao — abri: nao tem dado proprio, so repassa os 23%/17% da Meetime. Util apenas pelo alerta de viés de selecao da fonte, que eu incorporei.",
+    "Safra de conteudo SEO que aparece no topo da busca repetindo os mesmos '13% a 15%' (prospeo.io, understoryagency.com, therevopsreport.com, 10louder.com, prooflytics.io, demandgeninsider.com) — descartados sem abrir um a um: sao do mesmo genero do data-mania, que eu abri e confirmei ser agregacao sem estudo proprio. Nenhum deles aparece como origem primaria de numero nenhum."
+   ]
+  },
+  {
+   "premissa": "SQL → venda (fechamento de oportunidade) — B2B industrial/atacado com ciclo curto (mediana 6 dias)",
+   "atual_do_cliente": "16,74% (média ponderada jun+jul+ago/2026). Melhor mês histórico: 39,7%. Derivados do mesmo funil, para comparação com fontes de denominador mais largo: MQL→venda 9,73% e lead→venda 3,24%.",
+   "veredito": "na media",
+   "faixa_mercado": "13% a 20% no corte industrial com definição de SQL comparável (First Page Sage: Manufacturing 13%, Engineering 14%, Construction 16%, Industrial IoT 16%, Heavy Equipment 20% — mediana 16%). Faixa ampliada de 12% a 35% quando se incluem os cortes que descrevem melhor o perfil da indústria de plásticos (ticket baixo e ciclo curto): Ebsta 18% no melhor caso de velocidade, Optifai 28%/31%/35% (P25/mediana/P75) para ACV abaixo de US$ 10 mil, Sirius CRM 35% em Distribuição/Atacado com ciclo de 8 dias. No Brasil, com denominador mais largo (negociações criadas→ganho), RD Station: 14,8% em Engenharia e Indústria Geral, contra mediana de 8,8% dos 20 segmentos.",
+   "taxa_utilizada": "16,7% constante como premissa de projeção (sem ganho por benchmark de mercado — a indústria de plásticos já está acima do único benchmark brasileiro de indústria, 14,8% do RD Station). Se o cenário precisar de rampa, ela tem que ser declarada como \"recuperação de histórico próprio\", não como mercado: 18% é o limite otimista defensável e 20% é o teto absoluto, ambos só como sensibilidade. Descartar 29% (HVAC, setor irrelevante) e 35% (Sirius e Optifai, fontes rejeitadas). Os 39,7% seguem só como sensibilidade, como já estava proposto.",
+   "verificacao": "corrigida na verificação",
+   "justificativa": "Abri as 5 URLs. Os NÚMEROS conferem quase todos; o que não se sustenta é a LEITURA que foi feita deles. Os 20% como \"patamar de chegada\" caem.\n\nCONFERÊNCIA FONTE A FONTE\n\n1) First Page Sage — ABRIU, números batem. Manufacturing 13%, Engineering 14%, Construction 16%, Industrial IoT 16%, Heavy Equipment 20%, Transp. & Logistics 14%, HVAC 29% (maior). 27 setores, faixa 11% (Biotech) a 29%. A definição de SQL está lá e é de fato quase igual à do NectarCRM. Publicado 04/02/2025, modificado 23/12/2025 — idade ok, mas os dados varrem 2019–2025 (mistura pré e pós-2023).\n   PROBLEMA: é uma agência de SEO vendendo serviço, e a base é \"nossos dados internos de vendas e clientes com quem trabalhamos\" — SEM tamanho de amostra, sem metodologia, mercado americano. Pelo seu próprio critério de corte, isso é motivo de rejeição como premissa load-bearing. Pior: dentro de uma tabela já frágil, escolheu-se",
+   "fontes": [
+    {
+     "nome": "First Page Sage — SQL to Closed Won Conversion Rate (Close Rate) by Industry: 2026 Report",
+     "url": "https://firstpagesage.com/seo-blog/sql-to-closed-won-conversion-rate-by-industry/",
+     "valor": "Manufacturing 13%; Engineering 14%; Construction 16%; Industrial IoT 16%; Heavy Equipment 20%; Transportation & Logistics 14%; HVAC 29% (maior da tabela). Mediana dos 27 setores: 16%; faixa 11%–29%",
+     "periodo": "dados de 2019 a 2025; publicado em 04/02/2025, última modificação em 23/12/2025",
+     "segmento": "27 setores, corte industrial/manufatura — mercado americano (APROXIMAÇÃO: não há equivalente brasileiro com esta etapa)",
+     "amostra": "NÃO INFORMADA — a fonte diz apenas 'nossos dados internos de vendas e clientes com quem trabalhamos de 2019 a 2025' mais entrevistas com contatos-cliente. É o ponto fraco desta fonte, mas é a única que define SQL explicitamente: lead com intenção clara de compra, com verba, e que já se reuniu com um vendedor e foi considerado fit — definição praticamente igual à etapa SQL do NectarCRM"
+    },
+    {
+     "nome": "RD Station — Dados RD Station: métricas de Marketing, Vendas e Atendimento (base dos Panoramas 2026)",
+     "url": "https://www.rdstation.com/blog/marketing/dados-rd-station-benchmarks/",
+     "valor": "Engenharia e Indústria Geral 14,8%; Varejo 33,2%; Hardware e Eletrônicos 28,3%; Agronegócio 12,4%; Serviços em Geral 12,0%; mediana dos 20 segmentos 8,8%",
+     "periodo": "dados coletados ao longo de 2025; página publicada em 04/08/2026",
+     "segmento": "20 segmentos, Brasil, empresas usuárias do RD Station CRM. Métrica = taxa de conversão de negociações (definida no Panorama como negociações marcadas como venda ÷ negociações criadas — denominador mais largo que SQL)",
+     "amostra": "97 milhões de negociações no RD Station CRM (o estudo-mãe, Panoramas 2026, soma ainda 2.790 respondentes, 95% de confiança e 2,5% de margem de erro)"
+    },
+    {
+     "nome": "Sirius CRM — Anuário do Vendedor B2B Brasileiro 2026",
+     "url": "https://siriuscrm.com.br/anuario",
+     "valor": "Distribuição/Atacado: taxa de fechamento 35%, ciclo médio 8 dias, deal size médio R$ 12.500. Outros: Serviços B2B 22% (12 dias), Representação Comercial 18% (19 dias), SaaS 15% (30 dias), Energia Solar 12% (45 dias)",
+     "periodo": "janeiro/2025 a março/2026; publicado em março/2026",
+     "segmento": "Distribuição/Atacado, Brasil — é o corte mais parecido com a indústria de plásticos (atacado + ciclo de 8 dias vs. 6 da indústria de plásticos), e também a fonte mais frágil da lista",
+     "amostra": "+127 empresas B2B brasileiras ativas no Sirius CRM com no mínimo 6 meses de uso; dados anonimizados e agregados pela própria plataforma. Não informa número de negócios nem define o denominador de 'taxa de fechamento'"
+    },
+    {
+     "nome": "Ebsta x Pavilion — 2025 GTM Benchmark Report (GTM Digest: Sales Efficiency, PDF)",
+     "url": "https://benchmarks.ebsta.com/hubfs/V3%202025%20Benchmark%20Report/2025_gtm_digest_-_sales_efficiency.pdf",
+     "valor": "Win rate por escorregamento do negócio: 18% (escorrega 1 semana), 13% (1 mês), 8% (3 meses), 5% (6 meses), 3% (6 meses+). Ou seja: no melhor caso de velocidade o win rate B2B fica em 18%. Envolvimento antecipado do decisor eleva win rate em 55%",
+     "periodo": "comparativo 2024 vs. 2025",
+     "segmento": "B2B geral, pesado em TI e serviços (39% da amostra é Information Technology & Services) — APROXIMAÇÃO, não é indústria brasileira",
+     "amostra": "655 mil oportunidades analisadas, US$ 48 bilhões em pipeline, 240 mil minutos de calls, 2.000+ CROs pesquisados, perfil de 387 empresas"
+    },
+    {
+     "nome": "Optifai — Pipeline / Sales Ops Benchmark: B2B SaaS Win Rate by Deal Size",
+     "url": "https://optif.ai/learn/questions/b2b-saas-win-rate-by-deal-size/",
+     "valor": "Win rate por ACV (P25 / mediana / P75): abaixo de US$ 10 mil = 28% / 31% / 35%; US$ 10–50 mil = 20% / 24% / 28%; US$ 50–100 mil = 15% / 18% / 22%; acima de US$ 100 mil = 12% / 15% / 18%",
+     "periodo": "Q2/2025 a Q1/2026",
+     "segmento": "B2B SaaS (APROXIMAÇÃO: setor errado). Entra só para sustentar a direção — ticket baixo fecha mais. A indústria de plásticos, com ticket de R$ 3.235 (~US$ 600), cai na primeira faixa",
+     "amostra": "N = 939 empresas B2B SaaS. A página não define o denominador do win rate"
+    }
+   ],
+   "descartados": [
+    "winningsales.com.br — 'Métricas de Vendas B2B: os 15 KPIs e Benchmarks do Brasil' (win rate 20%–35% 'considerado bom'): nenhum estudo citado, sem amostra, sem período, sem metodologia. É opinião apresentada como benchmark.",
+    "spotmkt.com.br — 'Funil de Vendas B2B: Benchmarks do Mercado Brasileiro' (SQL/reunião→cliente 31%–39%, até 50%): a própria página declara ser compilação de outros estudos, sem dado original. Pior: atribui o número à Insight Sales, mas ABRI a Insight Sales e ela publica 6%–9% (20%–30% em ciclos curtos). O número citado não bate com a fonte citada.",
+    "insightsalesglobal.com — 'Como calcular taxa de conversão em vendas' (SQL→cliente 6%–9%): sem base própria, sem amostra, sem período; repassa número de terceiro (Martal Group). Só fórmula e faixa genérica.",
+    "Landbase — 'Win Rate Benchmarks by Industry, Deal Size and Source 2026': derivativo, sem dataset próprio, sem data dos dados citados, e cita a Optifai com N=847 quando a Optifai publica N=939. Além disso não traz corte de indústria/atacado apesar do título.",
+    "zenitdata.com — 'B2B SaaS Win Rate Benchmarks by Deal Size, Stage and Segment': agregador sem metodologia própria e sem links para os datasets originais. Usei só como pista para chegar na Optifai e na Ebsta.",
+    "gradient.works e hyperbound.ai — 'média B2B de 19%–21% de win rate': repetem Ebsta/Pavilion sem amostra própria. Fui na Ebsta e usei o número primário (18% no melhor caso de velocidade) no lugar.",
+    "'47% de win rate para negócios fechados em até 50 dias', atribuído à Ebsta por vários blogs: NÃO encontrei esse número no material primário da Ebsta que consegui abrir (o digest de Sales Efficiency). Não uso número que não achei na fonte.",
+    "HubSpot — 'Average close rate for sales in 2026' (20% geral; Software 22%, Finance 19%, Biotech 15%): a própria página define close rate com denominador = todos os leads do pipeline, não SQL — etapa errada. Amostra não informada e nenhum setor industrial/atacado.",
+    "Meetime — Inside Sales Benchmark Brasil (19% de 'taxa de conversão', top 5% ~40%): página pública de highlights de 2020, não define de qual etapa para qual etapa é a conversão, não informa amostra, e a própria leitura crítica de terceiros aponta viés (só empresas clientes da plataforma, perfil SaaS). Dados de 2020, fora de janela.",
+    "Agendor — Panorama de Geração de Leads no Brasil 2025 (2.861 sites, 3,7 mi de leads, 167 mi de acessos): fonte boa e brasileira, mas ABRI e confirmei que só mede visitante→lead (Indústria 3,81%). Não tem nenhuma etapa de fundo. Serve para a etapa clique→lead, não para esta.",
+    "Prax Analytics — Benchmark de Taxa de Conversão por Setor (+1.000 e-commerces): B2C e-commerce, etapa e modelo de negócio errados.",
+    "RD Station, linha 'Varejo 33,2%': descartada como COMPARAÇÃO direta (a fonte continua válida). Esses 33,2% são varejistas vendendo, não venda PARA varejistas. A indústria de plásticos é indústria vendendo para o varejo — a linha dela na mesma tabela é Engenharia e Indústria Geral, 14,8%."
+   ]
+  },
+  {
+   "premissa": "Ticket médio e taxa de recompra em atacado/distribuição de utensílios domésticos no Brasil — há espaço para subir o ticket (mix, volume mínimo, cross-sell)?",
+   "atual_do_cliente": "Ticket de R$ 3.235 por venda fechada e 37% das vendas vindas de recompra (média ponderada jun+jul+ago/2026, CRM NectarCRM).",
+   "veredito": "sem benchmark confiavel",
+   "faixa_mercado": "NÍVEL de ticket por pedido no atacado brasileiro de utilidades domésticas: não existe número publicado — nenhuma das fontes abertas (ABAD/NielsenIQ, ABCasa/IEMI, Mercos, plataformas B2B) divulga ticket médio por pedido nesse segmento. O que existe é VARIAÇÃO e comportamento: ticket médio por PDV no canal atacadista distribuidor +4,3% e preço médio +3% com volume +0,6% (jan–jul/2026, NielsenIQ/Mtrix, 2.600+ atacadistas); pedidos menores e mais frequentes no setor de utilidades (~2 mi de pedidos em 2025, +36,6%, base Mercos) e recompras crescendo ~3x mais rápido que pedidos totais no atacado (RepSpark, 250 marcas, EUA, FY2025). RECOMPRA, quando medida como % das transações: 63% no varejo brasileiro em 2024 (Dito, 300 empresas) — mesma fórmula da indústria de plásticos, mas B2C. Medida por cliente (fórmula diferente, não comparável ao 37%): 57,1% de média em 20 marcas de varejo brasileiro, faixa 26,9% a 90,7%; e 18,8% em DTC americano (156 mil clientes), sendo 10–15% em duráveis/casa e 30–40% em consumíveis.",
+   "taxa_utilizada": "Ticket: manter R$ 3.235 e corrigir no máximo +0,35% ao mês (+4,3% ao ano) — é a única taxa de crescimento de ticket efetivamente medida no canal atacadista distribuidor brasileiro (ABAD/NielsenIQ/Mtrix, jan–jul/2026, 2.600+ empresas), e ela vem de preço, não de volume. Em 3 meses isso leva o ticket de R$ 3.235 para ~R$ 3.269 — efeito irrelevante na projeção, ou seja: não use ticket como alavanca. Recompra: manter 37% fixo. Não há fonte pública de taxa de recompra B2B em atacado no Brasil, e o 63% mais próximo é varejo B2C com carteira madura. Se quiser modelar melhora de ticket por mix/volume ",
+   "verificacao": "sem verificação",
+   "justificativa": "Cinco ressalvas que mudam a leitura da etapa.\n\n1) O veredito é 'sem benchmark confiável' por causa do TICKET, não da recompra. Abri ABAD/NielsenIQ, ABCasa/IEMI, Mercos, RepSpark e as plataformas B2B: ninguém publica ticket médio por pedido no atacado de utilidades domésticas no Brasil. Só existe variação (+4,3% por PDV) e tamanho de mercado. Qualquer número de 'ticket de mercado' que aparecer numa apresentação é inventado.\n\n2) Na recompra, o proxy mais próximo em FÓRMULA (recompras ÷ total de transações) é 63% no varejo brasileiro (Dito, 300 empresas, 2024). Pela leitura literal, os 37% da indústria de plásticos ficariam abaixo — e o B2B tende a ser mais recorrente que o B2C (comprador CNPJ faz 40% mais compras por mês, ML Negócios). Mas não chamo de 'abaixo do mercado' por dois motivos: é B2C com carteira madura, e a carteira da indústria de plásticos é nova. Com ciclo de 6 dias e mídia rodando há poucos meses, ",
+   "fontes": [
+    {
+     "nome": "ABAD / NielsenIQ / Mtrix — Setor atacadista e distribuidor mantém crescimento de +3,6% no acumulado do ano",
+     "url": "https://abad.com.br/mercado/setor-atacadista-e-distribuidor-mantem-crescimento-de-36-no-acumulado-do-ano/",
+     "valor": "Ticket médio por PDV +4,3%; preço médio +3%; volume +0,6%; faturamento +3,6%",
+     "periodo": "janeiro a julho de 2026 (acumulado, vs. mesmo período de 2025)",
+     "segmento": "Canal indireto brasileiro — atacadistas e distribuidores de bens de consumo de alto giro (predominância de mercearia/alimentar; não isola utilidades domésticas)",
+     "amostra": "mais de 2.600 atacadistas e distribuidores (sell through)"
+    },
+    {
+     "nome": "ABAD / NielsenIQ — Ranking ABAD/NielsenIQ, faturamento do atacado distribuidor chega a R$ 616,6 bilhões",
+     "url": "https://abad.com.br/indicadores/atacado-distribuidor-chega-a-r-6166-bilhoes-de-faturamento-e-reforca-protagonismo-nacional/",
+     "valor": "R$ 616,6 bi de faturamento (+17,27% nominal, +11% real); 1.181.640 PDVs atendidos; 56% do mercado de alto giro (R$ 1,1 tri). Dividindo os dois números publicados dá ~R$ 522 mil de compra por PDV/ano — cálculo meu, não é número da ABAD, e é dominado por alimentos",
+     "periodo": "ano-base 2025, publicado em 2026",
+     "segmento": "Atacado distribuidor brasileiro (todas as categorias de alto giro)",
+     "amostra": "768 empresas respondentes, faturamento respondente de R$ 302,5 bi (49% do setor)"
+    },
+    {
+     "nome": "Dito (publicado no E-Commerce Brasil) — Taxa de recompra supera 63% no varejo em 2024",
+     "url": "https://www.ecommercebrasil.com.br/artigos/taxa-de-recompra-supera-63-no-varejo-em-2024",
+     "valor": "63% de taxa de recompra — fórmula: recompras no período ÷ total de transações × 100, com janela de 12 meses (MESMA fórmula do 37% da indústria de plásticos)",
+     "periodo": "2024, com série desde 2019",
+     "segmento": "Varejo brasileiro B2C (base de CRM da Dito, lojas físicas + e-commerce, sem recorte B2B/atacado) — APROXIMAÇÃO de canal",
+     "amostra": "300 empresas de médio e grande porte no Brasil"
+    },
+    {
+     "nome": "Dito — Como aumentar a taxa de recompra",
+     "url": "https://blog.dito.com.br/como-aumentar-taxa-de-recompra/",
+     "valor": "57,1% de recompra média, maior 90,7% e menor 26,9% — fórmula por CLIENTE (clientes com 2+ compras ÷ total de clientes), não comparável direto ao 37% da indústria de plásticos",
+     "periodo": "não informado pela fonte (limitação declarada)",
+     "segmento": "Varejo brasileiro de médio e grande porte",
+     "amostra": "20 marcas brasileiras"
+    },
+    {
+     "nome": "Mercado Livre Negócios (dados apresentados no Eletrolar Show, via Eletrolar News)",
+     "url": "https://eletrolarnews.com.br/unidade-b2b-do-mercado-livre-cresce-e-mira-mercado-de-us-250-bi/",
+     "valor": "Comprador CNPJ vs. B2C: ticket médio 35% maior, 40% mais compras por mês e 50% mais itens por pedido; B2B +42% e 10% das vendas totais do ML",
+     "periodo": "junho/2025 a abril/2026; apresentado em 22/06/2026",
+     "segmento": "Marketplace B2B brasileiro, compradores CNPJ multicategoria (inclui bazar/utilidades) — APROXIMAÇÃO: é e-commerce de marketplace, não distribuição industrial",
+     "amostra": "mais de 4,4 milhões de CNPJs cadastrados e ativos (dado de palco, sem metodologia publicada)"
+    },
+    {
+     "nome": "RepSpark — The Wholesale Reorder & Channel Mix Benchmark",
+     "url": "https://www.repspark.com/blog/the-wholesale-reorder-channel-mix-benchmark",
+     "valor": "Recompras (reorders) +32,8% no ano, crescendo ~3x mais rápido que o total de pedidos; varejistas colocando pedidos menores e mais frequentes. A própria fonte declara que NÃO publica taxa absoluta de recompra",
+     "periodo": "ano fiscal 2025 vs. 2024",
+     "segmento": "Atacado B2B nos EUA, multivertical (vestuário, calçados, outdoor, golf) — APROXIMAÇÃO: não é Brasil e não é utilidades domésticas; serve só para direção",
+     "amostra": "250 marcas na plataforma"
+    },
+    {
+     "nome": "BS&Co — Repeat Purchase Rate Benchmarks",
+     "url": "https://bsandco.us/blog-post/repeat-purchase-rate-benchmarks",
+     "valor": "18,8% de recompra média (janela 365 dias); consumíveis 30–40%, moda 12–17%, duráveis/casa 10–15%; em home decor a recompra é quase toda cross-sell (produto diferente), não reposição do mesmo item; 50,3% das recompras em 30 dias e 76,4% em 90 dias",
+     "periodo": "janela de 365 dias (edição 2025/2026)",
+     "segmento": "DTC B2C nos EUA, multicategoria com recorte de casa/duráveis — APROXIMAÇÃO forte: canal e fórmula diferentes dos da indústria de plásticos; usado apenas para a mecânica cross-sell vs. reposição",
+     "amostra": "156.110+ clientes, 10+ marcas"
+    },
+    {
+     "nome": "Mercos — ABCasa Fair: 7 insights para indústrias e distribuidoras",
+     "url": "https://blog.mercos.com/abcasa-fair/",
+     "valor": "Setor de utilidades: quase 2 milhões de pedidos no sistema em 2025, +36,6% vs. 2024; comportamento declarado: lojistas compram mais vezes e em volumes menores. NÃO traz ticket em R$",
+     "periodo": "2025 vs. 2024",
+     "segmento": "Indústrias, distribuidoras e representantes de utilidades domésticas no Brasil (base de clientes Mercos) — é o segmento mais próximo da indústria de plásticos que encontrei com dado quantitativo",
+     "amostra": "base proprietária Mercos (~2 mi de pedidos); número de empresas não divulgado"
+    },
+    {
+     "nome": "ABCasa / IEMI (via E-Commerce Brasil) — Setor de artigos para casa movimenta R$ 102 bi em 2024",
+     "url": "https://www.ecommercebrasil.com.br/noticias/setor-de-artigos-para-casa-movimenta-r-102-bi-em-2024",
+     "valor": "Consumo de R$ 102 bi (+8,7%); R$ 478 per capita/ano; R$ 1.362 por domicílio/ano; ~144 mil lojas especializadas e 114 mil não especializadas",
+     "periodo": "2024",
+     "segmento": "Consumo no VAREJO de artigos para casa, decoração, presentes e utilidades domésticas no Brasil — dimensiona o mercado, não o pedido de atacado",
+     "amostra": "não divulgada na matéria (metodologia do estudo IEMI não publicada abertamente)"
+    }
+   ],
+   "descartados": [
+    "Zydon — resumo do Ranking ABAD/NielsenIQ 2025: fonte secundária, só reembala os números da ABAD/NielsenIQ; usei a página da própria ABAD.",
+    "Ranking ABAD/NielsenIQ 2021 (PDF oficial, 660 respondentes, ano-base 2020): baixei e extraí o texto das 34 páginas — não contém ticket médio por pedido em R$ nem taxa de recompra. Descartado por não ter a métrica, não por qualidade.",
+    "NuORDER — 'reorder rate saudável de 20–30%': regra de bolso sem amostra e sem metodologia; a própria página linka para um glossário da Klaviyo (B2C) como origem do número.",
+    "leadjet.com.br 'Mercado B2B no Brasil' e crpmango 'E-commerce B2B guia definitivo': afirmam 'ticket maior' e 'mais recompra' sem nenhum número com fonte. A estatística '67% das transações B2B são recompras', que aparece em buscas, não foi localizada em NENHUMA fonte primária ao abrir as páginas — não use.",
+    "winningsales.com.br 'Métricas de vendas B2B: os 15 KPIs e Benchmarks do Brasil': tabela de benchmarks sem estudo, sem período e sem amostra.",
+    "clickpost.ai, wiserreview, speedcommerce, cartylabs, opensend (AOV por indústria): agregadores de e-commerce B2C que se repetem entre si e não declaram base própria.",
+    "Páginas comerciais de atacadistas de utilidades (Vila Real, pedido mínimo R$ 300; Feira da Madrugada SP; Utilimix; Semaan Pari; JLK Plásticos; Nova Era Plast): política de preço da própria empresa, sem data e sem metodologia. Indicam que o piso de pedido no segmento fica na casa das centenas de reais — ou seja, R$ 3.235 já está bem acima do pedido de entrada —, mas isso é indício comercial, não benchmark.",
+    "Statista (AOV de home/furniture) e relatórios pagos (ResearchAndMarkets): conteúdo fechado, não consegui ler o número na fonte.",
+    "Blogs de 'produtos para revenda' (melhorenvio, lojaintegrada, nuvemshop): ticket de R$ 80 a R$ 350 citado sem origem e para revenda B2C."
+   ]
+  }
+ ],
+ "conclusao": "A operação está NA MÉDIA ou ACIMA do mercado em CTR, clique → lead, MQL → SQL e SQL → venda. O único ganho com lastro externo é lead → MQL, de 33,25% para 37,0%. Consequência: o gargalo do projeto não é o funil, é a economia unitária — a 12% de margem cada R$ 1 de mídia devolve R$ 1,04 e cai abaixo de R$ 1,00 assim que o CPM sobe com a escala."
+}

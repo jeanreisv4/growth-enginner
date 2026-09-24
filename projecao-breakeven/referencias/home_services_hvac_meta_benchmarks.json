@@ -1,0 +1,176 @@
+{
+ "atualizado_em": "2026-09-23",
+ "nota": "HVAC residencial nos EUA anunciando em META (Facebook/Instagram), com tickets de Massachusetts. Montado para o cliente de climatização (Nova Inglaterra, MA) em 23/09/2026 a partir de tres pesquisas: mix conserto x instalacao, funil de Google Ads (descartado, canal errado) e funil de Meta. ~200 URLs apareceram, 45 foram abertas, 22 retidas. O canal do cliente e Meta: todo benchmark de Google Ads, Search e Local Services Ads foi descartado por nao se aplicar.",
+ "colunas": [
+  "PREMISSA",
+  "FONTE",
+  "BENCHMARK ENCONTRADO",
+  "PERÍODO ANALISADO",
+  "TAXA UTILIZADA",
+  "JUSTIFICATIVA"
+ ],
+ "spans": [
+  [
+   "B",
+   "B"
+  ],
+  [
+   "C",
+   "D"
+  ],
+  [
+   "E",
+   "G"
+  ],
+  [
+   "H",
+   "H"
+  ],
+  [
+   "I",
+   "I"
+  ],
+  [
+   "J",
+   "N"
+  ]
+ ],
+ "nota_tabela": "O cliente de climatização tem tres meses de historico, duas vendas e um campo de impressoes quebrado em julho e agosto. Cada premissa abaixo diz se veio do historico do cliente, do mercado, ou se ficou travada por falta de base. A unica alavanca que a projecao move e o CTR, e o alvo dela fica ABAIXO do quartil inferior do mercado.",
+ "linhas": [
+  [
+   "CTR (link) — a alavanca",
+   "Databox, Facebook Ads Benchmarks (set/2026); LocaliQ, Home Services Advertising Benchmarks",
+   "Link CTR mediano 1,177%; quartil inferior 0,797%; quartil superior 1,951%. Recorte HVAC no social: Heating & Furnaces 1,22%, AC Services 1,28%, AC Sales 0,96%",
+   "Databox: >2.800 empresas via API. LocaliQ: 4.595 contas de home services dos EUA, mai/2020 a jun/2021",
+   "0,31% → 0,797% no mês 6",
+   "Único elo quebrado do funil: 0,31% está 2,6x abaixo do quartil inferior do mercado inteiro. O alvo é o próprio quartil inferior, não a mediana — o piso do mercado, não a média. O breakeven acontece antes disso, em 0,591%. Com CPM e conversão pós-clique constantes, ir de 0,31% a 0,797% corta o CPL de $79,73 para $31,01."
+  ],
+  [
+   "CPM",
+   "Databox (set/2026); LocaliQ, Home Services (CPM derivado de CPC × CTR publicados); Gupta Media, The true cost of social media ads",
+   "Mediana geral $7,26 (quartil superior $13,03). Derivado para HVAC: AC Services $24,58, Heating & Furnaces $18,91, AC Sales $10,46. Meta global 2025: $7,67 a $8,62, pico Cyber Monday $17,70",
+   "Databox: >2.800 empresas. Gupta: dezenas de bilhões de impressões, set/2022 a out/2025",
+   "$20,44, travado",
+   "Setembro é o único mês cujo CPM reconcilia. $20,44 está dentro da faixa derivada para HVAC local ($10 a $25) e acima da mediana geral, o que é esperado em praça pequena e geo-restrita. NÃO é assinatura de inventário ruim: Audience Network entrega CPM de centavos, não de $20."
+  ],
+  [
+   "Clique → lead",
+   "LocaliQ / WordStream, Facebook Advertising Benchmarks (2026)",
+   "Home & Home Improvement, objetivo Leads: 5,32%. Todas as indústrias, objetivo Leads: 8,54%",
+   "Dataset WordStream by LocaliQ, 20 indústrias, medianas, atualizado set/2026",
+   "8,27%, travado",
+   "O cliente está 55% ACIMA do benchmark do setor. Esse passo do funil não está quebrado e a projeção não pede melhora nele."
+  ],
+  [
+   "Lead → MQL",
+   "Invoca, Home Services Lead Conversion Benchmarks Report 2026",
+   "38% das chamadas atendidas viram lead qualificado. Lead rate por canal: Display 54%, Social Ads 43%, Google Paid Search 39% a 40%",
+   ">70 milhões de chamadas, 600 milhões de minutos, 10 indústrias, jul/2026",
+   "50%, travado",
+   "Compatível com o lead rate social de 43% da Invoca. Não há evidência de 'lead lixo de Instant Form': o teste com amostra publicada (Jon Loomer, 630 leads) não encontrou a queda de qualidade que o mercado assume. Ressalva: a Invoca mede chamadas, o cliente mede formulário."
+  ],
+  [
+   "MQL → SQL",
+   "Sem benchmark aplicável ao canal",
+   "Os book rates publicados (37,6% non-branded, 44,0% LSA, SearchLight Digital) são de GOOGLE ADS e foram descartados: o cliente não roda Google",
+   "—",
+   "23,53%, travado no histórico",
+   "Travado no histórico do próprio cliente (17 MQLs, 4 SQLs na janela). Amostra frágil, tratar como hipótese. A projeção NÃO pede melhora aqui — se vier, é upside não contabilizado."
+  ],
+  [
+   "SQL → venda",
+   "ACCA + Farmington Consulting Group, Contractor of the Future (2025), via ACHR News",
+   "Close rate de instalação: 43% geral, 45% residencial. Alavancas medidas: proposta com 4+ opções fecha 52% contra 42%; com financiamento 49% contra 38%",
+   "Survey com mais de 1.000 contractors dos EUA, 69% da receita residencial",
+   "50%, travado no histórico",
+   "O histórico do cliente (50%, n=4) está acima do close rate residencial de instalação do ACCA (45%). Travado, sem pedir melhora. Não existe benchmark publicado de close rate de CONSERTO — calibrar no CRM."
+  ],
+  [
+   "Ticket médio ponderado",
+   "Mass Save, Air Source Heat Pumps (rebates 2026); MassCEC, Whole-Home ASHP Pilot; Angi, guias de custo Boston MA; ACCA (2025); Housecall Pro, Trades Pulse HVAC (2026)",
+   "Instalação em MA: heat pump whole-home $22.000 bruto (líquido do consumidor $13.500 após rebate de $8.500), furnace Boston $6.396, boiler Boston $4.339, sistema completo $8.123. Conserto: $390 residencial (ACCA), $1.205 por job (Housecall Pro), $350 nacional e $500 em NY (Angi)",
+   "Mass Save: dado de programa estadual, base 2022. MassCEC: 168 projetos, 39 instaladores, 2019 a 2021. ACCA: n>1.000. Housecall Pro: ~2 milhões de jobs, 2021 a 2025",
+   "$4.425 (mix 70:30)",
+   "Mix de 70 consertos para 30 instalações a cada 100 jobs, com conserto a $750 e instalação a $13.000. O benchmark do NEGÓCIO INTEIRO dá 73% a 89% de conserto por contagem, mas ele é movido por BUSCA — emergência de aquecimento vira pesquisa, não rolagem de feed. Numa operação só em META, que é geração de demanda e não captura de emergência, o mix pende para instalação: venda de consideração e ticket alto são o que o canal faz bem. Por isso 70:30 e não os 80:20 do negócio inteiro. ATENÇÃO: o rebate do Mass Save reduz o custo do CONSUMIDOR, não o faturamento do contractor — a receita projetada é a bruta (whole-home $22.000)."
+  ],
+  [
+   "Sazonalidade",
+   "NOAA NCEI, US Monthly Climate Normals 1991-2020, estação Hyannis (USW00094720); Gupta Media",
+   "Graus-dia de aquecimento em Nova Inglaterra: dez+jan+fev concentram 50,4% da carga do ano; nov a mar, 76,2%; jun+jul+ago, 1,5%. No Meta, dezembro é o mês mais caro do ano (leilão de e-commerce), jan e fev os mais baratos",
+   "NOAA: normais climatológicas de 30 anos. Gupta: dezenas de bilhões de impressões",
+   "Não aplicada",
+   "NÃO foi aplicada à projeção, de propósito: a curva de graus-dia é de aquecimento e o cliente também vende ar-condicionado, cuja demanda faz o caminho inverso. Fica registrada como guia de plano de mídia: melhor relação demanda/custo do ano é out-nov (demanda no pico, CPM ainda pré-Q4); evitar escalar em dezembro, quando se paga o leilão da Black Friday para vender aquecimento."
+  ]
+ ],
+ "descartados": [
+  "TODO o benchmark de Google Ads (CPC $9,12 a $9,68; CPL $104 blended, $127,74 AC, $149 non-branded; book rate 37,6%; Local Services Ads com CPL $51, book rate 44,0% e ROAS 9,55x sobre 409 contas de HVAC): pesquisado a fundo e descartado inteiro quando se confirmou que o cliente roda SÓ META. Fica no arquivo porque é bom e serve no dia em que houver Google.",
+  "LocaliQ 2025 'HVAC = US$ 5,31 de CPC e US$ 45,27 de CPL': número falso em circulação. Os dois relatórios da LocaliQ foram abertos e não trazem essa linha — o de 2025 tem AC $9,68/$127,74 e Heating $9,30/$129,02. Se aparecer numa reunião, é ruído propagado.",
+  "MarginPlug, close rate de HVAC (65% a 75% de média, 82% a 88% para os melhores): verificado direto, não tem metodologia, amostra, citação nem escopo geográfico. É o número mais citado do setor e não tem origem.",
+  "'CPL de home services no Meta = $34,00 em 2026': só aparece em adamigo.ai, sem amostra. Idem 'HVAC blended $45, install leads $115-117, tune-up $35-65'.",
+  "'Conversion Leads / CAPI for CRM reduz o custo por lead qualificado em 19% a 21%': atribuído ao Meta em dezenas de posts. A documentação oficial do Meta foi lida e faz apenas a afirmação qualitativa ('may yield higher quality leads'), sem percentual.",
+  "'CPA na learning phase é 20% a 50% maior': repetido por mais de 8 blogs, nenhum cita documento do Meta. Não há fonte primária.",
+  "'88% dos jobs de HVAC são conserto, por contagem': circula atribuído à Housecall Pro; a página da Housecall Pro foi aberta e o número não está lá.",
+  "'67% de IVT no Audience Network': vem de clickfortify.com, sem amostra. A medida com fonte é o Lunio Global IVT Report 2026, que põe o IVT médio do Meta em 8,20%, o segundo mais baixo entre as plataformas analisadas.",
+  "Julho e agosto de 2026 do próprio cliente, nas métricas que dependem de impressões: CPM de $330,64 e $210,11 e CTR de 12,59% e 3,35% são impossíveis contra qualquer fonte (o quartil superior do Databox é $13,03 e o pico histórico diário da Gupta é $17,70). O campo de impressões está subcontado. CPC, CPL e clique → lead desses meses seguem válidos.",
+  "~55 sites de conteúdo gerado por IA com tabelas de benchmark sem metodologia nem amostra, e ~12 blogs de agência. Assinatura típica: 20 indústrias, 4 casas decimais, zero amostra, números que não batem entre si.",
+  "Mix de 80:20 (conserto:instalação) derivado do benchmark do negócio inteiro: descartado para ESTE canal. A derivação desce de ~87% para 80% de conserto por causa de uma campanha dedicada de instalação que, no caso do cliente de climatização, é do Google e não está rodando. E o vetor aponta para o outro lado: Meta é geração de demanda, não captura de emergência, então puxa o mix para instalação. Usado 70:30."
+ ],
+ "fontes": [
+  {
+   "texto": "Databox · Facebook Ads Benchmarks · link CTR mediano 1,177%, quartil inferior 0,797%, CPM mediano $7,26 · >2.800 empresas · 2026",
+   "link": "https://databox.com/benchmarks/facebook-benchmarks"
+  },
+  {
+   "texto": "LocaliQ · Home Services Advertising Benchmarks · CPL social Heating & Furnaces $72,97, CTR 1,22% · 4.595 contas · dados 2020-21",
+   "link": "https://localiq.com/blog/home-services-advertising-benchmarks/"
+  },
+  {
+   "texto": "LocaliQ / WordStream · Facebook Advertising Benchmarks · clique → lead Home & Home Improvement 5,32%, CPL $42,95 · 2026",
+   "link": "https://localiq.com/blog/facebook-advertising-benchmarks/"
+  },
+  {
+   "texto": "Invoca · Home Services Lead Conversion Benchmarks Report · lead rate social 43%, 38% das chamadas viram lead, 52% nem são atendidas · >70 mi de chamadas · 2026",
+   "link": "https://www.invoca.com/reports/the-invoca-home-services-lead-conversion-benchmarks-report-2026"
+  },
+  {
+   "texto": "Gupta Media · The true cost of social media ads · CPM Meta $7,67 a $8,62, dezembro o mês mais caro · dezenas de bi de impressões · 2025",
+   "link": "https://www.guptamedia.com/social-media-ads-cost"
+  },
+  {
+   "texto": "Mass Save · Air Source Heat Pumps · instalação whole-home $22.000 bruto, rebate até $8.500 · dado de programa estadual · 2026",
+   "link": "https://www.masssave.com/residential/rebates-offers-services/heating-and-cooling/heat-pumps/air-source-heat-pumps"
+  },
+  {
+   "texto": "MassCEC · Whole-Home ASHP Pilot · mediana de retrofit $20.000 · 168 projetos, 39 instaladores · 2019-2021",
+   "link": "https://www.masscec.com/blog/masscec-pilot-showcases-success-whole-home-heat-pumps"
+  },
+  {
+   "texto": "Angi · Custo de instalação em Boston MA · furnace $6.396, boiler $4.339, sistema completo $8.123 · 2026",
+   "link": "https://www.angi.com/articles/insider-s-price-guide-new-heating-and-cooling-system/ma/boston"
+  },
+  {
+   "texto": "ACCA + Farmington Consulting Group via ACHR News · close rate de instalação 45% residencial, ticket de serviço $390 · n>1.000 contractors · 2025",
+   "link": "https://www.achrnews.com/articles/165799-survey-reveals-strategies-to-boost-hvac-close-rates-by-double-digits"
+  },
+  {
+   "texto": "Housecall Pro · Trades Pulse HVAC · conserto 31,3% da receita, $1.205 por job · ~2 mi de jobs · 2026",
+   "link": "https://www.housecallpro.com/resources/hvac-industry-trends/"
+  },
+  {
+   "texto": "NOAA NCEI · Climate Normals 1991-2020, Hyannis · dez+jan+fev = 50,4% da carga de aquecimento do ano",
+   "link": "https://www.ncei.noaa.gov/access/services/data/v1?dataset=normals-monthly-1991-2020&stations=USW00094720&dataTypes=MLY-HTDD-NORMAL&format=csv"
+  },
+  {
+   "texto": "Meta for Developers · Conversions API for CRM · Conversion Leads exige >=200 leads/mês · documentação oficial",
+   "link": "https://developers.facebook.com/documentation/ads-commerce/conversions-api/conversion-leads-integration"
+  },
+  {
+   "texto": "Lunio · Global IVT Report · IVT médio do Meta 8,20% · 2026",
+   "link": "https://www.lunio.ai/blog/click-fraud-meta-ads"
+  },
+  {
+   "texto": "Jon Loomer · Testing lead quality · instant form x site, 630 leads, sem queda de qualidade detectada · fonte média, teste único",
+   "link": "https://www.jonloomer.com/testing-quality-leads/"
+  }
+ ]
+}

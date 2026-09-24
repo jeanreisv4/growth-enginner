@@ -1,6 +1,6 @@
 {
  "atualizado_em": "2026-09-19",
- "nota": "Benchmarks para loja de multimídia e acessórios automotivos com leads de Meta Ads e venda por WhatsApp/telefone (loja de multimídia). Cada número foi aberto na página da fonte em 18 e 19/09/2026. A coluna TAXA UTILIZADA é a da loja de multimídia; para outro cliente, troque pelo analise.json.",
+ "nota": "Benchmarks para loja de multimídia e acessórios automotivos com leads de Meta Ads e venda por WhatsApp/telefone (multimídia automotiva). Cada número foi aberto na página da fonte em 18 e 19/09/2026. A coluna TAXA UTILIZADA é a da multimídia automotiva; para outro cliente, troque pelo analise.json.",
  "colunas": [
   "PREMISSA",
   "FONTE",
@@ -35,7 +35,7 @@
    "N"
   ]
  ],
- "nota_tabela": "O histórico da loja de multimídia tem um mês fechado e uma venda, e não sustenta taxa nenhuma para dezembro. As etapas sem histórico suficiente recebem alvo de mercado; as demais seguem o histórico. Onde não existe número do modelo exato (loja de multimídia automotiva no Brasil), a tabela usa o segmento mais próximo e diz que é aproximação.",
+ "nota_tabela": "O histórico da multimídia automotiva tem um mês fechado e uma venda, e não sustenta taxa nenhuma para dezembro. As etapas sem histórico suficiente recebem alvo de mercado; as demais seguem o histórico. Onde não existe número do modelo exato (loja de multimídia automotiva no Brasil), a tabela usa o segmento mais próximo e diz que é aproximação.",
  "linhas": [
   [
    "Leads contatados (conexão)",
@@ -43,15 +43,15 @@
    "Contato com 69% dos leads inbound, de 47% a 79% entre 48 mercados; quem contata abaixo de 66% fecha abaixo da média. Resposta em até 1 hora: quase 7 vezes mais chance de qualificar o lead",
    "Foureyes: 1º tri/2026, 1.150 lojas, 2,6 mi de leads. HBR: 2.241 empresas auditadas",
    "22% → 69% em dezembro",
-   "Única taxa de contato publicada com base grande. É aproximação: concessionárias de veículos dos EUA, leads de todas as origens. O MQL da loja de multimídia sai do lead contatado, então lead → MQL sobe na mesma proporção (16,0% → 50,1%) e o resto do funil fica igual."
+   "Única taxa de contato publicada com base grande. É aproximação: concessionárias de veículos dos EUA, leads de todas as origens. O MQL da multimídia automotiva sai do lead contatado, então lead → MQL sobe na mesma proporção (16,0% → 50,1%) e o resto do funil fica igual."
   ],
   [
    "MQL → SQL (conferência)",
    "First Page Sage, Sales Funnel Conversion Rate Benchmarks 2026",
    "Automotivo: lead → MQL 21%, MQL → SQL 42%",
    "2017–2025, majoritariamente B2B",
-   "26% (janela da loja de multimídia), sem alvo de mercado",
-   "O mercado sugere espaço (42%), mas a loja de multimídia já passa o automotivo em lead → SQL (13% em dezembro, contra 9%) por causa do contato de 69%. Levar também o MQL → SQL a 42% poria o lead → venda em cerca de 7%, 3,5 vezes o automotivo (2%). Não seria realista somar os dois."
+   "26% (janela da multimídia automotiva), sem alvo de mercado",
+   "O mercado sugere espaço (42%), mas a multimídia automotiva já passa o automotivo em lead → SQL (13% em dezembro, contra 9%) por causa do contato de 69%. Levar também o MQL → SQL a 42% poria o lead → venda em cerca de 7%, 3,5 vezes o automotivo (2%). Não seria realista somar os dois."
   ],
   [
    "SQL → venda",
@@ -67,23 +67,23 @@
    "Automotivo ≈ 2,0% (21% × 42% × 46% × 49%). Concessionárias: 11,7% dos leads de venda compraram",
    "First Page Sage: 2017–2025. Foureyes: jan–dez/2025, mais de 22.900 sites",
    "4,3% em dezembro (resultado das taxas acima)",
-   "Fica entre o automotivo geral e o varejo de veículos, que tem produto e intenção de compra diferentes. A loja de multimídia está hoje em 0,23%."
+   "Fica entre o automotivo geral e o varejo de veículos, que tem produto e intenção de compra diferentes. A multimídia automotiva está hoje em 0,23%."
   ],
   [
    "CPM base e saturação do público",
-   "Growth Pack da loja de multimídia (Meta diário); Superads, CPM Benchmarks in Brazil",
-   "loja de multimídia: R$ 2,54 em 07–15/08 e R$ 2,61 em 16–24/08 (mesmas campanhas, antes e depois do início do impulsionamento eleitoral); R$ 5,19 em 25–30/08 e R$ 7,43 em 10–17/09 (formulário de leads). Mediana do Brasil: R$ 18,26 (jul/2025–jul/2026, todos os objetivos). Nenhuma fonte mede quanto o CPM sobe quando a verba escala num público local",
+   "Growth Pack da multimídia automotiva (Meta diário); Superads, CPM Benchmarks in Brazil",
+   "multimídia automotiva: R$ 2,54 em 07–15/08 e R$ 2,61 em 16–24/08 (mesmas campanhas, antes e depois do início do impulsionamento eleitoral); R$ 5,19 em 25–30/08 e R$ 7,43 em 10–17/09 (formulário de leads). Mediana do Brasil: R$ 18,26 (jul/2025–jul/2026, todos os objetivos). Nenhuma fonte mede quanto o CPM sobe quando a verba escala num público local",
    "ago–set/2026; jul/2025–jul/2026",
    "Base de R$ 7,43 em setembro subindo 1,1% ao mês até R$ 8,00 em abril/2027 (quando a verba chega a R$ 21,3 mil), estável depois",
    "O CPM subiu com a troca para formulário, não com a eleição. A alta até R$ 8,00 é premissa do usuário (o público local satura com a verba 7 vezes maior), sem benchmark. É o maior CPM que ainda fecha o acumulado nos 12 meses com folga: com R$ 8,25 zera em agosto de 2027, com R$ 8,50 em setembro e com R$ 10 não zera."
   ],
   [
    "Eleição de 2026 (CPM)",
-   "TRE-RJ, Cartilha Eleições 2026; CNN Brasil (02/09/2022); Growth Pack da loja de multimídia",
-   "Impulsionamento pago de 16/08 a 01/10/2026; 1º turno 04/10, 2º turno 25/10. Em 2022, um público eleitoral amplo (16+, Brasil inteiro) passou de R$ 5,03 para R$ 96,71 de CPM na 2ª quinzena de agosto. No público da loja de multimídia, o CPM não mudou no início da janela (R$ 2,54 → R$ 2,61)",
+   "TRE-RJ, Cartilha Eleições 2026; CNN Brasil (02/09/2022); Growth Pack da multimídia automotiva",
+   "Impulsionamento pago de 16/08 a 01/10/2026; 1º turno 04/10, 2º turno 25/10. Em 2022, um público eleitoral amplo (16+, Brasil inteiro) passou de R$ 5,03 para R$ 96,71 de CPM na 2ª quinzena de agosto. No público da multimídia automotiva, o CPM não mudou no início da janela (R$ 2,54 → R$ 2,61)",
    "2022 e 2026",
    "Setembro já medido na janela; outubro ×1,05 (2º turno)",
-   "O número de 2022 é de campanha eleitoral de alcance nacional, não de anunciante local de formulário. O próprio dado da loja de multimídia mostra efeito pequeno. O impulsionamento do 1º turno acaba em 01/10; outubro leva uma folga de 5% pelo 2º turno."
+   "O número de 2022 é de campanha eleitoral de alcance nacional, não de anunciante local de formulário. O próprio dado da multimídia automotiva mostra efeito pequeno. O impulsionamento do 1º turno acaba em 01/10; outubro leva uma folga de 5% pelo 2º turno."
   ],
   [
    "Datas comemorativas e Black Friday (CPM)",
@@ -107,7 +107,7 @@
    "Automotive – Repair, Service & Parts (objetivo Tráfego): 0,80%. Brasil, todas as indústrias: 1,70%, mas contando todos os cliques",
    "2025, EUA; jul/2025–jul/2026, Brasil",
    "0,68% → 0,80% em dezembro",
-   "O único comparativo do setor (peças e serviços automotivos) é 0,80%, e a loja de multimídia está um pouco abaixo. Os números de 1,7% a 2,6% contam todos os cliques e não se comparam com CTR de link. O alvo supõe criativo melhor, sem ir além do setor. Aproximação: EUA, objetivo Tráfego."
+   "O único comparativo do setor (peças e serviços automotivos) é 0,80%, e a multimídia automotiva está um pouco abaixo. Os números de 1,7% a 2,6% contam todos os cliques e não se comparam com CTR de link. O alvo supõe criativo melhor, sem ir além do setor. Aproximação: EUA, objetivo Tráfego."
   ],
   [
    "Clique → lead",
@@ -115,7 +115,7 @@
    "Campanhas de leads: média de todas as indústrias 7,72% (2025) e 8,54% (2026); Casa e Reformas 5,22%; Automotive – For Sale 4,15% (2026)",
    "2025 e abr/2025–jun/2026, EUA",
    "6,6% (setembro, campanha de formulário atual)",
-   "A loja de multimídia está dentro da faixa do mercado, então a taxa fica a de setembro, sem ganho suposto. Na média de campanhas de leads (7,7%), o custo por lead cairia de R$ 14,10 para cerca de R$ 12: é folga, não premissa. Agosto misturava campanhas de catálogo e mensagem e não serve de base."
+   "A multimídia automotiva está dentro da faixa do mercado, então a taxa fica a de setembro, sem ganho suposto. Na média de campanhas de leads (7,7%), o custo por lead cairia de R$ 14,10 para cerca de R$ 12: é folga, não premissa. Agosto misturava campanhas de catálogo e mensagem e não serve de base."
   ],
   [
    "Ticket da venda",
@@ -123,7 +123,7 @@
    "Aparelho de R$ 1.100 a R$ 2.300 (mediana R$ 1.600); kit moldura + chicote R$ 145 a R$ 340; instalação de tela R$ 300 a R$ 600; câmera de ré instalada R$ 290 a R$ 499; interface de volante R$ 247 a R$ 387",
    "Preços vistos em 18/09/2026",
    "R$ 1.500 → R$ 2.500 em dezembro",
-   "Não há ticket médio nem taxa de anexação publicados para loja de som ou multimídia. Aparelho + kit + instalação dá R$ 1.450 a R$ 2.250; com câmera de ré e interface de volante, R$ 2.000 a R$ 3.100. R$ 2.500 é o kit com câmera de ré, no meio da faixa. É estimativa a partir de amostras, não benchmark, e depende de a loja de multimídia vender o kit completo."
+   "Não há ticket médio nem taxa de anexação publicados para loja de som ou multimídia. Aparelho + kit + instalação dá R$ 1.450 a R$ 2.250; com câmera de ré e interface de volante, R$ 2.000 a R$ 3.100. R$ 2.500 é o kit com câmera de ré, no meio da faixa. É estimativa a partir de amostras, não benchmark, e depende de a multimídia automotiva vender o kit completo."
   ],
   [
    "Margem de contribuição",
@@ -139,7 +139,7 @@
    "Busca por \"central multimídia\" (média das duas grafias, razão à média móvel de 12 meses, 2021–2025): jan 1,01; fev 0,96; mar 0,97; abr 0,96; mai 0,98; jun 1,01; jul 1,07; ago 1,04; set 0,94; out 0,97; nov 1,01; dez 1,05. Semana da Black Friday +5%; \"smart tv\" +74% a +108% na mesma semana. IBGE peças e acessórios: novembro e dezembro 1,03",
    "Google Trends 2021–2025 (geo Brasil, mensal, semanal e diário); IBGE 2023–2025",
    "Novembro ×1,05 e dezembro ×1,08; demais meses 1,00",
-   "Os picos de central multimídia são julho (férias), agosto (Dia dos Pais) e dezembro (Natal); Dia das Mães, Namorados e Dia do Consumidor não aparecem na busca. A projeção aplica só novembro e dezembro; de fevereiro a maio a busca fica 2% a 4% abaixo da média e julho e agosto 4% a 7% acima, o que se compensa no ano. Na Black Friday a busca sobe cerca de 5%: os +90% são de smart TV. Ganho da oferta da loja de multimídia nessas datas não entra, por falta de dado de conversão."
+   "Os picos de central multimídia são julho (férias), agosto (Dia dos Pais) e dezembro (Natal); Dia das Mães, Namorados e Dia do Consumidor não aparecem na busca. A projeção aplica só novembro e dezembro; de fevereiro a maio a busca fica 2% a 4% abaixo da média e julho e agosto 4% a 7% acima, o que se compensa no ano. Na Black Friday a busca sobe cerca de 5%: os +90% são de smart TV. Ganho da oferta da multimídia automotiva nessas datas não entra, por falta de dado de conversão."
   ],
   [
    "WhatsApp como canal de venda (contexto)",

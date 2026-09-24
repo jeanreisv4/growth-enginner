@@ -35,6 +35,12 @@ CASOS = [
          receita="[R$] FATURAMENTO (VENDAS × TICKET)", extra_piloto=[], extra_gerador=[],
          exige=["[%] LEAD → MQL", "[QNTD] MQLS", "[%] MQL → SQL"],
          sem=["[%] CONEXÃO SOBRE OS LEADS (MQL OU NÃO)", "[QNTD] CONEXÕES", "[%] CONEXÃO → SQL"]),
+    # cliente em dólar: --moeda tem de trocar formato numérico E texto do rótulo, sem encostar em fórmula
+    # ("R$" também é referência absoluta válida: coluna R, linha travada).
+    dict(nome="inside_sales_moeda_usd", modelo="inside_sales", csv="indicadores_inside_sales.csv", aba="Inside Sales",
+         receita="[US$] FATURAMENTO (VENDAS × TICKET)", extra_piloto=[], extra_gerador=["--moeda", "US$"],
+         exige=["[US$] FEE V4", "[US$] CUSTO TOTAL (FEE V4 + MÍDIA)", "[US$] TICKET MÉDIO"],
+         sem=["[R$] FEE V4", "[R$] FATURAMENTO (VENDAS × TICKET)", "[R$] TICKET MÉDIO"]),
     dict(nome="inside_sales_lp", modelo="inside_sales", csv="indicadores_inside_sales_lp.csv", aba="Inside Sales",
          receita="[R$] FATURAMENTO (VENDAS × TICKET)", extra_piloto=[], extra_gerador=[],
          exige=["[%] CONNECT RATE (CLIQUE → VISITA NA PÁGINA)", "[QNTD] VISITAS PAGAS NA PÁGINA", "[R$] CUSTO POR VISITA", "[%] VISITA → LEAD"],

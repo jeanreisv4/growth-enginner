@@ -179,7 +179,7 @@ def ler_historico(df, modelo, ga4=None):
     if ga4 and modelo == "ecommerce":
         aplicar_ga4(dados, cols, ga4, cfg)
     # etapa opcional sem nenhum valor é ausente: a linha homônima de outro bloco (Meta, Google) pode existir vazia
-    # (agência de viagens: sem "Conexões" na aba principal, o piloto achava a do bloco Meta, vazia, e zerava lead → MQL)
+    # (turismo: sem "Conexões" na aba principal, o piloto achava a do bloco Meta, vazia, e zerava lead → MQL)
     for e in cfg.get("opcionais", []):
         if e in dados and not any((v or 0) > 0 for v in dados[e]):
             del dados[e]
@@ -487,13 +487,18 @@ def envelope(meses, modelo, janela, desde=None, incluir_corrente=False):
         if e["atual"] is not None and alvo is not None:
             alvo = min(alvo, e["atual"]) if e["sentido"] == "menor" else max(alvo, e["atual"])
         e["alvo"] = alvo
-    # Teto histórico de receita: o melhor mês FECHADO da fonte (parcial não conta). Serve de trava de sanidade —
+    # Teto histórico de receita: o melhor mês do período de referência. Serve de trava de sanidade —
     # uma projeção que pede muito mais do que o cliente já entregou alguma vez precisa dizer com que verba.
+    # O mês corrente entra quando o usuário pediu --incluir-corrente, marcado como parcial: receita parcial já
+    # aconteceu, então serve de piso do teto. Deixá-lo de fora fazia o alerta disparar contra o próprio melhor mês
+    # (cliente de climatização: melhor mês fechado US$ 350, corrente US$ 12.680 — a trava acusava "79x" em toda projeção).
     rec_key = MODELOS[modelo]["receita"]
-    serie_rec = [(m.get(rec_key) or 0, _rot(m), m.get("Investimento") or 0) for m in fechados if (m.get(rec_key) or 0) > 0]
+    serie_rec = [(m.get(rec_key) or 0, _rot(m), m.get("Investimento") or 0, m["status"] == "corrente")
+                 for m in periodo if (m.get(rec_key) or 0) > 0]
     if serie_rec:
         melhor = max(serie_rec, key=lambda x: x[0])
-        env["_teto_receita"] = {"receita": melhor[0], "mes": melhor[1], "midia": melhor[2], "meses_fechados": len(fechados)}
+        env["_teto_receita"] = {"receita": melhor[0], "mes": melhor[1], "midia": melhor[2],
+                                "parcial": melhor[3], "meses_fechados": len(fechados)}
     else:
         env["_teto_receita"] = None
     env["_referencia"] = {"mes": _rot(ref), "motivo": ref_motivo, "periodo": [_rot(m) for m in periodo]}
@@ -681,8 +686,9 @@ def veredito(env, modelo, fee, midia, margem, comissao, mes_alvo, horizonte, acu
             verba = (f"com {mid / mid_teto:.1f}x a verba daquele mês" if mid_teto and mid > mid_teto * 1.05
                      else (f"com a mesma verba" if mid_teto and mid <= mid_teto * 1.05 else ""))
             frouxo = " O histórico tem poucos meses fechados, então o teto é frágil." if tr.get("meses_fechados", 0) < 4 else ""
+            parc = " (mês ainda em curso, então o valor dele tende a subir)" if tr.get("parcial") else ""
             v["alerta_teto_receita"] = (f"a projeção pede {_rs(rec_alvo)} no mês-alvo, {mult:.1f}x o melhor mês já realizado "
-                                        f"({_rs(tr['receita'])} em {tr['mes']}){', ' + verba if verba else ''}."
+                                        f"({_rs(tr['receita'])} em {tr['mes']}{parc}){', ' + verba if verba else ''}."
                                         f" Diga de onde vem a diferença antes de apresentar.{frouxo}")
     v["leitura"] = leitura(v, env, mes_alvo, horizonte)
     return v, {"base": base, "cheio": cheio, "cenario": cenario, "alpha": alpha_usado}
@@ -799,7 +805,7 @@ def main():
     p.add_argument("--midia-teto", type=float, help="teto da verba mensal; o crescimento para ao atingir esse valor")
     p.add_argument("--lag", type=float, default=1.0, help="fração das vendas no mês do lead (1 = sem lag)")
     p.add_argument("--definicao-breakeven", default="margem de contribuição cobrindo fee + mídia", help="texto da definição usada; mude só com o usuário ciente (ex.: receita atribuída cobrindo fee + mídia)")
-    p.add_argument("--incluir-corrente", action="store_true", help="inclui o mês corrente (parcial) na janela de taxas e no período de referência; só quando usuário pedir")
+    p.add_argument("--incluir-corrente", action="store_true", help="inclui o mês corrente (parcial) na janela de taxas e no período de referência; só quando o usuário pedir")
     p.add_argument("--desde", help="primeiro mês fechado comparável (ex.: maio/2026); limita o período de referência da rampa")
     p.add_argument("--alvo", action="append", default=[], metavar="ALAVANCA=VALOR",
                    help="alvo da rampa vindo de benchmark de mercado, quando o histórico não basta (ex.: sql_venda=0.25); "

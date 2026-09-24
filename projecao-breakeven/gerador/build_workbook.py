@@ -3,7 +3,7 @@
 
 Uso:
   python3 build_workbook.py [saida.xlsx]
-      -> workbook demo com as duas abas (agência de viagens + e-commerce de tecidos), valores no código.
+      -> workbook demo com as duas abas (turismo + varejo de tecidos), valores no código.
   python3 build_workbook.py --premissas premissas.json --modelo inside_sales|ecommerce --out saida.xlsx [--cliente NOME] [--cenario NOME]
       -> uma aba gerada a partir do premissas.json (saída do modo `projetar` do piloto breakeven_pilot.py).
          Células amarelas recebem premissas confirmadas e taxas efetivas; células brancas mantêm fórmulas vivas.
@@ -13,11 +13,17 @@ Cada métrica: (chave, rótulo, tipo projetado, fonte, formato, total, realizado
   realizado:      'in' (você preenche) | 'proj' (puxa o projetado) | 'cum' | expressão com {c} (coluna do mês) e chaves de linha | '""' (sem realizado)
 """
 import argparse, json, os, re, sys, unicodedata
+# --moeda tem de valer antes do import: os formatos numéricos nascem na importação de projecao_builder.
+for _i, _a in enumerate(sys.argv):
+    if _a == '--moeda' and _i + 1 < len(sys.argv):
+        os.environ['PROJECAO_MOEDA'] = sys.argv[_i + 1]
+    elif _a.startswith('--moeda='):
+        os.environ['PROJECAO_MOEDA'] = _a.split('=', 1)[1]
 from openpyxl import Workbook
 from projecao_builder import *
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-LOGO = os.path.join(HERE, "logo.png")   # opcional: se o arquivo não existir, a planilha sai sem logo
+LOGO = os.path.join(HERE, "v4_logo.png")
 MESES = ["janeiro", "fevereiro", "marco", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
 ABREV = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 
@@ -55,7 +61,7 @@ FMT_DEC = '#,##0.0'
 def _simplificar_is(cfg, p):
     """Tira do inside sales as linhas que o cliente não tem. sem_lp: leads de formulário nativo ou planilha sem landing page
     (connect e visitas seriam 100% e zero, de enfeite). sem_conexao: a fonte não tem a linha Conexões.
-    conexao_so_lead: a linha Conexões conta só leads conectados (loja de multimídia); MQLs conectados não são medidos."""
+    conexao_so_lead: a linha Conexões conta só leads conectados (multimídia automotiva); MQLs conectados não são medidos."""
     tira, troca_ = set(), {}
     if p.get('verba_plano'):
         tira |= {'cresc', 'teto'}
@@ -68,7 +74,7 @@ def _simplificar_is(cfg, p):
         cfg['meta'] = lambda ctx, m: meta_block(ctx, m, p['target'], 'gmv', 'ticket', 'vendas', 'custo_cons', 'cum_cons', None, comissao_key='comissao', acum0_key='acum0')
         cfg['premises'] = [(k, "Comissão sobre o GMV (margem da agência)", v, f) if k == 'comissao' else (k, lab, v, f) for k, lab, v, f in cfg['premises']]
     if float(p['prem'].get('comissao', 1)) >= 0.999 and not p.get('crm'):
-        # receita própria do cliente (consultoria, RPS, loja de multimídia): sem comissão nem GMV de agência; o faturamento (vendas × ticket) já é a receita
+        # receita própria do cliente (Destra, RPS, multimídia automotiva): sem comissão nem GMV de agência; o faturamento (vendas × ticket) já é a receita
         tira |= {'comissao', 'receita'}
         troca_['gmv'] = dict(label="[R$] FATURAMENTO (VENDAS × TICKET)")
         troca_['margem'] = dict(tot='div:mc/gmv')
@@ -338,7 +344,7 @@ def inside_sales_config(p):
       kpis=is_kpis,
       meta=lambda ctx, m: meta_block(ctx, m, p['target'], 'gmv', 'ticket', 'vendas', 'custo_cons', 'cum_cons', 'margem', comissao_key='comissao', acum0_key='acum0'),
       metodologia=p.get('metodologia'), metodologia_fim=p.get('metodologia_fim'), historico=p.get('historico'), legado=p.get('legado'), pilot_ref=p.get('pilot_ref'),
-      real_prefill=p.get('real_prefill'), month_labels=p.get('month_labels'), envelope=p.get('envelope'), base_ref=p.get('base_ref'),
+      real_prefill=p.get('real_prefill'), month_labels=p.get('month_labels'), payback_estendido=p.get('payback_estendido'), envelope=p.get('envelope'), base_ref=p.get('base_ref'),
       charts=[
         dict(type='growth', title="Receita e crescimento mês a mês", bars='receita_cons', line='cresc_receita'),
         dict(type='line', title="Resultado acumulado mês a mês", series=[('cum_cons', GREEN, False)], y_fmt=FMT_BRL),
@@ -544,16 +550,16 @@ def ecommerce_config(p):
       meta=lambda ctx, m: meta_block(ctx, m, p['target'], rec, 'ticket_ped' if not usa_venda else 'ticket_fat', vol, 'custo_cons', 'cum_cons',
                                      'margem' if usa_margem else None, acum0_key='acum0'),
       metodologia=p.get('metodologia'), metodologia_fim=p.get('metodologia_fim'), historico=p.get('historico'), legado=p.get('legado'), pilot_ref=p.get('pilot_ref'), base_ref=p.get('base_ref'),
-      real_prefill=p.get('real_prefill'), month_labels=p.get('month_labels'), envelope=p.get('envelope'),
+      real_prefill=p.get('real_prefill'), month_labels=p.get('month_labels'), payback_estendido=p.get('payback_estendido'), envelope=p.get('envelope'),
       charts=charts, funnel=funnel,
     )
 
-# ===================================================================== DEMO (valores dos painéis agência de viagens e e-commerce de tecidos)
+# ===================================================================== DEMO (valores dos painéis turismo e varejo de tecidos)
 DEMO_IS = dict(
   sheet="Inside Sales", title="Projeção Inside Sales",
-  subtitle="agência de viagens   ·   Cenário Realista   ·   Projeção de 12 meses   ·   Breakeven Alvo M5 | comissão 15%",
+  subtitle="turismo   ·   Cenário Realista   ·   Projeção de 12 meses   ·   Breakeven Alvo M5 | comissão 15%",
   meta_line="Atualizado em {today}   ·   Modelo replicado do painel Projeção · Inside Sales e E-commerce   ·   Origem da base: histórico real (4 competências)",
-  footer="Projeção Inside Sales · demonstração",
+  footer="Projeção Inside Sales · turismo · agência",
   prem=dict(fee=6900, midia=5000, comissao=0.15, margem=0.40, connect=1.0, organicas=0, con_lead=0.9, con_mql=0.8, cresc=0.0, teto=0, lag=1.0, acum0=0, dias=30),
   monthly=dict(cpm=[18.08, 10.2, 9.05, 9.79, 9.68] + [10.68]*7, ctr=[0.0075, 0.009, 0.0068, 0.0037, 0.0078] + [0.0078]*7,
                conv_lp=[0.3803, 0.1951, 0.074, 0.0937, 0.1437] + [0.1437]*7, lead_mql=[0.2593, 0.4181, 0.4938, 0.6667, 0.4237] + [0.4237]*7,
@@ -563,15 +569,15 @@ DEMO_IS = dict(
   metodologia=[("NOTAS DO CENÁRIO", [USO_COMUM + "\n"
     "• Fórmulas: Impressões = Mídia ÷ CPM × 1.000 · Leads = Visitas LP × Conv. LP · Vendas = SQLs × (SQL → Venda), com lag comercial · Receita da agência = GMV × Comissão · "
     "Resultado MC = Receita × Margem · Resultado líquido = Resultado MC − (Fee + Mídia) · ROI = Resultado ÷ Custo · Payback = 1º mês com acumulado ≥ 0.\n"
-    "• Cenário replicado: Realista do painel Projeção · Inside Sales e E-commerce (agência de viagens), leitura de 11/09/2026, taxas com 2 casas como exibidas no painel. "
+    "• Cenário replicado: Realista do painel Projeção · Inside Sales e E-commerce (turismo), leitura de 11/09/2026, taxas com 2 casas como exibidas no painel. "
     "M12 não aparecia por inteiro no PDF: alavancas repetem o M11, exceto MQL con. → SQL (29,9%) e Ticket médio (R$ 8.189,26), da tabela 'Taxas efetivas'.\n"
     "• Meta de breakeven: coerente com a tabela (aplica comissão e margem). O painel original calculava essa meta só com a comissão, por isso mostrava 28 vendas no M5."])],
 )
 DEMO_EC = dict(
   sheet="E-commerce", title="Projeção E-commerce",
-  subtitle="e-commerce de tecidos   ·   Cenário Realista   ·   Projeção de 12 meses   ·   Premissas manuais | curva linear",
+  subtitle="varejo de tecidos   ·   Cenário Realista   ·   Projeção de 12 meses   ·   Premissas manuais | curva linear",
   meta_line="Atualizado em {today}   ·   Modelo replicado do painel Projeção · Inside Sales e E-commerce   ·   Origem: premissas manuais (CSV exportado em 16/09/2026)",
-  footer="Projeção E-commerce · demonstração",
+  footer="Projeção E-commerce · varejo de tecidos · agência",
   prem=dict(fee=5000, midia1=25000, cresc=0.05, teto=0, cpm=35, ctr=0.014, connect=0.85, organicas=5000, s_vi=0.48, vi_cart=0.12, cart_ic=0.55, ic_ped=0.52,
             ticket_ped=220, ped_venda=0.92, ticket_fat=220, margem=0.40, lag=1.0, acum0=0, dias=30),
   target=12,
@@ -581,7 +587,7 @@ DEMO_EC = dict(
     "• Fórmulas: Impressões = Mídia ÷ CPM × 1.000 · Sessões pagas = Cliques × Connect rate · Sessões total = pagas + orgânicas · View Item → Carrinho → Checkout → Pedidos pelas taxas de etapa (pedidos com lag) · "
     "Receita captada = Pedidos × Ticket do pedido · Vendas = Pedidos × (Pedido → Venda) · Receita faturada = Vendas × Ticket faturado · Resultado MC = Receita faturada × Margem · "
     "Resultado líquido = Resultado MC − (Fee + Mídia) · ROAS = Receita faturada ÷ Mídia · ROI = Resultado ÷ Custo · Payback = 1º mês com acumulado ≥ 0.\n"
-    "• Cenário replicado: Realista do painel Projeção · Inside Sales e E-commerce (e-commerce de tecidos), premissas manuais, CSV exportado em 16/09/2026; os valores batem com o CSV. "
+    "• Cenário replicado: Realista do painel Projeção · Inside Sales e E-commerce (varejo de tecidos), premissas manuais, CSV exportado em 16/09/2026; os valores batem com o CSV. "
     "Neste cenário o acumulado não fica positivo em 12 meses (payback após M12), igual ao painel."])],
 )
 
@@ -984,12 +990,34 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
         metodologia.append((titulo, conteudo))
     if obs: metodologia.append(("OBSERVAÇÕES", list(obs)))
 
-    p = dict(sheet=rotulo, title=title, legado=legado, verba_plano=verba_plano, sazonalidade=pc.get('sazonalidade'), cpm_crescimento=pc.get('cpm_crescimento'), con_lead_mensal=(col('conexao') if any(col('conexao')) else (col('con_lead') if any(col('con_lead')) else None)), organico=pc.get('organico'), crm=pc.get('crm'), fee_plano=pc.get('fee_plano'),
+    # Curva de payback além das 12 colunas: quando o acumulado só zera depois da tabela, o gráfico segue
+    # com os meses à frente (run-rate do piloto) até cruzar o zero, para o payback não virar nota de rodapé.
+    payback_estendido = None
+    r48 = (v.get('resultados_48m') or [])
+    if len(r48) > n:
+        curva = d.get('projecao') or []
+        acum = curva[-1]['acumulado'] if curva else 0.0
+        if acum < 0:
+            ult = labels[-1] if labels else ''
+            abrev = norm(ult.split('/')[0])[:3] if '/' in ult else ''
+            i0 = ABREV.index(abrev) if abrev in ABREV else n - 1
+            ano0 = int(ult.split('/')[-1]) if '/' in ult and ult.split('/')[-1].isdigit() else 0
+            rot, ac, mes, ano = [], [], i0, ano0
+            cauda = list(r48[n:])
+            run = cauda[-1] if cauda else 0.0
+            cauda += [run] * 48 if run > 0 else []   # a série do piloto acaba antes do payback: segue no run-rate
+            for x in cauda[:60]:
+                mes += 1
+                if mes > 11: mes, ano = 0, ano + 1
+                acum += x; rot.append(f"{ABREV[mes]}/{ano}"); ac.append(acum)
+                if acum >= 0: break
+            if rot: payback_estendido = {'rotulos': rot, 'acumulado': ac}
+    p = dict(sheet=rotulo, title=title, legado=legado, payback_estendido=payback_estendido, verba_plano=verba_plano, sazonalidade=pc.get('sazonalidade'), cpm_crescimento=pc.get('cpm_crescimento'), con_lead_mensal=(col('conexao') if any(col('conexao')) else (col('con_lead') if any(col('con_lead')) else None)), organico=pc.get('organico'), crm=pc.get('crm'), fee_plano=pc.get('fee_plano'),
              subtitle=(f"{esc(cliente)}   ·   Cenário {esc(cenario)}   ·   {labels[0]} a {labels[-1]}   ·   Meta de breakeven: {rot_mes(mes_alvo)}   ·   {v['status']}"
                        f"   ·   no azul a partir de: {rot_mes(azul_cont) if azul_cont else nunca}"
                        f"   ·   acumulado zera: {rot_mes(zera) if zera else nunca}"),
              meta_line=f"Atualizado em {{today}}   ·   Fonte: planilha de indicadores (aba {esc(det.get('aba'))})" + (" e GA4" if ga4.get('meses') else "") + f"   ·   Janela das taxas: {esc(', '.join(janela))}   ·   Detalhes na aba Premissas",
-             footer=f"Projeção {rotulo} · {cliente}", prem=prem, monthly=monthly, target=mes_alvo,
+             footer=f"Projeção {rotulo} · {cliente} · agência", prem=prem, monthly=monthly, target=mes_alvo,
              metodologia=metodologia, historico=historico, pilot_ref=pilot_ref, base_ref=base_ref, n_months=n,
              real_prefill=prefill, month_labels=labels, envelope=envelope, metodologia_fim=[tuple(x) for x in xm.get('fim', [])], **extra)
     return (inside_sales_config if modelo == 'inside_sales' else ecommerce_config)(p), d
@@ -1018,6 +1046,21 @@ def comparar_cenarios(wb, abas_info, n):
 
 
 # ===================================================================== CLI
+def aplicar_moeda(wb):
+    """Troca o 'R$' que está escrito no texto (rótulos [R$], notas, metodologia) pela moeda do template.
+
+    Os formatos numéricos e os eixos dos gráficos já nascem certos (FMT_BRL vem de projecao_builder.MOEDA); o que sobra
+    aqui é texto. Fórmulas ficam de fora porque 'R$' também é uma referência absoluta válida (coluna R, linha travada).
+    """
+    if MOEDA == "R$":
+        return
+    for ws in wb.worksheets:
+        for row in ws.iter_rows():
+            for c in row:
+                if isinstance(c.value, str) and "R$" in c.value and not c.value.startswith("="):
+                    c.value = c.value.replace("R$", MOEDA)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('saida', nargs='?', help="caminho do xlsx (modo demo)")
@@ -1026,6 +1069,7 @@ def main():
     ap.add_argument('--out', help="caminho do xlsx gerado")
     ap.add_argument('--cliente', help="nome do cliente para título e rodapé")
     ap.add_argument('--cenario', default="Realista")
+    ap.add_argument('--moeda', default="R$", help='símbolo da moeda do template (ex.: "US$" para cliente em dólar); padrão R$')
     ap.add_argument('--inicio-contrato', help="mês/ano em que o cliente entrou na V4 (ex.: agosto/2026); o Mês 1 passa a ser esse mês")
     ap.add_argument('--faturamento-total', help='faturamento total da loja por mês: "agosto/2026=143309.07,setembro/2026=82148.21"')
     ap.add_argument('--base-nao-midia', type=float, help='faturamento mensal fora da mídia V4 (base para projetar o total); calculado dos meses fechados se omitido')
@@ -1062,6 +1106,7 @@ def main():
         if len(abas_info) > 1:
             comparar_cenarios(wb, abas_info, int(cfg.get('n_months', 12)))
         out = a.out or f"Projecao_{a.modelo}_{re.sub(r'[^A-Za-z0-9]+', '_', a.cliente or 'cliente')}.xlsx"
+        aplicar_moeda(wb)
         wb.save(out)
         print(json.dumps({"arquivo": out, "aba": cfg['sheet'], "veredito": d['veredito']['status'], "mes_alvo": d['premissas_confirmadas']['mes_alvo'],
                           "linhas_tabela": [info['HDR2'] + 1, info['LAST_TABLE']], "meta_top": info['META_TOP']}, ensure_ascii=False))
@@ -1073,6 +1118,7 @@ def main():
         print(cfg['sheet'], {k: info[k] for k in ('HDR2', 'META_TOP', 'LAST_TABLE', 'LAST_ROW', 'support')})
     wb.active = 0
     out = a.saida or a.out or os.path.join(os.path.dirname(HERE), "Projecao_Inside_Sales_e_Ecommerce.xlsx")
+    aplicar_moeda(wb)
     wb.save(out); print("saved", out)
 
 if __name__ == "__main__":

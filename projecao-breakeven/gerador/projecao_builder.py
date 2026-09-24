@@ -48,7 +48,10 @@ BLOCOS = {
 }
 BLOCO_PADRAO = 'resultado'
 FONT = "Calibri"
-FMT_BRL, FMT_BRL2, FMT_INT = '"R$" #,##0', '"R$" #,##0.00', '#,##0'
+# Moeda do template. Vem do ambiente porque os formatos nascem aqui, na importação do módulo, antes de qualquer
+# parsing de argumento; build_workbook lê --moeda de sys.argv e planta PROJECAO_MOEDA antes de importar este arquivo.
+MOEDA = os.environ.get("PROJECAO_MOEDA", "R$")
+FMT_BRL, FMT_BRL2, FMT_INT = f'"{MOEDA}" #,##0', f'"{MOEDA}" #,##0.00', '#,##0'
 FMT_PCT0, FMT_PCT1, FMT_PCT2, FMT_X = '0%', '0.0%', '0.00%', '0.00"x"'
 
 N_MONTHS_MAX = 12
@@ -128,7 +131,7 @@ def build_sheet(ws, cfg, logo_path):
     today = datetime.date.today().strftime("%d/%m/%Y")
     ws.row_dimensions[1].height = 8
     ws.row_dimensions[2].height = 26; ws.row_dimensions[3].height = 18; ws.row_dimensions[4].height = 16
-    if logo_path and os.path.exists(logo_path):   # logo opcional: ponha um PNG em gerador/logo.png
+    if logo_path and os.path.exists(logo_path):   # logo opcional: ponha um PNG em gerador/v4_logo.png
         img = XLImage(logo_path); img.width = 60; img.height = 61; ws.add_image(img, 'A2')
     put('B2', cfg['title'], font(18, True, BLACK), al=Alignment(vertical='center'))
     put('B3', cfg['subtitle'], font(11, False, GRAY))
@@ -412,6 +415,22 @@ def build_sheet(ws, cfg, logo_path):
         put(f'B{mr}', spec[key][1], font(8, False, GRAY), al=LEFT, sheet=sup)
         for k, col in enumerate(SUPC):
             put(f'{col}{mr}', f"={MAIN}{PROJ[k]}{R[key]}", font(8, False, GRAY), fmt=spec[key][4], al=RIGHT, sheet=sup)
+    PBX = cfg.get('payback_estendido')
+    PB0 = F0 + len(cfg['funnel']) + 2
+    if PBX:   # a tabela tem 12 colunas, mas a curva de payback pode precisar de mais meses para cruzar o zero
+        put(f'B{PB0-1}', "Curva de payback estendida (tabela + meses à frente, até o acumulado zerar)", font(8, True, GRAY), al=LEFT, sheet=sup)
+        put(f'B{PB0}', "Mês", font(8, False, GRAY), al=LEFT, sheet=sup)
+        put(f'B{PB0+1}', "Acumulado positivo", font(8, False, GRAY), al=LEFT, sheet=sup)
+        put(f'B{PB0+2}', "Acumulado negativo", font(8, False, GRAY), al=LEFT, sheet=sup)
+        for k, col in enumerate(SUPC):   # os 12 meses da tabela vêm por fórmula, para acompanhar quem editar a aba
+            put(f'{col}{PB0}', (cfg.get('month_labels') or [f"M{k+1}"] * len(SUPC))[k], font(8, False, GRAY), al=CENTER, sheet=sup)
+            put(f'{col}{PB0+1}', f"=MAX({MAIN}{PROJ[k]}{R[cum_key]},0)", font(8, False, GRAY), fmt=FMT_BRL, al=RIGHT, sheet=sup)
+            put(f'{col}{PB0+2}', f"=MIN({MAIN}{PROJ[k]}{R[cum_key]},0)", font(8, False, GRAY), fmt=FMT_BRL, al=RIGHT, sheet=sup)
+        for j, (rot, ac) in enumerate(zip(PBX['rotulos'], PBX['acumulado'])):
+            col = get_column_letter(3 + len(SUPC) + j)
+            put(f'{col}{PB0}', rot, font(8, False, GRAY), al=CENTER, sheet=sup)
+            put(f'{col}{PB0+1}', max(ac, 0), font(8, False, GRAY), fmt=FMT_BRL, al=RIGHT, sheet=sup)
+            put(f'{col}{PB0+2}', min(ac, 0), font(8, False, GRAY), fmt=FMT_BRL, al=RIGHT, sheet=sup)
     put(f'B{F0-1}', "Funil acumulado projetado · 12 meses", font(8, True, GRAY), al=LEFT, sheet=sup)
     put(f'C{F0-1}', "Volume", font(8, True, GRAY), al=RIGHT, sheet=sup); put(f'D{F0-1}', "Conv. etapa", font(8, True, GRAY), al=RIGHT, sheet=sup)
     for i, (lab, key) in enumerate(FUNNEL):
@@ -448,11 +467,18 @@ def build_sheet(ws, cfg, logo_path):
     def payback_chart(sp):
         ch = BarChart(); ch.type = 'col'; ch.grouping = 'stacked'; ch.overlap = 100; ch.gapWidth = 60
         ch.title = sp['title']; ch.height = CHH; ch.width = CW; ch.legend = None
-        ch.add_data(Reference(sup, min_col=2, max_col=2 + n, min_row=S_POS, max_row=S_POS), from_rows=True, titles_from_data=True)
-        ch.add_data(Reference(sup, min_col=2, max_col=2 + n, min_row=S_NEG, max_row=S_NEG), from_rows=True, titles_from_data=True)
+        if PBX:   # curva até o payback, mesmo quando ele cai depois das 12 colunas da tabela
+            nx = n + len(PBX['rotulos'])
+            ch.add_data(Reference(sup, min_col=2, max_col=2 + nx, min_row=PB0 + 1, max_row=PB0 + 1), from_rows=True, titles_from_data=True)
+            ch.add_data(Reference(sup, min_col=2, max_col=2 + nx, min_row=PB0 + 2, max_row=PB0 + 2), from_rows=True, titles_from_data=True)
+            cats_pb = Reference(sup, min_col=3, max_col=2 + nx, min_row=PB0, max_row=PB0)
+        else:
+            ch.add_data(Reference(sup, min_col=2, max_col=2 + n, min_row=S_POS, max_row=S_POS), from_rows=True, titles_from_data=True)
+            ch.add_data(Reference(sup, min_col=2, max_col=2 + n, min_row=S_NEG, max_row=S_NEG), from_rows=True, titles_from_data=True)
+            cats_pb = cats
         for s, color in zip(ch.series, (GREEN, RED)):
             s.graphicalProperties.solidFill = color; s.graphicalProperties.line.solidFill = color
-        ch.set_categories(cats); grid(ch.x_axis); grid(ch.y_axis)
+        ch.set_categories(cats_pb); grid(ch.x_axis); grid(ch.y_axis)
         ch.y_axis.numFmt = NumFmt(formatCode=FMT_BRL, sourceLinked=False); ch.x_axis.tickLblPos = 'low'
         return finish(ch)
     def funnel_chart(sp):

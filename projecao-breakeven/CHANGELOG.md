@@ -2,6 +2,23 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v7.4 · 23/09/2026 · Template em outra moeda, e benchmark de home services em Meta
+
+- **`--moeda` no gerador.** O template nascia com `R$` cravado no código — em formato numérico, em rótulo (`[R$] FEE V4`) e no eixo dos gráficos. Agora `--moeda "US$"` troca os três. Veio do cliente de climatização, cliente da V4 em Nova Inglaterra (Massachusetts), que fatura em dólar.
+- **Como funciona:** os formatos numéricos nascem na importação de `projecao_builder`, antes de qualquer argparse, então `build_workbook` lê `--moeda` de `sys.argv` e planta `PROJECAO_MOEDA` no ambiente antes do import. O texto dos rótulos é trocado num passe final sobre a pasta (`aplicar_moeda`), que **pula fórmulas de propósito**: `R$` também é referência absoluta válida no Excel (coluna R, linha travada), e trocar dentro de fórmula quebraria a planilha.
+- **O piloto já lia dólar:** `num()` sempre tirou `$` junto com `R$`, então `$1.200,00` na fonte nunca foi problema. O que faltava era a saída.
+- **Trava do melhor mês passa a enxergar o mês corrente.** Com `--incluir-corrente`, a janela de taxas e o período de referência já incluíam o mês parcial, mas o `teto_receita` continuava só nos fechados — então o alerta disparava contra o próprio melhor mês do cliente. No cliente de climatização o melhor mês fechado era US$ 350 e o corrente US$ 12.680: a trava acusava "79,3x o melhor mês" em toda projeção. Agora o teto sai do período de referência, marcado como parcial, e o alerta diz que aquele mês ainda vai subir. Passou de 79,3x para 2,2x, com a verba comparada.
+- **Regressão:** 19 casos (novo: `inside_sales_moeda_usd`), que exige os rótulos em `[US$]`, proíbe os em `[R$]` e confere que nenhuma fórmula foi tocada.
+- **`referencias/home_services_hvac_meta_benchmarks.json`:** 8 premissas, 10 blocos de descarte e 14 fontes, para HVAC residencial nos EUA anunciando em **Meta**, com tickets de Massachusetts. Três pesquisas alimentaram o arquivo; ~200 URLs apareceram, 45 foram abertas, 22 retidas.
+- **Lição de método que custou meia pesquisa: confirme o CANAL antes de pesquisar benchmark.** Montei o diagnóstico inteiro do cliente de climatização em cima de Google Ads porque a aba Plano de Mídia da planilha lista campanhas de Search e Local Services Ads. O cliente roda só Meta. Todo o benchmark de Google — CPC, CPL, book rate, LSA — foi descartado. Ficou no arquivo porque é bom, para o dia em que houver Google. **A pergunta "qual canal está de fato rodando" entra na entrevista antes de qualquer pesquisa de mercado.**
+- **Padrão novo de diagnóstico: separar métrica quebrada de dado quebrado.** No cliente de climatização, CPM e CTR variavam 16x e 40x entre meses enquanto CPC, CPL e clique → lead variavam 3%. As que explodiram têm impressões no denominador; as estáveis não. Isso é assinatura de campo subcontado, não de mudança de leilão — e a reconciliação fechou: recalculando jul/ago com o CPM do único mês que bate, o CTR de agosto (0,33%) e o de setembro (0,31%) convergem. **Antes de explicar uma variação de dez vezes por comportamento de mídia, teste se o denominador mudou.**
+
+## v7.3 · 22/09/2026 · Curva de payback além da tabela e benchmarks de indústria B2B
+
+- **Curva de payback estendida.** A tabela tem 12 colunas e o payback muitas vezes cai depois delas — o gráfico terminava sem cruzar o zero e o payback virava nota de rodapé. Agora o gerador monta `payback_estendido` a partir dos 48 meses do piloto (seguindo no run-rate quando a série acaba antes) e o gráfico "Curva de payback" vai até o mês em que o acumulado zera. Na indústria de plásticos a curva passou de 12 para 44 colunas, de jan/2026 a ago/2029.
+- **`referencias/industria_plasticos_b2b_benchmarks.json`:** 7 premissas, 44 fontes abertas e 77 descartadas, para indústria de plásticos e utensílios vendendo B2B a varejo e atacado no Brasil. Cada linha passou por verificação adversarial que abriu as URLs; duas conclusões do pesquisador foram corrigidas na verificação (SQL → venda e MQL → SQL).
+- **Lição de método que motivou a pesquisa:** usar só o envelope histórico do cliente mede o teto errado quando a operação está quebrada — o melhor mês de quem está mal pode estar abaixo do normal do setor. A regra já estava no SKILL.md; o que faltava era aplicá-la antes de declarar "esta alavanca não chega".
+
 ## v7.2 · 22/09/2026 · Legado na projeção, projetado × realizado e a trava do melhor mês
 
 - **Legado dentro da tabela.** A entrevista passa a perguntar se o cliente quer o histórico na própria tabela de projeção (1.4.2). Com `--inicio-contrato`, os meses vividos entram pela coluna Realizado e os seguintes são projeção, numa linha só — sem aba separada de histórico. O aviso que a pergunta precisa dar: a tabela tem 12 colunas, então legado longo come o horizonte.
@@ -26,28 +43,28 @@ Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode 
 - **Trio de breakeven sobre o consolidado.** `receita necessária`, `vendas necessárias` e `sobra/falta` passaram a correr sobre `custo_cons × receita_cons ÷ mc_cons` (margem implícita do consolidado), o que vale igual para receita própria, comissão, CRM e e-commerce, usa o realizado nos meses vividos e elimina as três variantes de fórmula. A identidade conferida em todos os casos: sobra/falta × margem = resultado líquido do mês.
 - **Retorno acumulado com déficit herdado.** `cum_cons/custo_acum + 1` dava múltiplo negativo quando havia "acumulado inicial" (o numerador carregava o déficit, o denominador não). Agora é MC acumulada ÷ custo acumulado, que bate com o cartão de KPI.
 - **Acertos de leitura.** Coluna do rótulo de 40 para 52 (os nomes com prefixo eram cortados pela célula do Mês 1); o total continua cinza, porque amarelo é o código de "editável" e total é sempre fórmula; seções vizinhas do mesmo bloco compartilham uma tarja só, em vez de repetir a palavra; linhas `mixed` (sessões orgânicas, faturamento da loja, base do CRM) entraram na pintura de alavanca; e a explicação das cores e dos prefixos virou a seção "COMO LER A ABA DE PROJEÇÃO" na aba Premissas do cliente, que antes só existia na planilha demo.
-- **O SQL sai de quem foi conectado, não do MQL.** A cadeia do inside sales virou lead → conexão → SQL → venda quando a fonte tem a linha `Conexões`; sem ela, volta a lead → MQL → SQL. O MQL sai da multiplicação e fica como qualidade do lead no bloco de marketing (`informativas()` no piloto). Motivo: a oportunidade depende de alguém ter falado com a pessoa — na loja de multimídia, setembro teve 46 MQLs e 9 conexões, e o modelo antigo gerava SQL a partir dos 46. As duas linhas de conexão viraram uma só, `CONEXÃO SOBRE OS LEADS (MQL OU NÃO)`, porque todo MQL já é um lead e a conexão vale para os dois. O rótulo diz o denominador de propósito: encadear `MQL → conexão` parece natural mas não fecha — o time conecta lead que nunca virou MQL, e na loja de multimídia agosto teve 23 MQLs para 86 conexões (374%). `--alvo conexao` deixou de ser gambiarra (subia o lead → MQL na proporção) e virou alvo direto da etapa; a versão antiga sobrevive só para fonte sem `Conexões`. Na loja de multimídia a projeção ficou idêntica mês a mês — mesmo payback em jul/2027 — porque `lead → MQL × MQL → SQL` e `conexão × conexão → SQL` dão o mesmo lead → SQL (4,18%).
+- **O SQL sai de quem foi conectado, não do MQL.** A cadeia do inside sales virou lead → conexão → SQL → venda quando a fonte tem a linha `Conexões`; sem ela, volta a lead → MQL → SQL. O MQL sai da multiplicação e fica como qualidade do lead no bloco de marketing (`informativas()` no piloto). Motivo: a oportunidade depende de alguém ter falado com a pessoa — na multimídia automotiva, setembro teve 46 MQLs e 9 conexões, e o modelo antigo gerava SQL a partir dos 46. As duas linhas de conexão viraram uma só, `CONEXÃO SOBRE OS LEADS (MQL OU NÃO)`, porque todo MQL já é um lead e a conexão vale para os dois. O rótulo diz o denominador de propósito: encadear `MQL → conexão` parece natural mas não fecha — o time conecta lead que nunca virou MQL, e na multimídia automotiva agosto teve 23 MQLs para 86 conexões (374%). `--alvo conexao` deixou de ser gambiarra (subia o lead → MQL na proporção) e virou alvo direto da etapa; a versão antiga sobrevive só para fonte sem `Conexões`. Na multimídia automotiva a projeção ficou idêntica mês a mês — mesmo payback em jul/2027 — porque `lead → MQL × MQL → SQL` e `conexão × conexão → SQL` dão o mesmo lead → SQL (4,18%).
 - **O marketing vai até o MQL.** `lead → MQL`, `MQLs` e `custo por MQL` voltaram para o bloco de marketing: o MQL é qualificado por critérios do formulário ou da landing page, não pelo vendedor (regra do usuário, 22/09). As seções viraram "MARKETING · DA VERBA AO MQL" e "VENDAS · DO ATENDIMENTO À RECEITA", que começa na conexão do lead. A planilha de referência da V4 põe lead → MQL no bloco comercial; a operação do usuário não funciona assim.
 - **Cartões do resultado executivo.** Passaram a começar na coluna G, com respiro entre o bloco de premissas e os cartões, e a se organizar pela quantidade (até 8 cartões ficam 4 + 3, não 5 + 2). A ordem começa pelo resultado líquido, depois faturamento, custo e retorno. Saíram "maior exposição de caixa" e "excedente pós-payback" — o número da exposição segue no veredito, na aba Premissas.
-- **Um bloco financeiro só, todo consolidado.** A aba trazia os blocos FINANCEIRO (só projetado) e RESULTADO (realizado onde existe) lado a lado, com **cinco métricas repetidas e com valores diferentes** — resultado MC, custo acumulado, resultado do mês, resultado acumulado e retorno por R$ 1. Em mês já vivido a versão projetada é ficção (na loja de multimídia, setembro: R$ 658 de MC projetado contra R$ 0 real, R$ 11.364 de custo contra R$ 9.396), e nada indicava qual das duas ler. Agora existe um bloco financeiro só, em três grupos (resultado · quanto falta para zerar o mês · eficiência e retorno), com toda linha no consolidado. ROAS, ROAS de breakeven, retorno da mídia e retorno por R$ 1 passaram a rodar sobre as linhas consolidadas, o que exigiu uma `midia_cons`. O ROAS de breakeven virou `receita necessária ÷ mídia`, fórmula única que dispensa a variante da agência com margem 100%. `hidden_rows` no builder esconde as intermediárias de fórmula e as três flags `(1 = SIM)`, que alimentam os cartões e não são para o cliente: de 24 linhas visíveis para 16 métricas em 3 grupos.
-- **Bloco orgânico parametrizável.** As linhas de tráfego orgânico deixaram de ser fixas em SEO: `--organico-origem` e `--organico-metrica` definem a origem (SEO, social orgânico, indicação) e o que é contado na entrada, porque em cliente sem site a entrada não é "visita" e sim clique no link da bio ou conversa iniciada. Os rótulos das três linhas e da premissa seguem esses dois valores; o padrão continua SEO/visitas orgânicas. Veio da loja de multimídia, que não tem página nenhuma e cujo Growth Pack não mede orgânico de social.
-- **Mês vivido sem receita.** A margem implícita do consolidado é 0/0 nesses meses e zerava a linha de breakeven (apareceu ao regerar a loja de multimídia: setembro mostrava R$ 0 de receita necessária em vez de R$ 37.585). A fórmula agora cai para a razão planejada do mês, e a regressão passou a exigir que a linha seja sempre positiva.
+- **Um bloco financeiro só, todo consolidado.** A aba trazia os blocos FINANCEIRO (só projetado) e RESULTADO (realizado onde existe) lado a lado, com **cinco métricas repetidas e com valores diferentes** — resultado MC, custo acumulado, resultado do mês, resultado acumulado e retorno por R$ 1. Em mês já vivido a versão projetada é ficção (na multimídia automotiva, setembro: R$ 658 de MC projetado contra R$ 0 real, R$ 11.364 de custo contra R$ 9.396), e nada indicava qual das duas ler. Agora existe um bloco financeiro só, em três grupos (resultado · quanto falta para zerar o mês · eficiência e retorno), com toda linha no consolidado. ROAS, ROAS de breakeven, retorno da mídia e retorno por R$ 1 passaram a rodar sobre as linhas consolidadas, o que exigiu uma `midia_cons`. O ROAS de breakeven virou `receita necessária ÷ mídia`, fórmula única que dispensa a variante da agência com margem 100%. `hidden_rows` no builder esconde as intermediárias de fórmula e as três flags `(1 = SIM)`, que alimentam os cartões e não são para o cliente: de 24 linhas visíveis para 16 métricas em 3 grupos.
+- **Bloco orgânico parametrizável.** As linhas de tráfego orgânico deixaram de ser fixas em SEO: `--organico-origem` e `--organico-metrica` definem a origem (SEO, social orgânico, indicação) e o que é contado na entrada, porque em cliente sem site a entrada não é "visita" e sim clique no link da bio ou conversa iniciada. Os rótulos das três linhas e da premissa seguem esses dois valores; o padrão continua SEO/visitas orgânicas. Veio da multimídia automotiva, que não tem página nenhuma e cujo Growth Pack não mede orgânico de social.
+- **Mês vivido sem receita.** A margem implícita do consolidado é 0/0 nesses meses e zerava a linha de breakeven (apareceu ao regerar a multimídia automotiva: setembro mostrava R$ 0 de receita necessária em vez de R$ 37.585). A fórmula agora cai para a razão planejada do mês, e a regressão passou a exigir que a linha seja sempre positiva.
 - **Regressão:** 17 casos (novos: fonte com linha de visitas, connect rate informado na mão, ciclo de venda em 50% e o formato do EZ — margem 100% com comissão). A checagem de taxa acima de 100% passou a valer para todo rótulo `[%]`, exceto crescimento, conexão e participação, que podem passar por definição. Duas travas numéricas novas, porque a checagem de existência de linha não pegava troca de valor entre alavancas: `valores=` prende o número da alavanca no Mês 1 (connect rate e visita → lead), e a identidade **sobra/falta × margem = resultado líquido do mês** é conferida em todos os meses de todos os casos. Conferido por mutação: tirar a margem do denominador da linha de breakeven faz o teste falhar.
 
 ## v7.0 · 21/09/2026 · Modelo padrão de dados e entrevista por frente contratada
 
 - **Regra do modelo padrão:** a aba de projeção mostra a cadeia padrão com o valor usado no mês; premissa que varia (CPM com saturação, multiplicadores de eleição, datas e remarketing, sazonalidade de demanda) não vira linha na projeção. A decomposição vai para a aba Premissas, em tabela mês a mês. A sazonalidade da demanda passou a entrar na taxa de SQL → venda usada no mês, com a tabela "Sazonalidade da demanda mês a mês" na aba Premissas.
 - **Entrevista:** novas perguntas de 1.0 (frentes contratadas e o que o fee cobre), 1.3.1 (custo de mídia da campanha atual, saturação do CPM com a escala, fatia de remarketing, eleição e datas), 1.5.1 (prazo do cliente e cenário-meta em aba extra), 1.5.2 (capacidade da operação: contatos e vendas por mês) e 1.6.3 (sazonalidade do produto pelo Google Trends e IBGE; oferta não entra sem dado).
-- **Premissa mais dura que ainda fecha:** quando usuário pede uma premissa mais conservadora, mostre a faixa com o mês de payback de cada valor e pare no mais duro que ainda fecha; os extremos ficam como sensibilidade.
+- **Premissa mais dura que ainda fecha:** quando o usuário pede uma premissa mais conservadora, mostre a faixa com o mês de payback de cada valor e pare no mais duro que ainda fecha; os extremos ficam como sensibilidade.
 
-## v6.5 · 19/09/2026 · Cenário extra em outra aba (loja de multimídia)
+## v6.5 · 19/09/2026 · Cenário extra em outra aba (multimídia automotiva)
 
-- Gerador com `--extra "premissas.json|Aba|Cenário|metodologia.json"` (repetível): cada cenário vira uma aba de projeção no mesmo arquivo, com a própria aba de premissas. loja de multimídia: "Inside Sales" (plano base, payback em jul/2027) e "Cenário Dezembro" (acumulado zerado em dez/2026).
+- Gerador com `--extra "premissas.json|Aba|Cenário|metodologia.json"` (repetível): cada cenário vira uma aba de projeção no mesmo arquivo, com a própria aba de premissas. multimídia automotiva: "Inside Sales" (plano base, payback em jul/2027) e "Cenário Dezembro" (acumulado zerado em dez/2026).
 - Com cenários extras, o gráfico "Resultado acumulado mês a mês" de cada aba de projeção mostra também as linhas das outras abas (plano base × cenários), para o payback de cada um aparecer no mesmo gráfico. O usuário queria ver o acumulado do cenário nos gráficos da aba principal, não o resultado do mês nem o faturamento.
 - `metodologia_mercado.py` aceita "taxas" e "justificativas" por premissa no analise.json, para a tabela de benchmarks mostrar as taxas do cenário.
 - Regressão com caso de aba extra.
 
-## v6.4 · 19/09/2026 · Aba Premissas, CPM ao longo do ano e visão de 12 meses (loja de multimídia)
+## v6.4 · 19/09/2026 · Aba Premissas, CPM ao longo do ano e visão de 12 meses (multimídia automotiva)
 
 - A aba "Metodologia · <aba>" passa a se chamar "Premissas · <aba>", a pedido do usuário.
 - Inside sales: "Custo total (fee V4 + mídia)" sobe para logo abaixo de fee e mídia.
@@ -55,14 +72,14 @@ Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode 
 - A pedido do usuário, a projeção mostra só a linha "CPM", já com o CPM usado no mês (base × multiplicador). A decomposição (base com saturação, multiplicador e CPM usado) fica numa tabela mês a mês na aba Premissas, como explicação para o cliente.
 - Benchmarks: eleição de 2026 (TRE-RJ, CNN 2022), remarketing (Lebesgue, AdRoll, Metadata), CPM por data (Superads, Bïrch) e sazonalidade de demanda de 12 meses pelo Google Trends.
 
-## v6.3 · 19/09/2026 · Sazonalidade, ROAS e retorno após a margem (loja de multimídia)
+## v6.3 · 19/09/2026 · Sazonalidade, ROAS e retorno após a margem (multimídia automotiva)
 
 - Piloto com `--sazonalidade-demanda` e `--sazonalidade-cpm`: multiplicadores mês a mês de vendas e de CPM (Black Friday, Natal). Na planilha viram linhas editáveis ("Sazonalidade do CPM" e "Sazonalidade da demanda") que entram nas impressões e nas vendas geradas.
 - Inside sales ganha a cascata de retorno: ROAS (receita ou faturamento ÷ mídia), ROAS de breakeven ((fee + mídia) ÷ mídia ÷ margem), retorno dos anúncios após a margem (MC − mídia), ROI da mídia após a margem e o resultado depois do fee V4.
 - Benchmarks: sazonalidade de central multimídia pelo Google Trends (2021–2025), Neotrust, Cielo, NielsenIQ e NRF; conferência do MQL → SQL.
 - Regressão com caso de sazonalidade.
 
-## v6.2 · 19/09/2026 · Dados de mercado quando o histórico é curto (loja de multimídia)
+## v6.2 · 19/09/2026 · Dados de mercado quando o histórico é curto (multimídia automotiva)
 
 - Piloto com `--alvo alavanca=valor`: o alvo da rampa vem de benchmark de mercado nas etapas sem histórico suficiente, nunca pior que o atual, com alerta. `--alvo conexao=0.69` (inside sales com Conexões na fonte) sobe lead → MQL na proporção da conexão e grava a conexão mês a mês.
 - Planilha: a conexão lead vira linha mês a mês quando tem alvo de mercado; o envelope marca as alavancas com "alvo de mercado"; a Curva da projeção descreve a verba em degraus e os alvos de mercado.
@@ -70,10 +87,10 @@ Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode 
 - Regressão com caso de alvo de mercado.
 - Benchmarks de CPM, CTR de link e clique → lead no Brasil e no setor (Superads, LocaliQ, PTAX do BCB). A skill passa a exigir o custo de mídia da campanha atual e o estresse de CPM ao escalar a verba.
 
-## v6.1 · 18/09/2026 · Conexão só de lead e receita própria (loja de multimídia)
+## v6.1 · 18/09/2026 · Conexão só de lead e receita própria (multimídia automotiva)
 
 - Gerador com `--conexao-so-lead`: quando a linha Conexões conta só leads conectados, a conexão lead vem da fonte e a de MQL fica em branco para preencher, sem taxa suposta. O funil segue MQL → SQL e o realizado de MQL conectado fica aberto.
-- Cliente com receita própria (comissão 1, sem CRM): saem as linhas de comissão e "receita da agência". A linha de faturamento vira "Faturamento (vendas × ticket)", o cartão de GMV sai e a meta pede faturamento, não GMV. consultoria e RPS também mostravam "comissão 100%".
+- Cliente com receita própria (comissão 1, sem CRM): saem as linhas de comissão e "receita da agência". A linha de faturamento vira "Faturamento (vendas × ticket)", o cartão de GMV sai e a meta pede faturamento, não GMV. Destra e RPS também mostravam "comissão 100%".
 - Metodologia: as fórmulas do inside sales descrevem o funil real (leads = cliques × clique → lead) e o faturamento quando não há comissão; o cenário de referência cita o número real de meses.
 - Regressão com o caso de conexão só de lead, que também confere que as linhas de comissão não aparecem.
 
@@ -103,20 +120,20 @@ Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode 
 
 - A entrevista pede a margem com uma venda concreta ("numa venda de R$ X, quanto sobra?"). A EZ passou por três leituras de margem (6%, 20%, 3%) antes da confirmação em reais.
 
-## v5.3 · 18/09/2026 · Planilha até o payback (agência de viagens)
+## v5.3 · 18/09/2026 · Planilha até o payback (turismo)
 
 - O piloto usa o realizado dos meses já vividos no veredito, como a linha consolidada da planilha. Antes, a EZ tinha setembro projetado em −R$ 8,9 mil e realizado em +R$ 1,8 mil, e o piloto dizia payback em ago/27 enquanto a planilha dizia mai/27. `--inicio` alinha o Mês 1 quando ele é o início do contrato.
 - `--rampa-ate` separa o fim da rampa do mês-alvo. A planilha pode ir até o mês do payback sem que a rampa fique mais lenta e mude os números.
 - Regra de horizonte: até dezembro por padrão. Quando o acumulado só zera depois, a planilha é estendida até esse mês, a pedido do usuário.
 
-## v5.2 · 18/09/2026 · Duas datas no veredito e verba em degraus (agência de viagens)
+## v5.2 · 18/09/2026 · Duas datas no veredito e verba em degraus (turismo)
 
 - O veredito sempre responde "em que mês fica realista", mesmo depois do horizonte: **no azul a partir de** (todo mês seguinte com resultado ≥ 0) e **acumulado zera em** (payback). As duas datas consideram o realizado dos meses vividos e a projeção por 48 meses. Aparecem no subtítulo, na Metodologia e num cartão novo, e a tabela ganha as linhas "Mês no azul?" e "No azul daqui até o fim?".
 - `--verba-plano` define a verba mês a mês, em degraus. Na planilha, cada mês fica editável, e crescimento e teto saem das premissas.
 - Inside sales: quando a comissão já é a margem da agência (margem 100%), a linha de margem sai e a comissão vira "margem da agência".
 - O subtítulo mostra o período real (ex.: set/2026 a dez/2026) em vez de "12 meses".
 
-## v5.1 · 18/09/2026 · Caminho para o breakeven (agência de viagens)
+## v5.1 · 18/09/2026 · Caminho para o breakeven (turismo)
 
 - **Correção:** uma etapa opcional sem nenhum valor passa a contar como ausente. Na EZ, o piloto achava a linha "Conexões" vazia do bloco Meta e zerava o funil inteiro.
 - O piloto calcula o **caminho** quando a meta não fecha: quanto cada alavanca precisaria, sozinha, para o mês-alvo fechar no zero, e se isso já aconteceu num mês fechado. Mais o fee que fecharia, a margem por real de mídia, a verba que cobriria o fee e o primeiro mês positivo sem teto. O gerador leva isso para a seção "Caminho para o breakeven" da Metodologia.
@@ -126,7 +143,7 @@ Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode 
 
 ## v5 · 18/09/2026 · GA4, funil pago e versionamento
 
-- **Correção:** o funil de e-commerce passa a correr só sobre as sessões pagas. Antes, as sessões orgânicas passavam pelas taxas do tráfego pago e inflavam a receita atribuída. Na e-commerce de tecidos, outubro aparecia com R$ 91 mil, contra R$ 50 mil do piloto.
+- **Correção:** o funil de e-commerce passa a correr só sobre as sessões pagas. Antes, as sessões orgânicas passavam pelas taxas do tráfego pago e inflavam a receita atribuída. Na varejo de tecidos, outubro aparecia com R$ 91 mil, contra R$ 50 mil do piloto.
 - **GA4:**
   - `scripts/ga4_resumo.py` consulta o servidor MCP oficial e gera o `ga4.json` do mês.
   - O piloto aceita `--ga4` e separa Google (CPM, CTR, connect) de Meta (verba ÷ custo por sessão).
@@ -140,18 +157,18 @@ Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode 
 - Entram o teste de regressão (`tests/regressao.py`) com dados sintéticos, inclusive um GA4 sintético, e os aprendizados em `referencias/`.
 - Começa o versionamento com Git.
 
-## v4 · 17/09/2026 · Revisão do template (e-commerce de tecidos)
+## v4 · 17/09/2026 · Revisão do template (varejo de tecidos)
 
-- Nenhuma taxa de etapa passa de 100%: ela é travada com alerta e a causa é explicada. Na e-commerce de tecidos, os cliques eram só do Google e as sessões somavam Google e Meta.
+- Nenhuma taxa de etapa passa de 100%: ela é travada com alerta e a causa é explicada. Na varejo de tecidos, os cliques eram só do Google e as sessões somavam Google e Meta.
 - `--connect-rate` para informar o connect quando a fonte não permite medir.
 - O horizonte vai só até dezembro do ano corrente (`--horizonte`), sem meses do ano seguinte.
 - Sai o bloco de quarter. Histórico e envelope vão para a aba Metodologia.
 - Ordem da aba: premissas, indicadores, meta, projeção e, por último, os gráficos.
 - Gráficos: receita da mídia com crescimento mês a mês, resultado acumulado, payback, participação da mídia e funil.
 
-## v3 · 17/09/2026 · Revisão do template (consultoria, RPS, e-commerce de tecidos)
+## v3 · 17/09/2026 · Revisão do template (Destra, RPS, varejo de tecidos)
 
-- O alvo da rampa passa a ser a mediana do período comparável, nunca pior que o atual. O melhor mês inflava a consultoria de R$ 322 mil para R$ 1,1 milhão.
+- O alvo da rampa passa a ser a mediana do período comparável, nunca pior que o atual. O melhor mês inflava a Destra de R$ 322 mil para R$ 1,1 milhão.
 - A verba de mídia cresce por percentual mensal com teto (`--crescimento-midia`, `--midia-teto`), o que faz o ROAS variar.
 - Resultado consolidado: realizado onde existe, projetado à frente. `--inicio-contrato` define o Mês 1.
 - Aba "Metodologia" com fonte, janela, alertas, premissas assumidas e cenário base. Nenhum bloco de instruções na aba do cliente.
@@ -172,7 +189,7 @@ Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode 
 - Entrevista em ordem: fonte, modelo, fee e mídia confirmados, margem, mês-alvo.
 - Cada mês tem colunas Projetado e Realizado. Bloco histórico.
 - Janela das taxas: o último quarter fechado, ponderado por volume.
-- Primeiros clientes: varejo de revestimentos, consultoria e e-commerce de tecidos.
+- Primeiros clientes: RPS Revestimentos, Destra Consultoria e varejo de tecidos.
 
 ## v0 · Piloto original
 

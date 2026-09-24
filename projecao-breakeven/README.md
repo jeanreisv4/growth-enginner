@@ -2,8 +2,8 @@
 
 **Da planilha de indicadores do cliente para uma projeção de breakeven defensável — com veredito de realismo, benchmarks verificados e um .xlsx pronto para apresentar.**
 
-![versão](https://img.shields.io/badge/versão-7.0-E50914)
-![testes](https://img.shields.io/badge/testes-11%20casos-brightgreen)
+![versão](https://img.shields.io/badge/versão-7.4-E50914)
+![testes](https://img.shields.io/badge/testes-19%20casos-brightgreen)
 ![python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![licença](https://img.shields.io/badge/licença-MIT-black)
 
