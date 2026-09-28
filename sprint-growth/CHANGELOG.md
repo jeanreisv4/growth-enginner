@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.1 (28/09/2026)
+
+- **README com o desenho do workflow no formato de loop** (referência: modelos qualitativos de crescimento da
+  Reforge): cada fase leva a sua saída escrita na seta, cores por tipo de passo (informação, decisão, análise,
+  entrega, trava) e o ponto em que o loop se fecha (a próxima sprint começa pela memória do cliente).
+
 ## v1.1 (28/09/2026)
 
 Aprendizados da sprint de uma distribuidora de peças automotivas (inside sales pelo WhatsApp, CRM DataCrazy) e da

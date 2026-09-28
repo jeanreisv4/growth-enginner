@@ -2,6 +2,12 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v7.8.1 · 28/09/2026 · README com o desenho do workflow
+
+- **`README.md` novo**, com o fluxo em cinco fases (entrevista, cálculo automático, veredito, entrega, validação), a
+  saída de cada fase escrita na seta e o ponto em que o loop se fecha: o realizado de cada mês recalibra as taxas.
+  Formato inspirado nos modelos qualitativos de crescimento da Reforge. Sem mudança de cálculo.
+
 ## v7.8 · 25/09/2026 · Cliente que ainda não vendeu
 
 - **`--fixar` numa alavanca sem valor na janela deixou de quebrar.** Num cliente com zero venda no histórico, o ticket e o SQL → venda não existem — e o alerta de `--fixar` tentava formatar `None`, derrubando o piloto. Agora ele diz que "a janela não tinha valor para esta alavanca, o número veio inteiro da premissa", que é exatamente a informação que o leitor precisa. **Cliente sem venda nenhuma é um caso real, não um erro de entrada.**
