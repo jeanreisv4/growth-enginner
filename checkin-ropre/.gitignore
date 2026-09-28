@@ -1,0 +1,14 @@
+# Dado de cliente nunca entra no repositório.
+clientes/*/
+!clientes/exemplo/
+saida/
+tests/tmp/
+*.xlsx
+*.json.gz
+
+# Regressão contra cliente real (números e extrato ficam na máquina de quem roda)
+tests/regressao_cliente.py
+
+__pycache__/
+*.pyc
+.DS_Store

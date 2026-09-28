@@ -1,0 +1,69 @@
+flowchart TD
+    subgraph CHECKIN["Check-in ROPRE · este workflow"]
+        E01["<b>01</b> Abrir o período e as<br/>premissas 🔧"]
+        E02["<b>02</b> Conferir a cobertura<br/>das fontes 🔧"]
+        E03["<b>03</b> Puxar a base do<br/>período 🔧"]
+        E04["<b>04</b> Calcular os<br/>indicadores do período"]
+        E05["<b>05</b> Resumo de call →<br/>briefing"]
+        E06["<b>06</b> Varredura do grupo de<br/>WhatsApp 🔧"]
+        E07["<b>07</b> Entregas e horas 🔧"]
+        E08["<b>08</b> Sinais do cockpit 🔧"]
+        E09["<b>09</b> R · Resultados"]
+        E10["<b>10</b> O · Objetivos 🔧"]
+        E11["<b>11</b> P · Premissas e Riscos"]
+        E12["<b>12</b> E · Entregas"]
+        E13["<b>13</b> E · Próximos Passos"]
+        E14["<b>14</b> Conferência dos<br/>números"]
+        E15["<b>15</b> Entregar para o deck<br/>do design system 🔧"]
+    end
+
+    subgraph DECK["Deck · design system da companhia"]
+        E16["<b>16</b> Preparar o conteúdo<br/>para o deck<br/><i>checkin-colli</i>"]
+        E17["<b>17</b> Compilar as páginas no<br/>design system 🔧<br/><i>account-checkin-ropre-v2</i>"]
+        E18["<b>18</b> QA visual 🔧<br/><i>account-checkin-ropre-v2</i>"]
+        E19["<b>19</b> Publicar e entregar 🔧<br/><i>account-checkin-ropre-v2</i>"]
+    end
+
+    E01 --> E02
+    E01 --> E05
+    E01 --> E06
+    E01 --> E07
+    E01 --> E08
+    E02 --> E03
+    E03 --> E04
+    E04 --> E09
+    E04 --> E10
+    E04 --> E11
+    E05 --> E10
+    E05 --> E11
+    E05 --> E12
+    E05 --> E13
+    E06 --> E12
+    E07 --> E12
+    E08 --> E11
+    E09 --> E14
+    E10 --> E14
+    E11 --> E14
+    E12 --> E14
+    E13 --> E14
+    E14 --> E15
+    E15 --> E16
+    E16 --> E17
+    E17 --> E18
+    E18 --> E19
+
+    class E01,E05 briefing;
+    class E02,E03,E07 dados;
+    class E06,E08 pesquisa;
+    class E04,E09,E10,E11,E12,E13 analise;
+    class E14 revisao;
+    class E15 entrega;
+    class E16,E17,E18,E19 outra;
+
+    classDef briefing fill:#1f2937,stroke:#60a5fa,color:#e5e7eb;
+    classDef dados fill:#1f2937,stroke:#34d399,color:#e5e7eb;
+    classDef pesquisa fill:#1f2937,stroke:#fbbf24,color:#e5e7eb;
+    classDef analise fill:#1f2937,stroke:#f87171,color:#e5e7eb;
+    classDef revisao fill:#1f2937,stroke:#a78bfa,color:#e5e7eb;
+    classDef entrega fill:#1f2937,stroke:#e5e7eb,color:#e5e7eb;
+    classDef outra fill:#111827,stroke:#9ca3af,color:#9ca3af,stroke-dasharray:4 3;

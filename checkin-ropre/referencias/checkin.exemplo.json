@@ -1,0 +1,461 @@
+{
+  "_o_que_e": "Exemplo do check-in aprovado que a etapa 15 entrega à etapa 16. Gerado por workflow/render_spec.py a partir de tests/fixtures (dado sintético). Os cinco blocos do ROPRE são resultados, objetivos, premissas_riscos, entregas e proximos_passos; regra_atribuicao é o que vai escrito no deck; avisos é a lista do que não foi medido. null significa 'não medido', nunca zero.",
+  "cliente": "Cliente Teste",
+  "cadencia": "mensal",
+  "periodo": {
+    "cadencia": "mensal",
+    "rotulo": "Junho de 2026",
+    "de": "2026-06-01",
+    "ate": "2026-06-30",
+    "parcial": false
+  },
+  "gerado_em": "2026-06-30",
+  "fonte": "fixture",
+  "extraido_em": "2026-06-30",
+  "regra_atribuicao": {
+    "resumo": "tag da agência ou origem de mídia paga",
+    "fechada_em": "01/06/2026",
+    "tags": [
+      "AG"
+    ],
+    "origens_agencia": [
+      "AG",
+      "LEADS AG"
+    ],
+    "origens_midia_paga": [
+      "Instagram"
+    ],
+    "origens_em_aberto": [
+      "SDR IA"
+    ],
+    "canal_por_origem": {
+      "Instagram": "meta",
+      "AG": "meta"
+    }
+  },
+  "resultados": {
+    "periodo": {
+      "cadencia": "mensal",
+      "rotulo": "Junho de 2026",
+      "de": "2026-06-01",
+      "ate": "2026-06-30",
+      "parcial": false
+    },
+    "vendas": 2,
+    "receita": 3000.0,
+    "ticket": 1500.0,
+    "novos": {
+      "n": 1,
+      "receita": 1000.0,
+      "ticket": 1000.0
+    },
+    "recorrentes": {
+      "n": 1,
+      "receita": 2000.0,
+      "ticket": 2000.0
+    },
+    "participacao_recorrente": 0.5,
+    "investimento": 3000.0,
+    "leads_plataforma": 150,
+    "contatos_no_crm": 1,
+    "entrada_no_crm": 0.006666666666666667,
+    "impressoes": 30000,
+    "cliques": 600,
+    "ctr": 0.02,
+    "cpl": 20.0,
+    "roas": 1.0,
+    "cac": 3000.0,
+    "por_canal": {
+      "meta": {
+        "vendas": 2,
+        "receita": 3000.0,
+        "investimento": 3000.0,
+        "roas": 1.0
+      }
+    },
+    "cobertura_atribuicao": {
+      "só tag": 1,
+      "só origem de mídia paga": 1,
+      "sem marca": 1,
+      "origem em aberto": 1
+    },
+    "receita_com_canal": 1.0,
+    "cobertura_midia": {
+      "canais": [
+        "meta"
+      ],
+      "ultimo_dia": {
+        "meta": "2026-06-30"
+      },
+      "incompletos": [],
+      "completa": true,
+      "exigido_ate": "2026-06-29",
+      "canais_sem_lead": []
+    },
+    "break_even_mes": 50000.0,
+    "meta_periodo": 50000.0,
+    "atingimento": 0.06,
+    "resultado": -8400.0,
+    "custo_periodo": 9000.0,
+    "midia_estimada": false,
+    "anterior": {
+      "periodo": {
+        "cadencia": "mensal",
+        "rotulo": "Maio de 2026",
+        "de": "2026-05-01",
+        "ate": "2026-05-31",
+        "parcial": false
+      },
+      "vendas": 0,
+      "receita": 0,
+      "ticket": null,
+      "investimento": null,
+      "roas": null,
+      "cac": null,
+      "leads_plataforma": null,
+      "contatos_no_crm": 0,
+      "resultado": -10000.0
+    },
+    "variacao": {
+      "vendas": null,
+      "receita": null,
+      "ticket": null,
+      "investimento": null,
+      "roas": null,
+      "cac": null,
+      "leads_plataforma": null,
+      "contatos_no_crm": null
+    },
+    "serie_mensal": {
+      "2025-10": {
+        "vendas": 0,
+        "receita": 0,
+        "novos": 0,
+        "receita_novos": 0,
+        "recorrentes": 0,
+        "receita_recorrentes": 0
+      },
+      "2025-11": {
+        "vendas": 0,
+        "receita": 0,
+        "novos": 0,
+        "receita_novos": 0,
+        "recorrentes": 0,
+        "receita_recorrentes": 0
+      },
+      "2025-12": {
+        "vendas": 0,
+        "receita": 0,
+        "novos": 0,
+        "receita_novos": 0,
+        "recorrentes": 0,
+        "receita_recorrentes": 0
+      },
+      "2026-01": {
+        "vendas": 0,
+        "receita": 0,
+        "novos": 0,
+        "receita_novos": 0,
+        "recorrentes": 0,
+        "receita_recorrentes": 0
+      },
+      "2026-02": {
+        "vendas": 0,
+        "receita": 0,
+        "novos": 0,
+        "receita_novos": 0,
+        "recorrentes": 0,
+        "receita_recorrentes": 0
+      },
+      "2026-03": {
+        "vendas": 0,
+        "receita": 0,
+        "novos": 0,
+        "receita_novos": 0,
+        "recorrentes": 0,
+        "receita_recorrentes": 0
+      },
+      "2026-04": {
+        "vendas": 0,
+        "receita": 0,
+        "novos": 0,
+        "receita_novos": 0,
+        "recorrentes": 0,
+        "receita_recorrentes": 0
+      },
+      "2026-05": {
+        "vendas": 0,
+        "receita": 0,
+        "novos": 0,
+        "receita_novos": 0,
+        "recorrentes": 0,
+        "receita_recorrentes": 0
+      },
+      "2026-06": {
+        "vendas": 2,
+        "receita": 3000.0,
+        "novos": 1,
+        "receita_novos": 1000.0,
+        "recorrentes": 1,
+        "receita_recorrentes": 2000.0
+      }
+    },
+    "safra": {
+      "2025-10": {
+        "criadas": 0,
+        "resolvidas": 0,
+        "ganhas": 0,
+        "receita": 0,
+        "taxa_ganho": null,
+        "maturidade": null,
+        "investimento": null,
+        "eficiencia": null
+      },
+      "2025-11": {
+        "criadas": 0,
+        "resolvidas": 0,
+        "ganhas": 0,
+        "receita": 0,
+        "taxa_ganho": null,
+        "maturidade": null,
+        "investimento": null,
+        "eficiencia": null
+      },
+      "2025-12": {
+        "criadas": 0,
+        "resolvidas": 0,
+        "ganhas": 0,
+        "receita": 0,
+        "taxa_ganho": null,
+        "maturidade": null,
+        "investimento": null,
+        "eficiencia": null
+      },
+      "2026-01": {
+        "criadas": 0,
+        "resolvidas": 0,
+        "ganhas": 0,
+        "receita": 0,
+        "taxa_ganho": null,
+        "maturidade": null,
+        "investimento": null,
+        "eficiencia": null
+      },
+      "2026-02": {
+        "criadas": 0,
+        "resolvidas": 0,
+        "ganhas": 0,
+        "receita": 0,
+        "taxa_ganho": null,
+        "maturidade": null,
+        "investimento": null,
+        "eficiencia": null
+      },
+      "2026-03": {
+        "criadas": 0,
+        "resolvidas": 0,
+        "ganhas": 0,
+        "receita": 0,
+        "taxa_ganho": null,
+        "maturidade": null,
+        "investimento": null,
+        "eficiencia": null
+      },
+      "2026-04": {
+        "criadas": 0,
+        "resolvidas": 0,
+        "ganhas": 0,
+        "receita": 0,
+        "taxa_ganho": null,
+        "maturidade": null,
+        "investimento": null,
+        "eficiencia": null
+      },
+      "2026-05": {
+        "criadas": 1,
+        "resolvidas": 1,
+        "ganhas": 1,
+        "receita": 1000.0,
+        "taxa_ganho": 1.0,
+        "maturidade": 1.0,
+        "investimento": null,
+        "eficiencia": null
+      },
+      "2026-06": {
+        "criadas": 3,
+        "resolvidas": 3,
+        "ganhas": 1,
+        "receita": 2000.0,
+        "taxa_ganho": 0.3333333333333333,
+        "maturidade": 1.0,
+        "investimento": 3000.0,
+        "eficiencia": 0.6666666666666666
+      }
+    },
+    "perdas": {
+      "total": 1,
+      "motivos": [
+        {
+          "motivo": "Parou de Interagir",
+          "n": 1,
+          "share": 1.0
+        }
+      ]
+    },
+    "ticket_distribuicao": {
+      "media": 1500.0,
+      "mediana": 1500.0,
+      "faixas": [
+        {
+          "faixa": "R$ 0 a 1.000",
+          "n": 0
+        },
+        {
+          "faixa": "R$ 1.000 a 1.500",
+          "n": 1
+        },
+        {
+          "faixa": "R$ 1.500 a 2.500",
+          "n": 1
+        },
+        {
+          "faixa": "R$ 2.500 a 4.500",
+          "n": 0
+        },
+        {
+          "faixa": "R$ 4.500 a 10.000",
+          "n": 0
+        },
+        {
+          "faixa": "acima de R$ 10.000",
+          "n": 0
+        }
+      ]
+    },
+    "ponte_planilha": [
+      {
+        "mes": "2026-06",
+        "planilha_novas": 1,
+        "planilha_receita_novas": 1000.0,
+        "planilha_recorrentes": 0,
+        "planilha_receita_recorrentes": 0.0,
+        "crm_novas": 1,
+        "crm_receita_novas": 1000.0,
+        "crm_recorrentes": 1,
+        "crm_receita_recorrentes": 2000.0,
+        "diferenca_receita": 2000.0
+      }
+    ]
+  },
+  "objetivos": {
+    "objetivo_smart": null,
+    "step": null,
+    "okrs": [
+      {
+        "kr": "Receita do período",
+        "metrica": "receita",
+        "meta": 3000.0,
+        "realizado": 3000.0,
+        "formato": "moeda",
+        "status": "atingido",
+        "icone": "✅",
+        "fonte": "CRM, por data de fechamento"
+      },
+      {
+        "kr": "Recorrência no máximo em metade das vendas",
+        "metrica": "participacao_recorrente",
+        "meta": 0.5,
+        "realizado": 0.5,
+        "formato": "percentual",
+        "status": "atingido",
+        "icone": "✅",
+        "fonte": "CRM, por data de fechamento"
+      }
+    ],
+    "acordado_nas_calls": [
+      "verba segue em R$ 4.000"
+    ]
+  },
+  "premissas_riscos": {
+    "premissas": [
+      {
+        "premissa": "Margem de contribuição",
+        "valor": "20%",
+        "origem": "confirmada com o cliente"
+      },
+      {
+        "premissa": "Verba de mídia (bruta)",
+        "valor": "R$ 4.000,00",
+        "origem": "contrato"
+      },
+      {
+        "premissa": "Regra de atribuição",
+        "valor": "tag da agência ou origem de mídia paga",
+        "origem": "fechada em 01/06/2026"
+      }
+    ],
+    "riscos": [
+      {
+        "causa": "causa de teste",
+        "risco": "risco de teste",
+        "efeito": "efeito de teste",
+        "probabilidade": 2,
+        "impacto": 5,
+        "score": 10
+      },
+      {
+        "causa": "levantado na call de 2026-06-15",
+        "risco": "time comercial reduzido",
+        "efeito": null,
+        "probabilidade": null,
+        "impacto": null,
+        "score": null
+      },
+      {
+        "causa": "lead da plataforma não vira contato no CRM",
+        "risco": "apenas 1% dos leads entraram no CRM no período",
+        "efeito": "verba comprando lead que o comercial nunca vê",
+        "probabilidade": null,
+        "impacto": null,
+        "score": null
+      }
+    ]
+  },
+  "entregas": {
+    "realizadas": [
+      {
+        "entrega": "Auditoria de medição publicada",
+        "evidencia": "documento da auditoria"
+      }
+    ],
+    "previstas": [
+      {
+        "entrega": "Padronizar a tag da agência na criação da oportunidade",
+        "prazo": "próximo mês",
+        "dono": "a_confirmar"
+      }
+    ],
+    "pendencias": [
+      {
+        "dia": "2026-06-18",
+        "canal": "whatsapp",
+        "pendencia": "cliente não aprovou os criativos"
+      },
+      {
+        "dia": "2026-06-15",
+        "canal": "call",
+        "pendencia": "cliente vai mandar a base de inativos"
+      }
+    ],
+    "horas": "40h"
+  },
+  "proximos_passos": [
+    {
+      "passo": "verba segue em R$ 4.000",
+      "origem": "call de 2026-06-15",
+      "dono": null,
+      "prazo": null
+    }
+  ],
+  "avisos": []
+}

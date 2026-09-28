@@ -1,0 +1,28 @@
+{
+  "_comentario": "Entregas, horas e próximos passos do período. O que não sai de base de dados entra aqui, e entra com evidência: cada item precisa de algo que o cliente possa conferir (documento, campanha no ar, tarefa no CRM). Itens marcados com 'a_confirmar' precisam do time antes de virar slide.",
+  "realizadas": [
+    {
+      "entrega": "Auditoria de medição do GA4 com os pontos quebrados listados",
+      "evidencia": "documento da auditoria"
+    },
+    {
+      "entrega": "Regra de atribuição fechada e aplicada a todo o histórico do ano",
+      "evidencia": "documento da sprint, seção da regra"
+    }
+  ],
+  "previstas": [
+    {
+      "entrega": "Padronizar a gravação da tag da agência na criação da oportunidade",
+      "prazo": "a definir",
+      "dono": "a_confirmar"
+    }
+  ],
+  "horas": null,
+  "proximos_passos": [
+    {
+      "passo": "Consertar a cadência de follow-up dos negócios parados",
+      "dono": "a_confirmar",
+      "prazo": "próximo mês"
+    }
+  ]
+}

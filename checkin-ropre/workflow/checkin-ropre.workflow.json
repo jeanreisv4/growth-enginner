@@ -1,0 +1,973 @@
+{
+  "formato": "checkin-ropre/workflow/1.2",
+  "gerado_por": "https://github.com/jeanreisv4/v4-checkin-ropre",
+  "workflow": {
+    "nome": "Check-in ROPRE — quinzenal e mensal",
+    "produto": "Assessoria Byline · Executar",
+    "promessa": "Um check-in ROPRE pronto para a reunião — deck e documento — com cada número rastreável à sua fonte e o que não foi medido escrito na cara.",
+    "versao": "v1",
+    "escopo": "pessoal",
+    "cadencias": [
+      "quinzenal",
+      "mensal",
+      "quarter"
+    ],
+    "servidores": [
+      {
+        "chave": "dados-flow",
+        "no_v4os": "Dados Flow",
+        "responde": "tudo que o pipeline sincroniza do projeto: CRM, mídia paga, analytics, e-commerce, operações, social orgânico, as conexões com o estado de cada uma, e as metas do período",
+        "entra_em": "cobertura (02), base (03) e metas (10) — blocos R e O",
+        "acesso": "token pessoal do Flow; no chat vem desligado por padrão",
+        "etapas": [
+          "02",
+          "03",
+          "10"
+        ]
+      },
+      {
+        "chave": "cockpit",
+        "no_v4os": "Cockpit Colli",
+        "responde": "cadastro do projeto, health score e histórico, entradas e saídas (churn, aviso prévio, renovação), expansão, NPS e simulações de break-even",
+        "entra_em": "projeto (01) e sinais de risco (08) — blocos O e P",
+        "acesso": "credencial da plataforma",
+        "etapas": [
+          "01",
+          "08"
+        ]
+      },
+      {
+        "chave": "bigquery-calls",
+        "no_v4os": "BigQuery · Ligações",
+        "responde": "as calls do projeto no período, com trecho de transcrição",
+        "entra_em": "acordos, pendências e riscos da call (05) — bloco O e Próximos Passos",
+        "acesso": "credencial da plataforma",
+        "etapas": [
+          "01",
+          "05"
+        ]
+      },
+      {
+        "chave": "bigquery-whatsapp",
+        "no_v4os": "BigQuery · WhatsApp",
+        "responde": "os grupos do cliente, atividade por dia e resumos",
+        "entra_em": "pendências (06) — bloco de Entregas",
+        "acesso": "credencial da plataforma",
+        "etapas": [
+          "06"
+        ]
+      },
+      {
+        "chave": "ekyte",
+        "no_v4os": "eKyte",
+        "responde": "campanhas e tarefas de marketing — entregas realizadas, previstas e horas",
+        "entra_em": "entregas e horas (07) — bloco de Entregas",
+        "acesso": "credencial da plataforma; ferramentas a confirmar",
+        "etapas": [
+          "07"
+        ]
+      },
+      {
+        "chave": "v4os",
+        "no_v4os": "V4 OS",
+        "responde": "o contexto do projeto em que o workflow roda (obrigatório na plataforma)",
+        "entra_em": "projeto (01) e handoff para a próxima skill (15)",
+        "acesso": "obrigatório; ferramentas a confirmar",
+        "etapas": [
+          "01",
+          "15"
+        ]
+      },
+      {
+        "chave": "catalogo-produtos",
+        "no_v4os": "Catálogo de Produtos",
+        "responde": "os SKUs que a companhia vende",
+        "entra_em": "contexto de expansão; nenhuma etapa depende dele",
+        "acesso": "token pessoal do Flow",
+        "etapas": []
+      }
+    ],
+    "entradas_do_workflow": [
+      {
+        "campo": "projeto",
+        "tipo": "texto",
+        "obrigatorio": true,
+        "descricao": "o projectDocumentId do projeto na plataforma, ou o nome do cliente — a etapa 01 resolve o id com localize_project (BigQuery de calls) ou cockpit_list_projects. Um cliente pode ter mais de um projeto (assessoria e produto adicional são contratos separados); cada projeto é um check-in."
+      },
+      {
+        "campo": "cadencia",
+        "tipo": "`quinzenal` · `mensal` · `quarter`",
+        "obrigatorio": true,
+        "descricao": "define o corte do período e a profundidade dos blocos (ver referencias/ropre.md)."
+      },
+      {
+        "campo": "referencia",
+        "tipo": "data YYYY-MM-DD",
+        "obrigatorio": true,
+        "descricao": "qualquer dia dentro do período; a etapa 01 resolve início e fim, e marca como parcial se o período ainda não terminou."
+      },
+      {
+        "campo": "premissas_do_projeto",
+        "tipo": "objeto",
+        "obrigatorio": true,
+        "descricao": "o que não mora em sistema nenhum da plataforma e por isso entra como input: fee, verba de mídia bruta e imposto, margem de contribuição (com origem e data), funis de venda, funil de recorrência, a regra de atribuição (tags, origens da agência, origens de mídia paga, origens em aberto, e a data em que foi fechada), os OKRs do ciclo (kr, métrica, meta, comparador), os riscos cadastrados (causa, risco, efeito, probabilidade, impacto) e, se o cliente lança à mão, o lançamento manual por mês. Molde: clientes/exemplo/cliente.json."
+      },
+      {
+        "campo": "fonte_por_canal",
+        "tipo": "objeto",
+        "obrigatorio": false,
+        "descricao": "dono de cada canal de mídia quando o mesmo canal existe em duas fontes (ex.: meta na plataforma, google numa planilha porque a conexão quebrou). Sem isso, tudo vem da plataforma e nada é contado duas vezes."
+      },
+      {
+        "campo": "grupo_de_whatsapp",
+        "tipo": "texto",
+        "obrigatorio": false,
+        "descricao": "id do grupo do cliente no BigQuery de WhatsApp. Sem ele, a etapa 06 diz que não há grupo ligado."
+      },
+      {
+        "campo": "entregas_do_periodo",
+        "tipo": "objeto",
+        "obrigatorio": false,
+        "descricao": "realizadas (com evidência), previstas (com dono e prazo) e horas, enquanto a fonte de entregas (ekyte) não estiver ligada. Molde: clientes/exemplo/entradas/entregas.json."
+      }
+    ],
+    "saidas_do_workflow": [
+      {
+        "saida": "check-in aprovado",
+        "de": "15",
+        "formato": "JSON com os cinco blocos, os números, a regra de atribuição e a lista do que não foi medido. Molde real, gerado da fixture sintética: referencias/checkin.exemplo.json. É o que a etapa 16 recebe."
+      },
+      {
+        "saida": "documento de revisão",
+        "de": "15",
+        "formato": "markdown na ordem dos blocos, com as tabelas completas e a página de fontes — para conferir antes da reunião e registrar depois."
+      },
+      {
+        "saida": "deck publicado",
+        "de": "19 (account-checkin-ropre-v2)",
+        "formato": "HTML 1600×900 no design system da companhia, com os mesmos números do check-in aprovado."
+      }
+    ],
+    "leis": [
+      "**Cobertura antes de conta.** Nenhum indicador que dependa de uma fonte é calculado antes de a etapa 02 dizer que aquela fonte cobre o período inteiro. Fonte incompleta → o indicador sai **\"não medido\"**, com o motivo e o último dia com dado.",
+      "**Definição é fixa, não é escolha.** Faturamento lê **data de fechamento**. Safra lê **data de criação**. Recorrente é o **funil de recorrência**, não o campo de venda base. Atribuição é a **regra declarada no projeto**, e ela aparece escrita no deck.",
+      "**Lacuna é resposta.** Nunca preencher buraco com média, proporção, estimativa ou \"mês anterior\". Não medir e dar zero são coisas diferentes, e as duas são diferentes de \"estável\".",
+      "**Número novo não nasce na escrita.** Todo valor citado nos blocos tem de existir na saída da etapa de cálculo. Quem escreve o bloco não recalcula nada."
+    ],
+    "etapas": [
+      {
+        "id": "01",
+        "titulo": "Abrir o período e as premissas",
+        "categoria": "Briefing",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": true,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          2
+        ],
+        "entradas": [
+          "projeto (do contexto do V4 OS ou do formulário)",
+          "cadência (`quinzenal` | `mensal` | `quarter`)",
+          "data de referência"
+        ],
+        "saidas": [
+          "projeto resolvido (projectDocumentId)",
+          "período resolvido",
+          "premissas do projeto",
+          "regra de atribuição"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "v4os",
+            "ferramenta": "a confirmar",
+            "para_que": "o projeto em que o workflow está rodando, sem perguntar",
+            "parametros": "a confirmar",
+            "cuidados": [
+              "se o contexto não trouxer o projeto, o `projeto` do formulário manda."
+            ]
+          },
+          {
+            "servidor": "bigquery-calls",
+            "ferramenta": "localize_project",
+            "para_que": "acha o projectDocumentId pelo nome do cliente",
+            "parametros": "{search_text}",
+            "cuidados": [
+              "pode devolver mais de um projeto para o mesmo cliente; não escolha sozinho."
+            ]
+          },
+          {
+            "servidor": "cockpit",
+            "ferramenta": "cockpit_list_projects",
+            "para_que": "o mesmo, pelo cadastro do cockpit, com datas e status do contrato",
+            "parametros": "{filtersJson}",
+            "cuidados": []
+          }
+        ],
+        "briefing": "Resolva o projeto: se o workflow roda dentro de um projeto, o contexto do V4 OS já diz qual é;\nsenão, ache o `projectDocumentId` pelo nome. **Um cliente pode ter mais de um projeto** —\nassessoria e produto adicional são contratos separados — e cada projeto é um check-in.\nConfirme qual antes de seguir.\n\nResolva o período: quinzena fecha em 15 ou no último dia do mês; mês fecha no último dia; quarter\nfecha no trimestre. Período que ainda não terminou sai marcado **parcial**, com a data de corte.\n\nTraga do cadastro do projeto: fee, verba de mídia contratada (bruta e líquida, com o imposto),\nmargem de contribuição, funis de venda, funil de recorrência e a **regra de atribuição** com a data\nem que foi fechada.\n\nPremissa sem data de confirmação sai sinalizada. Margem e regra de atribuição são as duas que mais\nmudam veredito — se estiverem \"a confirmar\", isso precisa aparecer no bloco de Premissas."
+      },
+      {
+        "id": "02",
+        "titulo": "Conferir a cobertura das fontes",
+        "categoria": "Dados",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": true,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          1
+        ],
+        "entradas": [
+          "período (01)"
+        ],
+        "saidas": [
+          "mapa de cobertura por fonte e por canal: último dia com dado",
+          "completa sim/não"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "dados-flow",
+            "ferramenta": "flow_project_data_list_connections",
+            "para_que": "lista as conexões do projeto com categoria, plataforma, accountId, active, queryable, lastRunAt e lastRunStatus — é o estado de cada fonte",
+            "parametros": "{projectDocumentId}",
+            "cuidados": [
+              "conexão com `queryable` ou `active` falso, ou `lastRunStatus` de falha, reprova o canal inteiro: registre a plataforma e o `lastRunAt` como último dia com dado.",
+              "no primeiro cliente o Google Ads estava falhando havia mais de dois meses e o Meta em dia; a planilha do cliente estava no inverso exato. É por isso que existe `fonte_por_canal`."
+            ]
+          },
+          {
+            "servidor": "dados-flow",
+            "ferramenta": "flow_media_query",
+            "para_que": "último dia com custo por canal: `SELECT MAX(date_start) FROM <tabela de insights> WHERE account_id = '<id>'`",
+            "parametros": "{projectDocumentId, platform, sql}",
+            "cuidados": [
+              "mesmas regras de SQL da etapa 03.",
+              "tolere um dia de atraso: plataforma de anúncio consolida em D-1."
+            ]
+          },
+          {
+            "servidor": "dados-flow",
+            "ferramenta": "flow_crm_query",
+            "para_que": "último negócio criado e atualizado, quando o CRM do projeto está na plataforma",
+            "parametros": "{projectDocumentId, sql}",
+            "cuidados": [
+              "CRM fora da plataforma: a cobertura vem do adaptador direto (implementação de referência: extrair/crm_nectarcrm.py)."
+            ]
+          }
+        ],
+        "briefing": "**Esta etapa roda antes de qualquer número.** Para cada fonte que o check-in vai usar — CRM, cada\ncanal de mídia, analytics, chat — descubra o último dia com dado dentro do período e responda se\nela cobre o período inteiro. Tolere um dia de atraso: plataforma de anúncio consolida em D-1.\n\nQuando um canal tiver custo mas não tiver contagem de lead, registre isso separadamente: custo e\nlead têm coberturas diferentes, e um lead parcial estraga CPL e taxa de entrada no CRM sem estragar\no ROAS.\n\nDevolva a lista de fontes incompletas com nome e último dia. **Ela é insumo obrigatório da etapa de\ncálculo** e vai impressa na última página do deck.\n\nExemplo do que isso evita, de um caso real: com a base de um canal parada, setembro rendeu ROAS de\n37 e taxa de entrada no CRM de 720%. Os dois números eram aritmeticamente corretos e completamente\nfalsos."
+      },
+      {
+        "id": "03",
+        "titulo": "Puxar a base do período",
+        "categoria": "Dados",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": true,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          1,
+          2
+        ],
+        "entradas": [
+          "período (01)",
+          "mapa de cobertura (02)"
+        ],
+        "saidas": [
+          "base bruta do período — negócios",
+          "contatos",
+          "mídia por dia e canal"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "dados-flow",
+            "ferramenta": "flow_media_list_tables",
+            "para_que": "descobre a tabela de insights da conexão — o nome muda por conta e por plataforma",
+            "parametros": "{projectDocumentId, platform}",
+            "cuidados": [
+              "prefira o stream `adsinsights`, `insights`, `ad_performance_report` ou `campaign_insights`, nessa ordem, e use `qualifiedTable`."
+            ]
+          },
+          {
+            "servidor": "dados-flow",
+            "ferramenta": "flow_media_query",
+            "para_que": "custo, impressões e cliques por dia, numa chamada só e exata",
+            "parametros": "{projectDocumentId, platform, sql}",
+            "sql": "SELECT date_start AS dia, ROUND(SUM(CAST(spend AS FLOAT64)),2) AS investimento, SUM(CAST(impressions AS INT64)) AS impressoes, SUM(CAST(clicks AS INT64)) AS cliques FROM <tabela> WHERE account_id = '<id sem act_>' AND date_start >= '<de>' AND date_start <= '<ate>' GROUP BY dia ORDER BY dia",
+            "cuidados": [
+              "`WHERE account_id = '...'` é obrigatório, com aspas simples e **sem o prefixo `act_`**.",
+              "`UNNEST` é bloqueado — por isso lead não sai por SQL.",
+              "`spend`, `impressions` e `clicks` chegam como texto: `CAST` antes de somar.",
+              "puxe também os doze meses anteriores: safra e série mensal precisam do histórico."
+            ]
+          },
+          {
+            "servidor": "dados-flow",
+            "ferramenta": "flow_media_conversion_summary",
+            "para_que": "leads por dia — desempacota as ações (`lead` ou `onsite_conversion.lead_grouped`)",
+            "parametros": "{projectDocumentId, platform, period: {startGte, endLt}, pagination: {page, pageSize}}",
+            "cuidados": [
+              "`endLt` é exclusivo: passe o dia seguinte ao fim do período.",
+              "devolve linha por anúncio e por dia, **no máximo 100 por página e sem metadado de paginação** — pedir 500 trunca em silêncio. Foi assim que uma leitura saiu quatro vezes menor que o custo real.",
+              "pagine de 100 em 100 com teto (12 páginas). Se bater no teto, **descarte a contagem de lead e avise**: subcontagem é pior que lacuna. Custo continua exato, pelo SQL."
+            ]
+          },
+          {
+            "servidor": "dados-flow",
+            "ferramenta": "flow_crm_list_tables + flow_crm_query",
+            "para_que": "negócios (id, criação, fechamento, status, valor, funil, etapa, motivo de perda, contato, tags, origem) e contatos (id, criação, origem, canal), quando o CRM está na plataforma",
+            "parametros": "{projectDocumentId} para listar; {projectDocumentId, sql} para consultar",
+            "cuidados": [
+              "sem conexão de CRM, a base vem do adaptador direto do CRM. Pegadinhas do primeiro CRM real estão no topo de extrair/crm_nectarcrm.py: filtro de status é obrigatório, o filtro de data da API não filtra, e \"Ganha\" em funil de qualificação não é venda."
+            ]
+          }
+        ],
+        "briefing": "Puxe da plataforma de dados (servidor `dados-flow`, que o Nekt alimenta), para o período **e para os doze meses anteriores** (a série mensal e a safra precisam\ndo histórico):\n\n- **negócios**: id, data de criação, data de fechamento, status, valor, funil, etapa, motivo de\n  perda, contato, e as marcas de atribuição (tag e origem);\n- **contatos**: id, data de criação, origem, canal;\n- **mídia**: um registro por dia e canal, com investimento, impressões, cliques e leads.\n\nNão agregue nada aqui e não descarte linha. Só puxe do canal que o projeto declara como fonte\ndaquele canal — quando o mesmo canal existe em duas fontes, contar as duas dobra o investimento."
+      },
+      {
+        "id": "04",
+        "titulo": "Calcular os indicadores do período",
+        "categoria": "Análise",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": false,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          1,
+          2,
+          3
+        ],
+        "entradas": [
+          "base (03)",
+          "cobertura (02)",
+          "premissas (01)"
+        ],
+        "saidas": [
+          "pacote de números do período",
+          "com o período anterior ao lado"
+        ],
+        "ferramentas": [],
+        "briefing": "Calcule, aplicando a regra de atribuição do projeto a cada negócio e a cada contato. O que depender\nde fonte incompleta sai `null`, nunca zero.\n\n**Vendas e receita** — negócios com status ganho, em funil de venda, **data de fechamento dentro do\nperíodo** e valor maior que zero. Separe em **novos** (demais funis) e **recorrentes** (funil de\nrecorrência), com contagem, receita e ticket de cada um, e a soma dos dois.\n\n**Mídia** — investimento, impressões, cliques e leads somados do período. `CTR = cliques ÷\nimpressões`. `CPL = investimento ÷ leads`. `ROAS = receita ÷ investimento`. `CAC = investimento ÷\nvendas novas`. Todos `null` se a cobertura de 02 reprovou a fonte.\n\n**Entrada no CRM** — `contatos criados no período ÷ leads das plataformas`. Se a contagem de lead\nestiver parcial, sai `null`: uma razão com numerador cheio e denominador pela metade vira 720%.\n\n**Economia do período** — `break-even mensal = (fee + verba bruta) ÷ margem`. A meta do período é o\nbreak-even multiplicado por `dias do período ÷ dias do mês`. `atingimento = receita ÷ meta`.\n`resultado = receita × margem − fee proporcional − mídia bruta gasta`. Se o gasto não foi medido,\nuse a verba contratada proporcional **e marque que usou estimativa**.\n\n**Safra por mês de criação** — negócios criados no mês, quantos já resolvidos (ganho ou perdido),\nquantos ganhos, receita, `taxa de ganho = ganhos ÷ resolvidos` e `eficiência = receita da safra ÷\ngasto do mês`. Safra pouco resolvida não se compara com safra madura; registre a maturidade.\n\n**Série mensal** — doze meses por data de fechamento, com novos e recorrentes separados.\n\n**Cobertura de atribuição** — quantas vendas do período por tipo de marca (tag e origem, só tag, só\norigem, sem marca nenhuma). É esta tabela que sustenta o número quando o cliente diverge.\n\n**Ponte com o lançamento do cliente** — quando o cliente mantém planilha própria, compare mês a mês\no que ele lança com o que o CRM mostra, separando venda nova de recompra. A divergência quase sempre\né recompra: a planilha lança só a venda nova e a recompra fica numa linha à parte.\n\nRepita tudo para o **período anterior de mesmo tamanho** e devolva a variação de cada indicador."
+      },
+      {
+        "id": "05",
+        "titulo": "Resumo de call → briefing",
+        "categoria": "Briefing",
+        "origem": "catalogo",
+        "etapa_do_catalogo": "Resumo de call → briefing",
+        "chama_ferramenta": false,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [],
+        "entradas": [
+          "transcrições das calls do período"
+        ],
+        "saidas": [
+          "acordos",
+          "pendências e riscos",
+          "com data"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "bigquery-calls",
+            "ferramenta": "consultar_calls_por_tipo",
+            "para_que": "as calls do projeto no período, com trecho de transcrição",
+            "parametros": "{project_document_id, start_date, end_date, mode: \"list\", limit: \"50\", include_transcription_excerpt: \"true\", demais filtros como string vazia}",
+            "cuidados": [
+              "todos os parâmetros são string, inclusive `limit` e os booleanos.",
+              "`transcription_excerpt` é um trecho; para a transcrição inteira, confirmar a ferramenta.",
+              "no primeiro cliente voltou vazio no período — confirmar onde as calls daquele projeto ficam registradas. Sem call, as três listas saem vazias e o bloco diz que não houve.",
+              "esta etapa é do catálogo: se o template não buscar a transcrição sozinho, a busca entra como etapa de dados antes dela."
+            ]
+          }
+        ],
+        "briefing": "Além do que o template do catálogo já faz, separe a saída em três listas: **acordos** (o que ficou\ncombinado e quem assumiu), **pendências** (o que ficou aberto e de quem é a bola) e **riscos**\n(ameaça ao resultado levantada na conversa).\n\nSó entra o que foi dito. Não infira compromisso a partir de tom, de silêncio ou de \"a gente vê\nisso\". Sem call no período, devolva as três listas vazias e diga que não houve."
+      },
+      {
+        "id": "06",
+        "titulo": "Varredura do grupo de WhatsApp",
+        "categoria": "Pesquisa",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": true,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [],
+        "entradas": [
+          "período (01)",
+          "grupo do cliente"
+        ],
+        "saidas": [
+          "pendências abertas com data e o que trava"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "bigquery-whatsapp",
+            "ferramenta": "whatsapp_resumir_grupos_queryon",
+            "para_que": "resumo do grupo no período: `latest_resumo`, `latest_status_risco`, `last_created_at`",
+            "parametros": "{id_group, start_date, end_date, mode: \"list\", limit: \"50\", client_documentid: \"\", search_name: \"\"}",
+            "cuidados": [
+              "parâmetros são string.",
+              "os campos de resumo podem vir vazios com o grupo ativo — no primeiro cliente vieram. Isso é aviso de operação (vira risco no bloco P), não é zero pendência."
+            ]
+          }
+        ],
+        "briefing": "Traga só o que virou pendência: aprovação que não veio, material que o cliente ficou de mandar,\nacesso que falta, reclamação sem resposta. Conversa resolvida no próprio dia não entra.\n\nCada linha precisa de data e de uma frase acionável — ela vai direto para o bloco de Entregas.\nSe os campos de resumo do grupo vierem vazios, diga isso: é problema de operação e vira risco."
+      },
+      {
+        "id": "07",
+        "titulo": "Entregas e horas",
+        "categoria": "Dados",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": true,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          3
+        ],
+        "entradas": [
+          "período (01)",
+          "projeto no ekyte"
+        ],
+        "saidas": [
+          "entregas realizadas",
+          "previstas e horas dedicadas"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "ekyte",
+            "ferramenta": "a confirmar",
+            "para_que": "entregas realizadas, previstas e horas do projeto",
+            "parametros": "a confirmar",
+            "cuidados": [
+              "o servidor veio sem credencial na configuração recebida. Até ligar, as entregas entram pela entrada `entregas_do_periodo` do workflow, e a etapa diz de onde vieram."
+            ]
+          }
+        ],
+        "briefing": "Traga o que a equipe entregou no período, o que está previsto e as horas dedicadas.\n\n**Entrega sem evidência não entra**: cada item aponta para algo que o cliente possa conferir — a\npeça no ar, o documento, a campanha publicada. Tarefa interna de alinhamento não é entrega de\ncliente. Previsto sem dono ou sem data sai marcado `a confirmar`."
+      },
+      {
+        "id": "08",
+        "titulo": "Sinais do cockpit",
+        "categoria": "Pesquisa",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": true,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [],
+        "entradas": [
+          "projeto"
+        ],
+        "saidas": [
+          "health score e variação",
+          "churn ou renovação no horizonte",
+          "NPS recente"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "cockpit",
+            "ferramenta": "cockpit_list_projects",
+            "para_que": "cadastro do projeto (filtro por `filtersJson`): datas, status, contrato",
+            "parametros": "{filtersJson}",
+            "cuidados": [
+              "as ferramentas de health score, NPS e churn do cockpit não foram confirmadas; a implementação de referência não as chama. Sem elas, a etapa diz que não há sinal — não inventa health."
+            ]
+          }
+        ],
+        "briefing": "Health score não é resultado do trabalho: é termômetro de relação, e entra como **contexto de\nrisco**. Health caindo num período de resultado subindo é exatamente o que a reunião precisa saber."
+      },
+      {
+        "id": "09",
+        "titulo": "R · Resultados",
+        "categoria": "Análise",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": false,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          2,
+          3,
+          4
+        ],
+        "entradas": [
+          "pacote de números (04)",
+          "cobertura (02)"
+        ],
+        "saidas": [
+          "bloco R escrito"
+        ],
+        "ferramentas": [],
+        "briefing": "Abra com a frase que responde o período: quantas vendas, quanta receita, quanto da meta, e como\nficou contra o período anterior. Depois, obrigatoriamente:\n\n- **novo contra recorrente**, separados e somados;\n- **a ponte com o lançamento do cliente**, que explica a divergência antes de ele perguntar;\n- **como as vendas estão marcadas**, com a regra de atribuição escrita por extenso e datada;\n- **eficiência por safra**, que isola o efeito da mídia do mês.\n\nIndicador `null` vira \"não medido\" com o motivo ao lado. Não escreva \"estável\" nem \"sem variação\nrelevante\" no lugar de ausência de medição. Não invente número que não esteja no pacote."
+      },
+      {
+        "id": "10",
+        "titulo": "O · Objetivos",
+        "categoria": "Análise",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": true,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          3,
+          4
+        ],
+        "entradas": [
+          "pacote (04)",
+          "acordos da call (05)",
+          "metas cadastradas"
+        ],
+        "saidas": [
+          "bloco O"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "dados-flow",
+            "ferramenta": "flow_goals_list",
+            "para_que": "metas cadastradas do período, com `target`, `actual`, `attainment` e `pace`",
+            "parametros": "{subjectRef: <projectDocumentId>, subjectType: \"project\", periodKey: \"YYYY-MM\", granularity: \"monthly\"}",
+            "cuidados": [
+              "`granularity` é `monthly`, não `month`.",
+              "sem item, o projeto está sem meta cadastrada no período: use os OKRs das premissas e **diga que a meta não está no sistema** — cadastrar vira próximo passo."
+            ]
+          }
+        ],
+        "briefing": "Puxe as metas do período. Sem meta cadastrada, use as do cadastro do projeto **e diga que a meta não\nestá no sistema** — cadastrar vira próximo passo.\n\nCada key result sai com meta, realizado e status: ✅ atingido, ⏳ dentro da tolerância, ❌ fora,\n— sem dado. KR cujo indicador ficou sem medição sai como — e **não** como ❌: não atingir e não\nmedir são coisas diferentes.\n\nFeche com o que foi acordado com o cliente nas calls do período."
+      },
+      {
+        "id": "11",
+        "titulo": "P · Premissas e Riscos",
+        "categoria": "Análise",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": false,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          3,
+          4
+        ],
+        "entradas": [
+          "premissas (01)",
+          "riscos da call (05)",
+          "cockpit (08)",
+          "cobertura (02)",
+          "pacote (04)"
+        ],
+        "saidas": [
+          "bloco P"
+        ],
+        "ferramentas": [],
+        "briefing": "**Premissas:** o que o check-in assume como verdade — margem, verba, regra de atribuição, escopo —\ncada uma com a origem (\"confirmada com o cliente em DD/MM\", \"contrato\", \"a confirmar\"). Premissa sem\norigem é risco disfarçado.\n\n**Riscos** no formato causa → risco → efeito, com probabilidade e impacto de 1 a 5 e o produto.\nQuatro fontes: os riscos cadastrados, os levantados na call, os sinais do cockpit e **os que o\npróprio dado denuncia** — base parada, entrada no CRM abaixo de 80%, receita majoritariamente sem\ncanal identificado, evento de conversão sem disparar. Risco vindo do dado não precisa de P × I\ninventado: deixe em branco e mostre o número que o gerou."
+      },
+      {
+        "id": "12",
+        "titulo": "E · Entregas",
+        "categoria": "Análise",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": false,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          3,
+          4
+        ],
+        "entradas": [
+          "ekyte (07)",
+          "WhatsApp (06)",
+          "call (05)"
+        ],
+        "saidas": [
+          "bloco de Entregas"
+        ],
+        "ferramentas": [],
+        "briefing": "Três listas e um número: realizadas com evidência, previstas com prazo e dono (`a confirmar` quando\nfaltar), pendências abertas juntando WhatsApp e call, e as horas dedicadas. Sem as horas na fonte,\ndiga que não tem — não estime somando tarefa."
+      },
+      {
+        "id": "13",
+        "titulo": "E · Próximos Passos",
+        "categoria": "Análise",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": false,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          4
+        ],
+        "entradas": [
+          "acordos (05)",
+          "riscos (11)",
+          "backlog"
+        ],
+        "saidas": [
+          "bloco de Próximos Passos"
+        ],
+        "ferramentas": [],
+        "briefing": "O que vem, com dono e prazo, de duas origens: o acordado com o cliente e o planejado pela equipe.\n\nTodo passo responde ao que o check-in mostrou. Se o bloco R apontou queda de aquisição e o bloco P\npôs o atendimento como maior P × I, o primeiro passo é sobre isso — não sobre o que estava no\nbacklog antes da reunião. Passo sem dono sai `a confirmar`, visível no deck."
+      },
+      {
+        "id": "14",
+        "titulo": "Conferência dos números",
+        "categoria": "Revisão",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": false,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "entradas": [
+          "blocos (09 a 13)",
+          "pacote (04)",
+          "base (03)",
+          "cobertura (02)"
+        ],
+        "saidas": [
+          "aprovado",
+          "ou lista de correções que impede seguir"
+        ],
+        "ferramentas": [],
+        "briefing": "Esta etapa existe porque o cálculo foi feito por agente. Confira seis coisas e **bloqueie** se\nqualquer uma falhar:\n\n1. **recontagem independente**: some de novo, direto da base da etapa 03, a receita e a contagem de\n   vendas do período. Tem de bater com o pacote até o centavo;\n2. **fechamento das partes**: novos + recorrentes = total, em contagem e em receita;\n3. **nenhum número novo** nos blocos que não exista no pacote;\n4. **nada marcado \"não medido\" virou número** em algum bloco;\n5. **período parcial marcado** em toda comparação, com meta proporcional;\n6. **regra de atribuição escrita** no bloco R, com a data em que foi fechada.\n\nDivergência entre a recontagem e o pacote é erro de cálculo, não arredondamento: devolva os dois\nnúmeros e pare. Check-in atrasado custa menos que check-in com número que não fecha."
+      },
+      {
+        "id": "15",
+        "titulo": "Entregar para o deck do design system",
+        "categoria": "Entrega",
+        "origem": "do_zero",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": true,
+        "executado_por": "este workflow",
+        "leis_aplicaveis": [
+          3,
+          4
+        ],
+        "entradas": [
+          "check-in aprovado (14)"
+        ],
+        "saidas": [
+          "check-in em formato de consumo para a skill de deck",
+          "documento de revisão"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "v4os",
+            "ferramenta": "a confirmar",
+            "para_que": "entregar o pacote aprovado à etapa 16 (`checkin-colli`) e gravar o documento de revisão",
+            "parametros": "o pacote de referencias/checkin.exemplo.json",
+            "cuidados": [
+              "como uma etapa aciona outra skill no V4OS está em aberto — é a pendência que decide se o handoff é automático ou manual."
+            ]
+          }
+        ],
+        "briefing": "**Este workflow não desenha slide.** O deck é responsabilidade da skill de design system da\ncompanhia (`account-checkin-ropre-v2`), que já tem os tokens visuais, os layouts de 1600×900, o\nstorytelling de performance e o QA visual. O que sai daqui é o conteúdo aprovado, pronto para ela\nconsumir.\n\nEntregue dois artefatos do mesmo pacote:\n\n1. **o check-in aprovado**, com os cinco blocos, os números e a lista do que não foi medido, no\n   formato que a skill de deck espera;\n2. **o documento de revisão**, para conferência antes da reunião e registro depois.\n\nDois conteúdos são obrigatórios e não podem ser podados pela diagramação: a **regra de atribuição**\nescrita por extenso no bloco de Resultados, e a página final de **fontes e o que não foi medido**.\nSe o layout não tiver lugar para elas, o lugar tem de ser criado — são elas que permitem defender o\nnúmero linha por linha na reunião.\n\nFora da plataforma, quando não há design system disponível, o renderizador local gera um .pptx na\nmesma ordem de blocos. É fallback, não é o caminho principal."
+      },
+      {
+        "id": "16",
+        "titulo": "Preparar o conteúdo para o deck",
+        "categoria": "Entrega",
+        "origem": "outra_skill",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": false,
+        "executado_por": "checkin-colli",
+        "leis_aplicaveis": [
+          3,
+          4
+        ],
+        "entradas": [
+          "check-in aprovado (15)"
+        ],
+        "saidas": [
+          "conteúdo do deck organizado em narrativa de slides"
+        ],
+        "ferramentas": [],
+        "briefing": "Executada por `checkin-colli`. Transforma os cinco blocos do ROPRE na narrativa que o deck vai\ncontar: uma ideia por slide, na ordem capa → índice → 01 Resultados → 02 Objetivos → 03 Premissas e\nRiscos → 04 Entregas → 05 Próximos Passos → fontes.\n\nO que o check-in exige desta etapa, e que vale como contrato: **nenhum número pode ser recalculado,\narredondado ou reescrito aqui**. Indicador que chegou como \"não medido\" continua \"não medido\" —\nnão vira travessão, não vira zero e não é omitido por não caber no slide."
+      },
+      {
+        "id": "17",
+        "titulo": "Compilar as páginas no design system",
+        "categoria": "Entrega",
+        "origem": "outra_skill",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": true,
+        "executado_por": "account-checkin-ropre-v2",
+        "leis_aplicaveis": [
+          4
+        ],
+        "entradas": [
+          "conteúdo do deck (16)"
+        ],
+        "saidas": [
+          "deck HTML 1600×900 com os tokens da marca aplicados"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "account-checkin-ropre-v2",
+            "ferramenta": "internas da skill",
+            "para_que": "compilar as páginas com os tokens do design system",
+            "parametros": "conteúdo do deck (16)",
+            "cuidados": []
+          }
+        ],
+        "briefing": "Executada por `account-checkin-ropre-v2`. Compila as páginas: escolhe o layout de cada slide pelo\ntipo de conteúdo (KPI, tabela, gráfico, lista, divisória), aplica os tokens visuais e monta o deck\nem HTML 1600×900.\n\nDois conteúdos são **requisito de layout**, não preferência editorial, e precisam de lugar previsto:\na **regra de atribuição escrita por extenso** no bloco de Resultados, e a **página final de fontes e\ndo que não foi medido**. São elas que permitem defender o número linha por linha na reunião; slide\nque as corta devolve o check-in para esta etapa."
+      },
+      {
+        "id": "18",
+        "titulo": "QA visual",
+        "categoria": "Revisão",
+        "origem": "outra_skill",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": true,
+        "executado_por": "account-checkin-ropre-v2",
+        "leis_aplicaveis": [
+          3,
+          4
+        ],
+        "entradas": [
+          "deck compilado (17)",
+          "check-in aprovado (15)"
+        ],
+        "saidas": [
+          "deck aprovado ou lista de correções de layout"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "account-checkin-ropre-v2",
+            "ferramenta": "internas da skill",
+            "para_que": "QA visual e as duas conferências de conteúdo",
+            "parametros": "deck compilado (17) e check-in aprovado (15)",
+            "cuidados": []
+          }
+        ],
+        "briefing": "Executada por `account-checkin-ropre-v2`. Confere o deck contra o conteúdo que entrou: texto\ncortado, tabela estourando a página, contraste, consistência de tokens e slide vazio.\n\nAcrescente duas conferências de conteúdo, que são as que interessam ao check-in: **todo número do\ndeck existe no check-in aprovado** e **nenhum \"não medido\" virou número na diagramação**.\nDivergência aqui não é ajuste de layout — é erro, e volta para a etapa 16."
+      },
+      {
+        "id": "19",
+        "titulo": "Publicar e entregar",
+        "categoria": "Entrega",
+        "origem": "outra_skill",
+        "etapa_do_catalogo": null,
+        "chama_ferramenta": true,
+        "executado_por": "account-checkin-ropre-v2",
+        "leis_aplicaveis": [
+          4
+        ],
+        "entradas": [
+          "deck aprovado (18)",
+          "documento de revisão (15)"
+        ],
+        "saidas": [
+          "deck publicado para a reunião",
+          "documento de registro"
+        ],
+        "ferramentas": [
+          {
+            "servidor": "account-checkin-ropre-v2",
+            "ferramenta": "internas da skill",
+            "para_que": "publicar o deck e guardar o documento",
+            "parametros": "deck aprovado (18) e documento (15)",
+            "cuidados": []
+          }
+        ],
+        "briefing": "Executada por `account-checkin-ropre-v2`. Publica o deck para a reunião e guarda o documento de\nrevisão como registro do período.\n\nO documento não é rascunho do deck: é onde o check-in fica auditável depois, com as tabelas\ncompletas e a lista de fontes. Deck e documento saem do mesmo pacote e não podem mostrar números\ndiferentes."
+      }
+    ],
+    "conexoes": [
+      {
+        "de": "01",
+        "para": "02"
+      },
+      {
+        "de": "01",
+        "para": "05"
+      },
+      {
+        "de": "01",
+        "para": "06"
+      },
+      {
+        "de": "01",
+        "para": "07"
+      },
+      {
+        "de": "01",
+        "para": "08"
+      },
+      {
+        "de": "02",
+        "para": "03"
+      },
+      {
+        "de": "03",
+        "para": "04"
+      },
+      {
+        "de": "04",
+        "para": "09"
+      },
+      {
+        "de": "04",
+        "para": "10"
+      },
+      {
+        "de": "04",
+        "para": "11"
+      },
+      {
+        "de": "05",
+        "para": "10"
+      },
+      {
+        "de": "05",
+        "para": "11"
+      },
+      {
+        "de": "05",
+        "para": "12"
+      },
+      {
+        "de": "05",
+        "para": "13"
+      },
+      {
+        "de": "06",
+        "para": "12"
+      },
+      {
+        "de": "07",
+        "para": "12"
+      },
+      {
+        "de": "08",
+        "para": "11"
+      },
+      {
+        "de": "09",
+        "para": "14"
+      },
+      {
+        "de": "10",
+        "para": "14"
+      },
+      {
+        "de": "11",
+        "para": "14"
+      },
+      {
+        "de": "12",
+        "para": "14"
+      },
+      {
+        "de": "13",
+        "para": "14"
+      },
+      {
+        "de": "14",
+        "para": "15"
+      },
+      {
+        "de": "15",
+        "para": "16"
+      },
+      {
+        "de": "16",
+        "para": "17"
+      },
+      {
+        "de": "17",
+        "para": "18"
+      },
+      {
+        "de": "18",
+        "para": "19"
+      }
+    ],
+    "integracoes_da_plataforma": [
+      {
+        "skill": "account-checkin-ropre-v2",
+        "papel": "renderiza o deck no design system da companhia — HTML 1600×900, tokens visuais, layouts de slide, storytelling de performance e QA visual",
+        "relacao": "recebe o check-in aprovado da etapa 15, passando pela 16; este workflow não desenha slide",
+        "contrato_de_entrada": "a confirmar — até lá, o check-in entrega no formato de referencias/checkin.exemplo.json"
+      },
+      {
+        "skill": "checkin-colli",
+        "papel": "prepara o conteúdo antes do deck",
+        "relacao": "sobrepõe em parte os blocos 09 a 13; confirmar a divisão para não haver etapa duplicada",
+        "contrato_de_entrada": "a confirmar — até lá, recebe o formato de referencias/checkin.exemplo.json"
+      },
+      {
+        "skill": "design-system-pro",
+        "papel": "criar ou refazer o design system no Figma",
+        "relacao": "fora do escopo do check-in; entra só se o design system mudar",
+        "contrato_de_entrada": "não se aplica"
+      }
+    ],
+    "instrucoes_de_import": {
+      "formato": "Este arquivo é a especificação neutra do workflow, não o export do Studio. Quem constrói lá dentro — o harness ou uma pessoa — cria uma etapa por item de `etapas` e uma conexão por item de `conexoes`, seguindo os passos abaixo. Quando houver um workflow exportado do Studio para servir de molde, o mapeamento vira mecânico.",
+      "passos": [
+        "Declare `entradas_do_workflow` como o formulário do workflow. A etapa 01 as consome; nada é perguntado ao usuário depois.",
+        "O briefing de cada etapa é `briefing` **precedido do texto das leis** listadas em `leis_aplicaveis` (índices em `leis`, a partir de 1). Regra escrita fora do briefing não chega ao agente que executa a etapa.",
+        "Para cada etapa com `chama_ferramenta`, ligue **no workflow** os servidores de `ferramentas` — a chave está em `servidores`, com o nome como aparece no painel *Ferramentas* do V4OS. O que se liga no chat não altera workflows. Os `cuidados` de cada ferramenta entram no briefing da etapa — são as pegadinhas que já custaram número errado.",
+        "Etapa com `origem: catalogo` usa o template do catálogo em `etapa_do_catalogo`; o `briefing` é o complemento ao template.",
+        "Etapa com `origem: outra_skill` não é criada aqui: é a etapa correspondente da skill em `executado_por`, e o `briefing` é o contrato que o check-in cobra dela.",
+        "Ligue as `conexoes` (de → para). Etapas com o mesmo antecessor correm em paralelo.",
+        "Antes de publicar, rode num período já fechado e compare com a implementação de referência, número a número (seção *Como validar*)."
+      ],
+      "pendencias": [
+        {
+          "o_que": "schema de export do Studio",
+          "por_que": "para o mapeamento deste JSON ser mecânico em vez de manual",
+          "quem": "V4OS"
+        },
+        {
+          "o_que": "catálogo completo de etapas",
+          "por_que": "06, 07 e 08 podem ter template pronto; só `Resumo de call → briefing` foi reusada",
+          "quem": "V4OS"
+        },
+        {
+          "o_que": "como uma etapa declara a ferramenta MCP que chama",
+          "por_que": "vale para toda etapa marcada 🔧",
+          "quem": "V4OS"
+        },
+        {
+          "o_que": "ferramentas do V4 OS (contexto do projeto)",
+          "por_que": "para a etapa 01 pegar o projeto do contexto em vez do formulário, e para a 15 acionar a próxima skill",
+          "quem": "V4OS"
+        },
+        {
+          "o_que": "como uma etapa aciona outra skill",
+          "por_que": "é a passagem 15 → 16",
+          "quem": "V4OS"
+        },
+        {
+          "o_que": "contrato de entrada de `checkin-colli` e de `account-checkin-ropre-v2`",
+          "por_que": "até saber o formato que elas esperam, o check-in entrega no de referencias/checkin.exemplo.json",
+          "quem": "dono das skills"
+        },
+        {
+          "o_que": "ferramentas do eKyte",
+          "por_que": "o servidor existe e está ligado no V4OS; faltam os nomes das ferramentas de entregas e horas para a etapa 07 — até lá, entram pela entrada `entregas_do_periodo`",
+          "quem": "V4OS"
+        },
+        {
+          "o_que": "ferramentas de health score, NPS e churn do cockpit",
+          "por_que": "etapa 08; só `cockpit_list_projects` é conhecida",
+          "quem": "V4OS"
+        },
+        {
+          "o_que": "onde as calls do projeto ficam registradas",
+          "por_que": "`consultar_calls_por_tipo` voltou vazio no primeiro cliente",
+          "quem": "V4OS"
+        },
+        {
+          "o_que": "produto do workflow",
+          "por_que": "cabeçalho está como *a confirmar*",
+          "quem": "quem publica"
+        },
+        {
+          "o_que": "token pessoal do Flow de quem roda",
+          "por_que": "Dados Flow e Catálogo de Produtos usam o token pessoal e vêm desligados no chat; sem ele, 02, 03 e 10 não respondem",
+          "quem": "quem roda"
+        }
+      ]
+    }
+  }
+}

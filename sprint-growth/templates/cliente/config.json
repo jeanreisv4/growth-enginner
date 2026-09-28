@@ -1,0 +1,8 @@
+{
+  "_nota": "Configuração do cliente para os scripts. Fica no git local; clientes/ não vai para o GitHub.",
+  "google_ads": {"conta": "", "mcp": "googleads_diretas", "campanhas_ativas": []},
+  "gtm": {"conta": "", "web": "", "server": ""},
+  "ga4": {"propriedade": ""},
+  "site": "",
+  "testes": {"telefones": [], "nomes": [], "emails": []}
+}

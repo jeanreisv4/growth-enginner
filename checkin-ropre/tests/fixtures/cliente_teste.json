@@ -1,0 +1,27 @@
+{
+  "cliente": "Cliente Teste",
+  "fee": 6000.0,
+  "midia_bruta": 4000.0,
+  "imposto_midia": 0.0,
+  "margem_contribuicao": 0.2,
+  "atribuicao": {
+    "resumo": "tag da agência ou origem de mídia paga",
+    "fechada_em": "01/06/2026",
+    "tags": ["AG"],
+    "origens_agencia": ["AG", "LEADS AG"],
+    "origens_midia_paga": ["Instagram"],
+    "origens_em_aberto": ["SDR IA"],
+    "canal_por_origem": {"Instagram": "meta", "AG": "meta"}
+  },
+  "crm": {"funis_venda": ["Vendas", "Vendas Base"], "funil_recorrencia": "Vendas Base"},
+  "midia": {"abas": [{"aba": "meta", "canal": "meta", "colunas": {}}]},
+  "okrs": [
+    {"kr": "Receita do período", "metrica": "receita", "meta": 3000.0, "comparador": ">=", "formato": "moeda"},
+    {"kr": "Recorrência no máximo em metade das vendas", "metrica": "participacao_recorrente",
+     "meta": 0.5, "comparador": "<=", "formato": "percentual"}
+  ],
+  "riscos": [{"causa": "causa de teste", "risco": "risco de teste", "efeito": "efeito de teste",
+              "probabilidade": 2, "impacto": 5}],
+  "lancamento_manual": {"2026-06": {"vendas_novas": 1, "receita_novas": 1000.0,
+                                    "vendas_recorrentes": 0, "receita_recorrentes": 0.0}}
+}

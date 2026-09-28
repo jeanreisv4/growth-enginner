@@ -1,0 +1,177 @@
+{
+  "cliente": "Cliente Exemplo",
+  "segmento": "Indústria de bens de consumo — venda B2B para varejo e distribuição",
+  "modelo": "inside_sales",
+  "fee": 8000.0,
+  "midia_bruta": 6000.0,
+  "imposto_midia": 0.1216,
+  "margem_contribuicao": 0.15,
+  "origem_margem": "confirmada com o cliente; confirme sempre em reais, com uma venda concreta",
+  "objetivo_smart": "Recuperar aquisição e levar o faturamento ao break-even de R$ 93.333/mês até o fim do ciclo, com a verba fechada em R$ 6.000 e o funil de atendimento consertado.",
+  "atribuicao": {
+    "resumo": "tag da agência na oportunidade ou no contato, OU origem de mídia paga no contato (inclui Instagram e Facebook, mesmo sem dizer o nome da agência)",
+    "fechada_em": "01/01/2026",
+    "tags": [
+      "AGENCIA"
+    ],
+    "origens_agencia": [
+      "AGENCIA",
+      "LEADS AGENCIA",
+      "INSTAGRAM/AGENCIA"
+    ],
+    "origens_midia_paga": [
+      "Instagram",
+      "Facebook"
+    ],
+    "origens_em_aberto": [
+      "SDR IA",
+      "INTERNET",
+      "tik tok"
+    ],
+    "canal_por_origem": {
+      "INSTAGRAM/AGENCIA": "meta",
+      "Instagram": "meta",
+      "Facebook": "meta"
+    },
+    "_nota_em_aberto": "Origem que existe na base mas ainda não foi decidida como da agência ou não. Fica de fora até o cliente decidir, e o check-in informa quanto está em jogo."
+  },
+  "crm": {
+    "sistema": "nectarcrm",
+    "bruto": "crm_bruto.json.gz",
+    "funis_venda": [
+      "Vendas",
+      "Vendas Base",
+      "Vendas Externas"
+    ],
+    "funil_recorrencia": "Vendas Base",
+    "funis_qualificacao": [
+      "Pré-vendas",
+      "SDR IA"
+    ]
+  },
+  "midia": {
+    "arquivo": "growthpack.xlsx",
+    "abas": [
+      {
+        "aba": "bd Meta Ads",
+        "canal": "meta",
+        "colunas": {
+          "dia": 0,
+          "investimento": 1,
+          "leads": 3,
+          "impressoes": 4,
+          "campanha": 5,
+          "cliques": 9
+        }
+      },
+      {
+        "aba": "bd Google Ads ",
+        "canal": "google",
+        "colunas": {
+          "dia": 0,
+          "investimento": 1,
+          "cliques": 2,
+          "leads": 3,
+          "impressoes": 5
+        }
+      }
+    ],
+    "fonte_por_canal": {
+      "meta": "flow",
+      "google": "planilha"
+    },
+    "_nota": "Meta vem do Flow (conexão Nekt em dia). Google vem da planilha porque a conexão do Flow está falhando desde 08/07/2026. Reverter para flow quando arrumarem."
+  },
+  "okrs": [
+    {
+      "kr": "Faturamento do período chega ao break-even",
+      "metrica": "receita",
+      "meta": 93333.33,
+      "comparador": ">=",
+      "formato": "moeda",
+      "fonte": "CRM, vendas ganhas por data de fechamento, regra de 21/09/2026"
+    },
+    {
+      "kr": "Vendas novas são pelo menos metade das vendas do período",
+      "metrica": "participacao_recorrente",
+      "meta": 0.5,
+      "comparador": "<=",
+      "formato": "percentual",
+      "fonte": "CRM, funil Vendas Base = recorrente"
+    },
+    {
+      "kr": "Entrada no CRM de pelo menos 80% dos leads das plataformas",
+      "metrica": "entrada_no_crm",
+      "meta": 0.8,
+      "comparador": ">=",
+      "formato": "percentual",
+      "fonte": "leads das plataformas x contatos criados no CRM"
+    },
+    {
+      "kr": "ROAS que a verba contratada exige para o projeto se pagar na margem declarada",
+      "metrica": "roas",
+      "meta": 15.8,
+      "comparador": ">=",
+      "formato": "numero",
+      "fonte": "receita V4 ÷ investimento realizado no período"
+    }
+  ],
+  "premissas": [
+    {
+      "premissa": "Verba de mídia",
+      "valor": "não sobe",
+      "origem": "decisão do cliente"
+    },
+    {
+      "premissa": "Faturamento",
+      "valor": "lido por data de fechamento",
+      "origem": "padrão do projeto"
+    }
+  ],
+  "riscos": [
+    {
+      "causa": "lead entra no funil de qualificação e não recebe segundo contato",
+      "risco": "metade dos negócios morre na etapa de follow-up",
+      "efeito": "taxa de ganho cai e a safra do mês fecha vazia",
+      "probabilidade": 4,
+      "impacto": 5
+    },
+    {
+      "causa": "margem de contribuição ainda não auditada",
+      "risco": "break-even calculado sobre margem errada",
+      "efeito": "decisão de fee e de verba tomada sobre número falso",
+      "probabilidade": 3,
+      "impacto": 5
+    },
+    {
+      "causa": "tag da agência não é gravada quando a oportunidade nasce",
+      "risco": "parte das vendas fica sem marca nenhuma",
+      "efeito": "atribuição depende de texto livre e volta a divergir",
+      "probabilidade": 4,
+      "impacto": 3
+    }
+  ],
+  "lancamento_manual": {
+    "2026-07": {
+      "vendas_novas": 11,
+      "receita_novas": 32000.0,
+      "vendas_recorrentes": 6,
+      "receita_recorrentes": 8200.0
+    }
+  },
+  "fontes": {
+    "crm": "API do CRM do cliente",
+    "midia": "Flow (Nekt) e planilha de acompanhamento",
+    "chat": "grupo de WhatsApp do cliente"
+  },
+  "flow": {
+    "project_document_id": "<documentId do projeto no Flow>",
+    "ticker": "<TICKER>",
+    "whatsapp_group_id": "<id do grupo>",
+    "fonte_por_canal": {
+      "meta": "flow",
+      "google": "planilha"
+    }
+  },
+  "step_projeto": "V2 — funil montado, gargalo no fundo"
+}

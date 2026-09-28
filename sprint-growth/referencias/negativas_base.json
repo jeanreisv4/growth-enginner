@@ -1,0 +1,6 @@
+{
+  "_nota": "Base que vale para qualquer cliente B2B/SaaS. Concorrentes e 'fora do produto' específicos ficam em clientes/<cliente>/negativas.json. Nunca incluir 'grátis/gratuito' se o produto tem teste grátis.",
+  "acesso": ["login", "entrar", "acessar", "senha", "www", "https"],
+  "emprego_e_estudo": ["vaga", "vagas", "emprego", "salario", "salário", "curso", "apostila", "tcc"],
+  "arquivos": ["download", "baixar", "pdf", "excel", "word"]
+}

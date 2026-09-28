@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.DS_Store
+# saídas grandes das auditorias ficam na pasta do cliente, mas o bruto da API não entra no git
+clientes/*/ads/ads_raw.json
+clientes/*/gtm/gtm_raw.json
+clientes/*/crm/*.json
+clientes/*/projecao.xlsx
+clientes/*/growth_pack.xlsx
+clientes/*/crm/*.log
+clientes/*/cnpj/*.json
