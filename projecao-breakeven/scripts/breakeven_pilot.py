@@ -928,9 +928,15 @@ def main():
         for campo in ("atual", "alvo"):
             env[chave][campo] = valor
         env[chave]["fixada"] = True
-        tx["alertas"].append(f"{env[chave]['rotulo']}: fixada em {valor:.2%} a pedido do usuário (a janela dava {antes:.2%}); o histórico mistura campanhas diferentes nessa etapa."
-                             if chave not in ("cpm", "ticket", "custo_sessao_meta") else
-                             f"{env[chave]['rotulo']}: fixado em {valor:,.2f} a pedido do usuário (a janela dava {antes:,.2f}).")
+        # a janela pode não ter valor para a alavanca (cliente que ainda não vendeu não tem ticket nem SQL → venda):
+        # nesse caso o valor fixado é a ÚNICA fonte, e o alerta precisa dizer isso em vez de quebrar na formatação.
+        eh_dinheiro = chave in ("cpm", "ticket", "custo_sessao_meta")
+        antes_txt = ("a janela não tinha valor para esta alavanca, o número veio inteiro da premissa" if antes is None
+                     else f"a janela dava {antes:,.2f}" if eh_dinheiro else f"a janela dava {antes:.2%}")
+        tx["alertas"].append(
+            f"{env[chave]['rotulo']}: fixado em {valor:,.2f} a pedido do usuário ({antes_txt})." if eh_dinheiro else
+            f"{env[chave]['rotulo']}: fixada em {valor:.2%} a pedido do usuário ({antes_txt})"
+            + ("." if antes is None else "; o histórico mistura campanhas diferentes nessa etapa."))
     conexao = None   # (conexão atual, lead → MQL atual) quando a conexão tem alvo de mercado
     for item in a.alvo:   # benchmark de mercado como alvo da rampa (histórico curto demais para dar a mediana)
         chave, valor = item.split("=", 1); chave = chave.strip(); valor = float(valor)

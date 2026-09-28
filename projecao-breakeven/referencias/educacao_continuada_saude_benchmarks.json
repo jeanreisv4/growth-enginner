@@ -1,0 +1,114 @@
+{
+ "titulo": "MARGEM E ECONOMIA UNITÁRIA · EDUCAÇÃO CONTINUADA EM SAÚDE (BRASIL)",
+ "levantado_em": "2026-09-25",
+ "perfil": "Cursos de especialização e imersão para profissionais de saúde no Brasil, ticket de R$ 3.000 a R$ 5.000 pelo programa inteiro. Montado para um cliente de cursos de odontologia.",
+ "nota_tabela": "Margem BRUTA de companhia aberta não é margem de CONTRIBUIÇÃO, e os dois desvios andam em direções opostas: a margem bruta joga custo fixo de turma e campus dentro do custo do serviço (subestima a MC) e deixa comissão e meio de pagamento em SG&A, fora dela (superestima a MC). A linha de MC abaixo é construída de baixo para cima e cruzada com o benchmark auditado.",
+ "colunas": [
+  "PREMISSA",
+  "FONTE",
+  "BENCHMARK ENCONTRADO",
+  "PERÍODO ANALISADO",
+  "TAXA UTILIZADA",
+  "JUSTIFICATIVA"
+ ],
+ "spans": [
+  [
+   "B",
+   "B"
+  ],
+  [
+   "C",
+   "D"
+  ],
+  [
+   "E",
+   "G"
+  ],
+  [
+   "H",
+   "H"
+  ],
+  [
+   "I",
+   "I"
+  ],
+  [
+   "J",
+   "N"
+  ]
+ ],
+ "linhas": [
+  [
+   "Margem de contribuição (MC1)",
+   "Cogna, release de resultados 3T25; Afya, release 1T26 (6-K); Yduqs, resultados 3T25",
+   "Margem BRUTA por modalidade (Cogna, o único que abre): EAD 93,5%, presencial com laboratório 62,0%, medicina 68,2%. Afya consolidado 68,9% (1T26), e o release diz que o segmento de Continuing Education está ABAIXO disso e comprimindo. Yduqs 60,0% (3T25)",
+   "Cogna 3T25 e 9M25; Afya 1T26 e FY2025; Yduqs 3T25. Demonstrativos auditados de companhia aberta",
+   "60%",
+   "Construção de baixo para cima sobre ticket de R$ 4.000: impostos 6% a 14%, meio de pagamento 3% a 14%, comissão 3% a 8%, insumo 0% a 8%, inadimplência 2% a 5% — total variável de 14% a 49%, ou seja MC de 51% a 86%. Cruzando com a margem bruta auditada (60% a 70%, que JÁ carrega custo fixo de turma), 60% é o número que sobrevive à pergunta 'de onde você tirou isso'. Usar 55% como a premissa mais dura que ainda fecha; 51% e 86% ficam como sensibilidade, não como cenário."
+  ],
+  [
+   "Insumo odontológico",
+   "UFBA, Faculdade de Odontologia (especialização em implantodontia); Studia",
+   "No padrão brasileiro de especialização odontológica o instrumental e o material descartável são comprados PELO ALUNO, não pela escola. A UFBA declara isso na página do curso; a Studia declara que o valor cobre exclusivamente o conteúdo programático",
+   "Páginas institucionais vigentes em set/2026",
+   "0% a 8% (confirmar)",
+   "É o item que parece o maior custo variável e frequentemente NÃO é custo da escola. Move a margem de 5 a 10 pontos sozinho. Confirmar com o cliente antes de fechar o número: se a escola entrega kit, entra na MC; se o aluno compra, sai."
+  ],
+  [
+   "Meio de pagamento",
+   "Hotmart, tabela pública de taxas; Cielo e Nuvemshop (MDR); Mercado Pago (parcelamento)",
+   "Hotmart: 9,9% + R$ 1,00 por venda, mais 3,49% ao mês de parcelamento aplicado cumulativamente por parcela. Checkout próprio: MDR de 1,3% a 5,9%, custo final típico de 3% a 5%, mais antecipação de 2% a 4% ao mês. Pix e boleto custam R$ 2 a R$ 4 por transação",
+   "Tabelas vigentes em 2025-2026. A tabela da Hotmart é oficial; o MDR vem de fonte comercial (fraca)",
+   "3% (Pix) a 14% (12x cartão)",
+   "É A MAIOR ALAVANCA DE MARGEM DESTE MODELO DE NEGÓCIO, maior que qualquer coisa que a mídia faça: a diferença entre vender 100% em Pix e 100% em 12x com juros absorvidos é de MAIS DE 15 PONTOS de margem de contribuição. Pedir o mix de pagamento dos últimos 6 meses é a primeira pergunta a fazer ao cliente."
+  ],
+  [
+   "Comissão de venda",
+   "Páginas de programa de afiliado e consultor educacional (Unyleya e similares)",
+   "Até R$ 300 por matrícula, o que sobre ticket de R$ 3.760 a R$ 4.130 dá 7% a 8%. Prática de mercado de inside sales em educação fica entre 3% e 8%",
+   "SEM FONTE auditada ou com metodologia — páginas de vaga e blog",
+   "3% a 8% (a confirmar)",
+   "Fonte fraca. Usar como faixa a confirmar com o cliente, nunca como número fechado. Perguntar se a comissão é percentual ou valor fixo por matrícula, e se inclui SDR além do closer."
+  ],
+  [
+   "Ticket de referência",
+   "FACOP (especialização em implantodontia); FUNORP, Ribeirão Preto",
+   "FACOP: R$ 300 de matrícula mais R$ 770 × 48 meses = R$ 37.260 pelo programa. FUNORP: R$ 100 mais R$ 2.300 por mês",
+   "Tabelas vigentes em set/2026",
+   "—",
+   "Serve para uma checagem que evita erro de escala: se o ticket informado for de R$ 3.000 a R$ 5.000, ele é de CURSO CURTO OU IMERSÃO, não de especialização MEC/CFO — o programa completo custa dez vezes mais. Sempre confirmar se o valor informado é o programa inteiro ou a parcela mensal antes de projetar."
+  ]
+ ],
+ "descartados": [
+  "Custo de material do ALUNO em graduação de odontologia (R$ 4.500 a R$ 8.000 por ano, ou R$ 4.500 a R$ 5.500 por semestre): não é custo da escola e não entra na margem de contribuição dela. Fontes fracas (UNDB, Pravaler, blogs de lojas de material odontológico, várias com interesse comercial em inflar o número).",
+  "Margem bruta da Afya isolada do segmento Continuing Education: a companhia NÃO divulga. Só se sabe, pelo texto do release, que está abaixo do consolidado de 68,9% e comprimindo.",
+  "Yduqs e Ser Educacional por segmento: os PDFs de apresentação não são extraíveis e o dado da Ser veio de relatório BTG, não do release primário. Usados só como faixa consolidada.",
+  "Qualquer margem bruta usada diretamente como margem de contribuição: é o erro que este arquivo existe para evitar. A margem bruta de 68,9% da Afya NÃO é a MC de um curso."
+ ],
+ "fontes": [
+  {
+   "texto": "Cogna · Release de resultados 3T25 · margem bruta por modalidade: EAD 93,5%, presencial 62,0%, medicina 68,2% · 2025",
+   "link": "https://d169uzu5o4xu1k.cloudfront.net/e7fe0b23-e144-4a3c-b07d-41ccaa1cb30d/2025/5997f741-144b-4292-94cf-2bf205b3fd51.pdf"
+  },
+  {
+   "texto": "Afya · Release 1T26 (6-K) · margem bruta consolidada 68,9%, Continuing Education abaixo disso · 2026",
+   "link": "https://api.mziq.com/mzfilemanager/v2/d/d9de61ef-dfe7-4141-bf30-ad612d6eeca2/c31c753e-ba11-8268-3c4a-533f4f9fd525?origin=2"
+  },
+  {
+   "texto": "UFBA · Especialização em implantodontia · material descartável adquirido pelos alunos",
+   "link": "https://odo.ufba.br/curso-de-especializacao-em-implantodontia"
+  },
+  {
+   "texto": "Studia · Especialização em implantodontia · valores cobrem exclusivamente o conteúdo programático",
+   "link": "https://studia.com.br/curso/especializacao-em-implantodontia/"
+  },
+  {
+   "texto": "Hotmart · Tabela de taxas do produtor · 9,9% + R$ 1,00 e 3,49% ao mês de parcelamento · 2025",
+   "link": "https://tactus.com.br/taxas-da-hotmart-para-produtor/"
+  },
+  {
+   "texto": "Cielo · Taxa MDR · faixa de 1,3% a 5,9%",
+   "link": "https://blog.cielo.com.br/financas/taxa-mdr/"
+  }
+ ]
+}
