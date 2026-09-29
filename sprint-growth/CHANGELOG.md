@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.0.1 (29/09/2026)
+
+- README com desenhos animados no estilo do claude-seo (SVG com animação nativa, roda no GitHub): capa com os
+  comandos sendo digitados e o funil vazando na restrição, fluxo do sinal pelas duas ondas de agentes com o loop
+  de volta à memória, e o mapa radial dos 8 agentes. O Mermaid detalhado continua, recolhido.
+- `scripts/desenhos.py` gera os três SVG de `assets/`; a regressão confere que os arquivos batem com o gerador
+  (107 casos).
+
 ## v2.0 (29/09/2026)
 
 A auditoria passa a rodar em agentes especialistas, no desenho do claude-seo (skill que orquestra, agentes que

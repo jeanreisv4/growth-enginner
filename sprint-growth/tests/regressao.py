@@ -195,6 +195,13 @@ if os.path.basename(os.path.dirname(os.path.abspath(RAIZ))) == "skills":  # só 
     dif = instalar_agentes.diferencas(instalar_agentes.destino_padrao())
     confere("agentes instalados batem com a fonte" + (f" ({dif})" if dif else ""), not dif)
 
+# desenhos: os SVG de assets/ são os que o gerador produz hoje (ninguém edita à mão, nada fica velho)
+import desenhos
+for nome, fn in (("capa.svg", desenhos.capa), ("fluxo.svg", desenhos.fluxo), ("agentes.svg", desenhos.agentes)):
+    arq = os.path.join(RAIZ, "assets", nome)
+    confere(f"assets/{nome} bate com scripts/desenhos.py", os.path.exists(arq) and open(arq, encoding="utf-8").read() == fn())
+confere("desenho de agentes lista as 8 frentes", len(desenhos.AGENTES) == 8 and len(desenhos.FRENTES_ONDA2) == 7)
+
 # README: todo script citado existe (publicar.py não vai para a cópia pública)
 readme = open(os.path.join(RAIZ, "README.md")).read()
 import re

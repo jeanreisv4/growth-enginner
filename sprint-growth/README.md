@@ -1,6 +1,8 @@
 # sprint-growth
 
-![versão](https://img.shields.io/badge/versão-2.0-E50914) ![regressão](https://img.shields.io/badge/regressão-103%20casos-111111) ![agentes](https://img.shields.io/badge/agentes-8-111111)
+![Capa da sprint-growth: comandos sendo digitados e um funil do tráfego à receita em que os leads vazam na restrição](assets/capa.svg)
+
+![versão](https://img.shields.io/badge/versão-2.0.1-E50914) ![regressão](https://img.shields.io/badge/regressão-107%20casos-111111) ![agentes](https://img.shields.io/badge/agentes-8-111111)
 
 Skill do Claude Code para a **sprint growth** de cliente de agência: audita a jornada inteira, do tráfego à venda,
 acha a restrição do sistema pela Teoria das Restrições e entrega um plano 5W1H priorizado por impacto em receita,
@@ -20,6 +22,11 @@ paralelo e um contrato de saída que um script consolida.
 - Receita: realizado da fonte oficial, CPL real por pessoa única, breakeven pela skill `projecao-breakeven`.
 
 ## Workflow
+
+![Fluxo da sprint-growth: comando, memória e entrevista, orquestrador, agente de fontes na onda 1, sete agentes em paralelo na onda 2, consolidar.py, restrição pela TOC e plano 5W1H em R$, com o Executado voltando para a memória](assets/fluxo.svg)
+
+<details>
+<summary>Ver o desenho detalhado (fases, decisões e travas)</summary>
 
 ```mermaid
 flowchart TB
@@ -79,6 +86,8 @@ flowchart TB
 Legenda: cinza = informação ou registro · amarelo = decisão · azul = análise · verde = entrega ·
 vermelho = trava ou prioridade · ↺ = onde o loop se fecha. Na seta entre as fases, a saída de cada uma.
 
+</details>
+
 ## Como funciona
 
 Uma linha por fase do desenho e uma por agente. "Trava" é o que impede a fase seguinte; o roteiro completo está
@@ -95,6 +104,8 @@ no [SKILL.md](SKILL.md), cada frente no seu arquivo em [agentes/](agentes/) e as
 | **4 · Documento** | Tudo acima | Claude Docs: Diagnóstico e plano, Dados do funil, Leads por CNPJ, Executado | [`documento.md`](referencias/documento.md) | Documento para o time e o cliente | Gráfico com título que não bate com o número |
 | **5 · Execução** | Plano aprovado | Valida antes (validateOnly, rascunho do GTM), aplica com ok, relê e registra | [`ads_escrita.py`](scripts/ads_escrita.py), MCPs | Linha na aba Executado | Sem ok explícito para aquela mudança, nada muda |
 | **↺ 6 · Fechamento** | O que a sprint ensinou | Memória, armadilhas, checklist, agentes, regressão, CHANGELOG, tag, cópia pública conferida | [`regressao.py`](tests/regressao.py) | Nova versão | Regressão falhando |
+
+![Os 8 agentes da sprint-growth em volta do orquestrador, todos somente leitura](assets/agentes.svg)
 
 | Agente (onda) | Entra | O que faz | Ferramenta | Sai |
 |---|---|---|---|---|
@@ -130,6 +141,7 @@ Abra uma conversa nova para o Claude Code carregar os agentes. Uma frente só: "
   - `cnpj.py`: qualificação B2B pela Receita;
   - `consolidar.py`: junta os achados das frentes;
   - `instalar_agentes.py`: instala e confere os agentes;
+  - `desenhos.py`: gera os desenhos animados de `assets/`;
   - `publicar.py`: gera a cópia pública.
 - `templates/cliente/` e `tests/regressao.py`.
 
