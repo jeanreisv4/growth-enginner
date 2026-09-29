@@ -1,22 +1,22 @@
 {
     "exportFormatVersion": 2,
-    "exportTime": "2026-05-17 03:52:12",
+    "exportTime": "2026-05-17 00:00:00",
     "containerVersion": {
-        "path": "accounts/4226126032/containers/248559899/versions/0",
-        "accountId": "4226126032",
-        "containerId": "248559899",
+        "path": "accounts/1000000000/containers/200000000/versions/0",
+        "accountId": "1000000000",
+        "containerId": "200000000",
         "containerVersionId": "0",
         "container": {
-            "path": "accounts/4226126032/containers/248559899",
-            "accountId": "4226126032",
-            "containerId": "248559899",
-            "name": "WEB | wkcarpetes.com.br",
-            "publicId": "GTM-KG7X38D6",
+            "path": "accounts/1000000000/containers/200000000",
+            "accountId": "1000000000",
+            "containerId": "200000000",
+            "name": "WEB | __DOMINIO__",
+            "publicId": "GTM-WEB0000",
             "usageContext": [
                 "WEB"
             ],
             "fingerprint": "1775508284624",
-            "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/4226126032/containers/248559899/workspaces?apiLink=container",
+            "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/1000000000/containers/200000000/workspaces?apiLink=container",
             "features": {
                 "supportUserPermissions": true,
                 "supportEnvironments": true,
@@ -34,13 +34,13 @@
                 "supportTransformations": false
             },
             "tagIds": [
-                "GTM-KG7X38D6"
+                "GTM-WEB0000"
             ]
         },
         "tag": [
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "11",
                 "name": "00.3 | Google Ads - Botão WhatsApp",
                 "type": "awct",
@@ -101,8 +101,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "19",
                 "name": "00.1 | CAPI - PageView",
                 "type": "gaawe",
@@ -173,8 +173,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "20",
                 "name": "00.1 | GA4 - Page View",
                 "type": "googtag",
@@ -220,8 +220,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "23",
                 "name": "Microsoft Clarity - Official",
                 "type": "cvt_MQDKZ",
@@ -229,7 +229,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "projectId",
-                        "value": "uxv41v1bfk"
+                        "value": "__CLARITY_ID__"
                     }
                 ],
                 "fingerprint": "1775508414118",
@@ -242,8 +242,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "24",
                 "name": "00.3 | CAPI - WhatsApp",
                 "type": "gaawe",
@@ -315,11 +315,11 @@
                 ]
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "30",
                 "name": "00.2 - Meta Ads - Lead",
-                "type": "cvt_248559899_28",
+                "type": "cvt_200000000_28",
                 "parameter": [
                     {
                         "type": "BOOLEAN",
@@ -478,8 +478,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "31",
                 "name": "00.1 | Vinculador de conversões",
                 "type": "gclidw",
@@ -514,8 +514,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "33",
                 "name": "00.1 | Google Ads - Page View",
                 "type": "sp",
@@ -565,8 +565,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "34",
                 "name": "00.2 | Google Ads - Lead",
                 "type": "awct",
@@ -636,11 +636,11 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "35",
                 "name": "00.1 | Meta Ads - PageView",
-                "type": "cvt_248559899_28",
+                "type": "cvt_200000000_28",
                 "parameter": [
                     {
                         "type": "BOOLEAN",
@@ -712,8 +712,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "36",
                 "name": "00.3 | GA4 - WhatsApp",
                 "type": "gaawe",
@@ -749,8 +749,8 @@
                 ]
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "41",
                 "name": "00.2 | CAPI - Lead",
                 "type": "gaawe",
@@ -911,11 +911,11 @@
                 ]
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "42",
                 "name": "00.3 | Meta Ads - WhatsApp",
-                "type": "cvt_248559899_28",
+                "type": "cvt_200000000_28",
                 "parameter": [
                     {
                         "type": "BOOLEAN",
@@ -988,8 +988,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "43",
                 "name": "00.2 | GA4 - Lead",
                 "type": "gaawe",
@@ -1060,11 +1060,11 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "44",
                 "name": "00.4 | Meta Ads - MQL",
-                "type": "cvt_248559899_28",
+                "type": "cvt_200000000_28",
                 "parameter": [
                     {
                         "type": "BOOLEAN",
@@ -1223,8 +1223,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "45",
                 "name": "00.4 | CAPI - MQL",
                 "type": "gaawe",
@@ -1385,8 +1385,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "46",
                 "name": "00.4 | Google Ads - MQL",
                 "type": "awct",
@@ -1456,8 +1456,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "47",
                 "name": "00.4 | GA4 - MQL",
                 "type": "gaawe",
@@ -1528,8 +1528,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "tagId": "48",
                 "name": "cHTML - Persist Form Data",
                 "type": "html",
@@ -1537,7 +1537,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "html",
-                        "value": "<script>\n(function() {\n  function captureFormData() {\n    var nome = document.querySelector('input[name=\"seu-nome\"]');\n    var email = document.querySelector('input[name=\"seu-e-mail\"]');\n    var telefone = document.querySelector('input[name=\"seu-telefonewhatsapp\"]');\n    var ambiente = document.querySelector('select[name=\"seu-ambiente\"]');\n    var metragem = document.querySelector('select[name=\"sua-metragem\"]');\n    if (!nome && !email && !telefone) return;\n    var data = {\n      nome: nome ? nome.value.trim() : \"\",\n      email: email ? email.value.trim().toLowerCase() : \"\",\n      telefone: telefone ? telefone.value.replace(/\\D/g, \"\") : \"\",\n      ambiente: ambiente ? ambiente.value : \"\",\n      metragem: metragem ? metragem.value : \"\"\n    };\n    try { sessionStorage.setItem(\"wk_lead_data\", JSON.stringify(data)); } catch(e) {}\n  }\n  function attach() {\n    var form = document.querySelector('form.e_formulario');\n    var btn = document.querySelector('.gpc_botao.e_formulario');\n    if (!form && !btn) { setTimeout(attach, 500); return; }\n    if (form) form.addEventListener(\"submit\", captureFormData, true);\n    if (btn) btn.addEventListener(\"click\", captureFormData, true);\n  }\n  if (document.readyState === \"loading\") {\n    document.addEventListener(\"DOMContentLoaded\", attach);\n  } else {\n    attach();\n  }\n})();\n</script>"
+                        "value": "<script>\n(function() {\n  function captureFormData() {\n    var nome = document.querySelector('__SEL_NOME__');\n    var email = document.querySelector('__SEL_EMAIL__');\n    var telefone = document.querySelector('__SEL_TELEFONE__');\n    var qualif1 = document.querySelector('__SEL_QUALIF_1__');\n    var qualif2 = document.querySelector('__SEL_QUALIF_2__');\n    if (!nome && !email && !telefone) return;\n    var data = {\n      nome: nome ? nome.value.trim() : \"\",\n      email: email ? email.value.trim().toLowerCase() : \"\",\n      telefone: telefone ? telefone.value.replace(/\\D/g, \"\") : \"\",\n      qualif_1: qualif1 ? qualif1.value : \"\",\n      qualif_2: qualif2 ? qualif2.value : \"\"\n    };\n    try { sessionStorage.setItem(\"v4_lead_data\", JSON.stringify(data)); } catch(e) {}\n  }\n  function attach() {\n    var form = document.querySelector('__SEL_FORM__');\n    var btn = document.querySelector('__SEL_BOTAO__');\n    if (!form && !btn) { setTimeout(attach, 500); return; }\n    if (form) form.addEventListener(\"submit\", captureFormData, true);\n    if (btn) btn.addEventListener(\"click\", captureFormData, true);\n  }\n  if (document.readyState === \"loading\") {\n    document.addEventListener(\"DOMContentLoaded\", attach);\n  } else {\n    attach();\n  }\n})();\n</script>"
                     },
                     {
                         "type": "BOOLEAN",
@@ -1561,8 +1561,8 @@
         ],
         "trigger": [
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "triggerId": "7",
                 "name": "Click URL contém wa.me/",
                 "type": "LINK_CLICK",
@@ -1602,8 +1602,8 @@
                 "parentFolderId": "6"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "triggerId": "8",
                 "name": "Click URL contém api.whatsapp",
                 "type": "LINK_CLICK",
@@ -1643,8 +1643,8 @@
                 "parentFolderId": "6"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "triggerId": "29",
                 "name": "Event contém gtm.formSubmit",
                 "type": "FORM_SUBMISSION",
@@ -1682,8 +1682,8 @@
                 "parentFolderId": "6"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "triggerId": "37",
                 "name": "Page URL contém obrigado",
                 "type": "PAGEVIEW",
@@ -1699,7 +1699,7 @@
                             {
                                 "type": "TEMPLATE",
                                 "key": "arg1",
-                                "value": "/obrigado"
+                                "value": "__PATH_OBRIGADO__"
                             }
                         ]
                     }
@@ -1708,8 +1708,8 @@
                 "parentFolderId": "6"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "triggerId": "38",
                 "name": "Event é JoinChat",
                 "type": "CUSTOM_EVENT",
@@ -1734,10 +1734,10 @@
                 "parentFolderId": "6"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "triggerId": "39",
-                "name": "Page URL /obrigado AND is_mql",
+                "name": "Page URL __PATH_OBRIGADO__ AND is_mql",
                 "type": "PAGEVIEW",
                 "filter": [
                     {
@@ -1751,7 +1751,7 @@
                             {
                                 "type": "TEMPLATE",
                                 "key": "arg1",
-                                "value": "/obrigado"
+                                "value": "__PATH_OBRIGADO__"
                             }
                         ]
                     },
@@ -1777,8 +1777,8 @@
         ],
         "variable": [
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "4",
                 "name": "cJS - nome - form",
                 "type": "jsm",
@@ -1786,7 +1786,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "javascript",
-                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"wk_lead_data\");\n    if (!raw) return undefined;\n    var d = JSON.parse(raw);\n    return d.nome || undefined;\n  } catch(e) { return undefined; }\n}"
+                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"v4_lead_data\");\n    if (!raw) return undefined;\n    var d = JSON.parse(raw);\n    return d.nome || undefined;\n  } catch(e) { return undefined; }\n}"
                     }
                 ],
                 "fingerprint": "1775508414107",
@@ -1794,8 +1794,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "9",
                 "name": "01 - Google Ads - Botão WhatsApp",
                 "type": "c",
@@ -1803,7 +1803,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "value",
-                        "value": "KG5qCLWhj5ccEOvFvvwD"
+                        "value": "__LABEL_CONTACT__"
                     }
                 ],
                 "fingerprint": "1775509038239",
@@ -1811,8 +1811,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "10",
                 "name": "00 - Google Ads - Tag Id",
                 "type": "c",
@@ -1820,7 +1820,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "value",
-                        "value": "1066377963"
+                        "value": "__GOOGLE_ADS_ID__"
                     }
                 ],
                 "fingerprint": "1775508857676",
@@ -1828,8 +1828,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "13",
                 "name": "00.1 - API Transport",
                 "type": "c",
@@ -1837,7 +1837,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "value",
-                        "value": "https://whhhlqap.sac.stape.io"
+                        "value": "__SSGTM_URL__"
                     }
                 ],
                 "fingerprint": "1775508414108",
@@ -1845,18 +1845,18 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "16",
                 "name": "00.1 - API Event Id",
-                "type": "cvt_248559899_15",
+                "type": "cvt_200000000_15",
                 "fingerprint": "1775508414110",
                 "parentFolderId": "12",
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "18",
                 "name": "00 - GA4 - Tag Id",
                 "type": "c",
@@ -1864,7 +1864,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "value",
-                        "value": "G-SQ2HXLBL2E"
+                        "value": "__GA4_ID__"
                     }
                 ],
                 "fingerprint": "1775508414110",
@@ -1872,8 +1872,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "25",
                 "name": "cJS - email - form",
                 "type": "jsm",
@@ -1881,7 +1881,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "javascript",
-                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"wk_lead_data\");\n    if (!raw) return undefined;\n    var d = JSON.parse(raw);\n    return d.email || undefined;\n  } catch(e) { return undefined; }\n}"
+                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"v4_lead_data\");\n    if (!raw) return undefined;\n    var d = JSON.parse(raw);\n    return d.email || undefined;\n  } catch(e) { return undefined; }\n}"
                     }
                 ],
                 "fingerprint": "1775508414118",
@@ -1889,8 +1889,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "26",
                 "name": "00 - Meta Ads - Pixel Id",
                 "type": "c",
@@ -1898,7 +1898,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "value",
-                        "value": "444617535160623"
+                        "value": "__META_PIXEL_ID__"
                     }
                 ],
                 "fingerprint": "1778099246910",
@@ -1906,8 +1906,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "27",
                 "name": "cJS - telefone - form",
                 "type": "jsm",
@@ -1915,7 +1915,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "javascript",
-                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"wk_lead_data\");\n    if (!raw) return undefined;\n    var d = JSON.parse(raw);\n    return d.telefone ? \"55\" + d.telefone : undefined;\n  } catch(e) { return undefined; }\n}"
+                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"v4_lead_data\");\n    if (!raw) return undefined;\n    var d = JSON.parse(raw);\n    return d.telefone ? \"55\" + d.telefone : undefined;\n  } catch(e) { return undefined; }\n}"
                     }
                 ],
                 "fingerprint": "1775508414119",
@@ -1923,8 +1923,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "32",
                 "name": "01 - Google Ads - Lead",
                 "type": "c",
@@ -1932,7 +1932,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "value",
-                        "value": "u7Y1CP2rlZccEOvFvvwD"
+                        "value": "__LABEL_LEAD__"
                     }
                 ],
                 "fingerprint": "1775508874958",
@@ -1940,8 +1940,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "40",
                 "name": "Cookie _fbp",
                 "type": "k",
@@ -1962,8 +1962,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "44",
                 "name": "Cookie _fbc",
                 "type": "k",
@@ -1984,16 +1984,16 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "45",
-                "name": "cJS - ambiente - form",
+                "name": "cJS - qualificador 1 - form",
                 "type": "jsm",
                 "parameter": [
                     {
                         "type": "TEMPLATE",
                         "key": "javascript",
-                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"wk_lead_data\");\n    if (!raw) return undefined;\n    var d = JSON.parse(raw);\n    return d.ambiente || undefined;\n  } catch(e) { return undefined; }\n}"
+                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"v4_lead_data\");\n    if (!raw) return undefined;\n    var d = JSON.parse(raw);\n    return d.qualif_1 || undefined;\n  } catch(e) { return undefined; }\n}"
                     }
                 ],
                 "fingerprint": "1775508414999",
@@ -2001,16 +2001,16 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "46",
-                "name": "cJS - metragem - form",
+                "name": "cJS - qualificador 2 - form",
                 "type": "jsm",
                 "parameter": [
                     {
                         "type": "TEMPLATE",
                         "key": "javascript",
-                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"wk_lead_data\");\n    if (!raw) return undefined;\n    var d = JSON.parse(raw);\n    return d.metragem || undefined;\n  } catch(e) { return undefined; }\n}"
+                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"v4_lead_data\");\n    if (!raw) return undefined;\n    var d = JSON.parse(raw);\n    return d.qualif_2 || undefined;\n  } catch(e) { return undefined; }\n}"
                     }
                 ],
                 "fingerprint": "1775508415000",
@@ -2018,8 +2018,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "47",
                 "name": "cJS - is_mql",
                 "type": "jsm",
@@ -2027,7 +2027,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "javascript",
-                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"wk_lead_data\");\n    if (!raw) return false;\n    var d = JSON.parse(raw);\n    var a = d.ambiente || \"\";\n    var m = d.metragem || \"\";\n    var ambOk = a && a.indexOf(\"Residencial\") === -1 && a.indexOf(\"Seu Ambiente\") === -1;\n    var metOk = m === \"Entre 50 e 75 m\\u00b2\" || m === \"Entre 75 e 100 m\\u00b2\" || m === \"Acima de 100 m\\u00b2\";\n    return !!(ambOk && metOk);\n  } catch(e) { return false; }\n}"
+                        "value": "function() {\n  try {\n    var raw = sessionStorage.getItem(\"v4_lead_data\");\n    if (!raw) return false;\n    var d = JSON.parse(raw);\n    return !!(__REGRA_MQL__);\n  } catch(e) { return false; }\n}"
                     }
                 ],
                 "fingerprint": "1775508415001",
@@ -2035,8 +2035,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "variableId": "48",
                 "name": "01 - Google Ads - MQL",
                 "type": "c",
@@ -2044,7 +2044,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "value",
-                        "value": "6ZwcCOztp64cEOvFvvwD"
+                        "value": "__LABEL_MQL__"
                     }
                 ],
                 "fingerprint": "1775508415002",
@@ -2054,57 +2054,57 @@
         ],
         "folder": [
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "folderId": "3",
                 "name": "🛠️ | JavaScript",
                 "fingerprint": "1775508414107"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "folderId": "5",
                 "name": "🟢 | Google Ads",
                 "fingerprint": "1775508414107"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "folderId": "6",
                 "name": "🎬 | Acionadores",
                 "fingerprint": "1775508414107"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "folderId": "12",
                 "name": "⚙️ | Integrações",
                 "fingerprint": "1775508414108"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "folderId": "14",
                 "name": "⚫ | API de Conversões",
                 "fingerprint": "1775508414108"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "folderId": "17",
                 "name": "🟠 | GA4",
                 "fingerprint": "1775508414110"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "folderId": "21",
                 "name": "🔵 | Meta Ads",
                 "fingerprint": "1775508414110"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "folderId": "39",
                 "name": "🍪 | Cookies",
                 "fingerprint": "1775508414230"
@@ -2112,66 +2112,66 @@
         ],
         "builtInVariable": [
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "type": "PAGE_URL",
                 "name": "Page URL"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "type": "EVENT",
                 "name": "Event"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "type": "CLICK_ELEMENT",
                 "name": "Click Element"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "type": "CLICK_CLASSES",
                 "name": "Click Classes"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "type": "CLICK_ID",
                 "name": "Click ID"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "type": "CLICK_TARGET",
                 "name": "Click Target"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "type": "CLICK_URL",
                 "name": "Click URL"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "type": "CLICK_TEXT",
                 "name": "Click Text"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "type": "FORM_ID",
                 "name": "Form ID"
             }
         ],
         "fingerprint": "1778989932724",
-        "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/4226126032/containers/248559899/versions/0?apiLink=version",
+        "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/1000000000/containers/200000000/versions/0?apiLink=version",
         "customTemplate": [
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "templateId": "15",
                 "name": "Event Id",
                 "fingerprint": "1775508414108",
@@ -2185,8 +2185,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "templateId": "22",
                 "name": "Microsoft Clarity - Official",
                 "fingerprint": "1775508414110",
@@ -2201,8 +2201,8 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "248559899",
+                "accountId": "1000000000",
+                "containerId": "200000000",
                 "templateId": "28",
                 "name": "Facebook Pixel",
                 "fingerprint": "1775508414119",

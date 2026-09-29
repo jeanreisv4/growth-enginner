@@ -1,7 +1,7 @@
 ---
 skill: tracking-web-and-capi
 owner: growth-engineer
-latest: v1.0.0
+latest: v1.1.0
 status: active
 segment:
   - b2b
@@ -30,7 +30,7 @@ specialization:
   - ecom
   - infoproduto
 created: 2026-05-17
-updated: 2026-05-17
+updated: 2026-09-28
 ---
 
 ## Propósito
@@ -92,7 +92,9 @@ Markdown estruturado:
 - `canonico/checklist-auditoria.md` — critérios objetivos de validação
 - `implementacoes/sheets.md` — passo a passo cliente sem CRM
 - `implementacoes/crm-kommo.md` — passo a passo cliente com Kommo
-- `playbook/caso-WK.md` — caso real piloto (referência)
+- `playbook/caso-piloto-carpetes.md` — caso real piloto (referência)
+- `referencias/armadilhas.md` — erros já vistos em cliente, com como detectar e o que fazer
+- `templates/gtm/` + `scripts/gerar_containers.py` — containers canônicos com marcadores e o gerador que valida
 
 ## Agentes que usam esta skill
 
@@ -105,4 +107,5 @@ Markdown estruturado:
 
 | Versão | Data | Status | Resumo |
 |--------|------|--------|--------|
-| v1.0.0 | 2026-05-17 | latest | Versão inicial, baseada no caso piloto WK Carpetes |
+| v1.1.0 | 2026-09-28 | latest | Templates com marcadores, gerador com validações, armadilhas das sprints, testes e desenho |
+| v1.0.0 | 2026-05-17 | tag git `v1.0.0` | Versão inicial, baseada no caso piloto |

@@ -1,5 +1,5 @@
 /**
- * SETUP AUTOMATICO - Planilha de Leads WK
+ * SETUP AUTOMATICO - Planilha de Leads
  *
  * Como usar:
  * 1. Crie uma nova planilha em branco no Google Sheets
@@ -70,8 +70,8 @@ function setupPlanilha() {
   // Conteudo da aba Configuracao
   const configData = [
     ['origem', 'ambiente', 'metragem', 'status', 'motivo_perdido', 'vendedor'],
-    ['LP - Carpete em Placas', 'corporativo/escritório', 'até 25m²', 'Lead', 'Fora do perfil', 'Vendedor 1'],
-    ['Meta Lead Ads - Pegasus', 'hotelaria/flats', 'entre 25 e 50m²', 'MQL', 'Sem orçamento', 'Vendedor 2'],
+    ['LP - <Nome da LP>', 'corporativo/escritório', 'até 25m²', 'Lead', 'Fora do perfil', 'Vendedor 1'],
+    ['Meta Lead Ads - <nome do form>', 'hotelaria/flats', 'entre 25 e 50m²', 'MQL', 'Sem orçamento', 'Vendedor 2'],
     ['WhatsApp Direto - LP', 'institucional (cinemas, teatros)', 'entre 50 e 75m²', 'SQL', 'Foi pra concorrente', 'Vendedor 3'],
     ['WhatsApp Direto - Ads', 'residencial (quarto, sala, home office)', 'entre 75 e 100m²', 'Cliente', 'Sem retorno do cliente', ''],
     ['WhatsApp Direto - Outros', '', 'acima de 100m²', 'Perdido', 'Projeto cancelado', ''],

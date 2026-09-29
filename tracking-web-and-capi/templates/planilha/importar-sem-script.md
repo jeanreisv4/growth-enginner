@@ -2,9 +2,9 @@
 
 ## 📦 Arquivos que você tem
 
-1. **`template-leads-WK.csv`** — cabeçalhos da aba `Leads` + 1 linha de exemplo
-2. **`template-dropdowns-WK.csv`** — valores das listas (origem, ambiente, metragem, status, motivo_perdido)
-3. **`template-planilha-leads-WK.md`** — documentação completa de referência
+1. **`leads.csv`** — cabeçalhos da aba `Leads` + 1 linha de exemplo
+2. **`dropdowns.csv`** — valores das listas (origem, ambiente, metragem, status, motivo_perdido)
+3. **`schema.md`** — documentação completa de referência
 
 ---
 
@@ -13,12 +13,12 @@
 ### 1) Criar nova planilha
 1. Abra https://sheets.google.com
 2. Clique em **+ Em branco** (nova planilha)
-3. Renomeie pra `[OFICIAL] Leads - WK Carpetes`
+3. Renomeie pra `[OFICIAL] Leads - <Cliente>`
 4. Configure permissão: **Compartilhar → Restrito** (não público)
 
 ### 2) Importar a aba `Leads`
 1. Na nova planilha, clique na aba `Página1` (canto inferior) → renomeie pra `Leads`
-2. **Arquivo → Importar** → faça upload de `template-leads-WK.csv`
+2. **Arquivo → Importar** → faça upload de `leads.csv`
 3. Local da importação: **Substituir planilha atual**
 4. Tipo de separador: **Detectar automaticamente**
 5. Confirme
@@ -27,7 +27,7 @@ A aba `Leads` agora tem 24 colunas + 1 linha de exemplo. **Apague a linha de exe
 
 ### 3) Criar aba `Configuracao` (valores dos dropdowns)
 1. Canto inferior → **+** (nova aba) → renomeie pra `Configuracao`
-2. **Arquivo → Importar** → upload de `template-dropdowns-WK.csv`
+2. **Arquivo → Importar** → upload de `dropdowns.csv`
 3. Local: **Anexar à planilha** (NÃO substituir)
 4. Confirme
 5. Mova a aba para o final (clique direito → Mover para o final)
@@ -114,7 +114,7 @@ function onEdit(e) {
 ```
 
 4. **Salvar** (ícone de disquete)
-5. Renomeie o projeto pra `WK - Auto Dates`
+5. Renomeie o projeto pra `<Cliente> - Auto Dates`
 6. **Fechar** (volta pra planilha)
 
 **Como testar:** numa linha de teste, mude o status pra `MQL`. A célula `data_mql` (coluna Q) deve preencher automaticamente.
@@ -127,7 +127,7 @@ Pra cada lead na aba antiga (LP 1 - MQL V1 ou FORMS - MQL V1), criar uma linha n
 |--------------|-----------|------------|
 | (não existe) | `lead_id` | gerar manual: `HIST-001`, `HIST-002`... pros leads históricos |
 | Data + Hora | `data_lead` | combinar em 1 célula |
-| (não existe) | `origem` | aba antiga LP → `LP - carpete-em-placas`; aba antiga FORMS → `FB Form - Pegasus` |
+| (não existe) | `origem` | aba antiga LP → `LP - <nome-da-lp>`; aba antiga FORMS → `FB Form - <nome do form>` |
 | Nome, E-mail, WhatsApp, Ambiente, Metragem, utm_* | mesmos campos | direto |
 | MQL/SQL/VENDA checked? | `status` | última etapa marcada vira o status |
 | PERDIDO/FORA DO PERFIL checked? | `status` = `Perdido` | preencher `motivo_perdido` |

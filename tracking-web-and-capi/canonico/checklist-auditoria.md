@@ -4,7 +4,7 @@
 > Coordenador usa este checklist no modo `auditar` da skill.
 
 **Status:** 📝 Em construção
-**Última revisão:** 2026-05-17
+**Última revisão:** 2026-09-28
 
 ---
 
@@ -99,21 +99,37 @@ Pontuação:
 - [ ] Versão GTM Server tem nome claro
 - [ ] Documentação do cliente em `playbook/caso-<cliente>.md` (opcional mas recomendado)
 
-## 11. Templates limpos (zero placeholder do WK)
+## 11. Containers gerados pelo template (zero marcador)
 
-Após gerar os JSONs a partir do template canônico, verificar que NENHUM valor do WK Carpetes sobreviveu no GTM do cliente. Qualquer ❌ aqui é BLOQUEANTE — é vazamento de template entre clientes.
+Os templates de `templates/gtm/` não têm ID de nenhum cliente: só marcadores. O item bloqueia se o container veio
+de outro caminho (cópia do container de outro cliente) ou se a validação do gerador não passou.
 
-- [ ] Nenhuma string `444617535160623` (Meta Pixel ID do WK)
-- [ ] Nenhuma string `1066377963` (Google Ads ID do WK)
-- [ ] Nenhuma string `G-SQ2HXLBL2E` (GA4 ID do WK)
-- [ ] Nenhuma string `u7Y1CP2rlZccEOvFvvwD`, `6ZwcCOztp64cEOvFvvwD`, `KG5qCLWhj5ccEOvFvvwD` (Conversion Labels do WK)
-- [ ] Nenhuma string `whhhlqap.sac.stape.io` (SSGTM do WK)
-- [ ] Nenhuma referência a `wkcarpetes.com.br` ou `lp.wkcarpetes.com.br`
-- [ ] Nenhuma referência a `5511976262557` (WhatsApp do WK)
-- [ ] Selectors do form ajustados ao form do cliente (não `seu-nome`, `seu-e-mail`, `seu-telefonewhatsapp`, `seu-ambiente`, `sua-metragem`)
+- [ ] Containers gerados por `scripts/gerar_containers.py` com `--producao`, `resumo.md` anexado e zero BLOQUEANTE
+- [ ] Nenhum marcador `__...__` no container importado
+- [ ] IDs conferidos contra as contas do cliente (Pixel, Google Ads, GA4), não contra o brief
+- [ ] Rótulos copiados da conta, letra a letra (G1 do `gtm_auditoria.py` limpo)
+- [ ] Seletores do formulário testados no formulário do cliente (`teste_formulario.py`)
 - [ ] Nome dos containers = `WEB | <dominio_cliente>` e `sGTM | <dominio_cliente>`
-- [ ] Critério em `cJS - is_mql` reflete a regra do cliente (não a do WK)
-- [ ] Nomenclatura de tags/triggers/variáveis e emojis das pastas preservados (não alterar o canônico)
+- [ ] `cJS - is_mql` com a regra do cliente, ou tags de MQL removidas quando não há critério
+- [ ] Nomenclatura de tags/acionadores/variáveis e emojis das pastas preservados
+
+## 12. Conta de anúncios e GA4
+
+- [ ] Uma conversão **principal** por etapa do funil no Google Ads; as demais secundárias (⚠️ se houver duas na mesma categoria)
+- [ ] A categoria da conversão principal está nas metas usadas pelas campanhas (`campaign_conversion_goal`)
+- [ ] Conversões automáticas de ligação/WhatsApp do Google como secundárias
+- [ ] Tag GA4 do servidor não dispara nos eventos do Meta (G2)
+- [ ] Key events do GA4 = eventos que de fato disparam
+- [ ] UTMs do Meta sem ID em `utm_source`/`utm_medium`
+- [ ] Clique no WhatsApp medido também quando vem de widget ou popup
+
+## 13. Origem até o CRM e volta da venda
+
+- [ ] GTM carrega antes do aceite de cookies ou com Consent Mode v2 (não fica preso no banner)
+- [ ] Formulário leva UTM, gclid e fbclid em campos ocultos até o Make/n8n/CRM (`teste_formulario.py`)
+- [ ] Origem do lead gravada por automação, não por etiqueta manual
+- [ ] Venda iniciada no WhatsApp: tracking de CTWA ligado no CRM
+- [ ] Venda volta às plataformas (CAPI Purchase; Google Ads offline pela API ou CSV agendado)
 
 ---
 
@@ -122,4 +138,5 @@ Após gerar os JSONs a partir do template canônico, verificar que NENHUM valor 
 - Itens da seção 7 (back-pass) podem ser ⚠️ se o cliente ainda não tem fluxo de vendas operando, mas devem virar ❌ quando começar a operar.
 - Item 8 (segurança) é sempre ❌ bloqueante.
 - Item 9 (validação) deve ser ❌ se não foi feito.
-- Item 11 (templates limpos) é sempre ❌ bloqueante — vazamento de dados entre clientes é falha crítica.
+- Item 11 (containers pelo template) é sempre ❌ bloqueante — vazamento de dados entre clientes é falha crítica.
+- Itens 12 e 13 são ⚠️ na primeira auditoria e viram ❌ quando a campanha já otimiza por essa conversão.

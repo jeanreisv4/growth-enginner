@@ -2,7 +2,7 @@
 
 > Caso majoritário da V4 Company. Cliente não tem CRM — usa planilha como storage de leads.
 
-**Status:** 📝 Em construção (rascunho do caso WK)
+**Status:** 📝 Em construção (rascunho do caso piloto)
 **Última revisão:** 2026-05-17
 
 ---
@@ -44,9 +44,9 @@
 
 ### 1. Estrutura da planilha
 
-Use o script automático `artefatos-referencia/setup-planilha-automatico.gs` (referência: caso WK).
+Use o script automático `templates/planilha/setup-planilha-automatico.gs` (referência: caso piloto).
 
-> **TODO próximo chat:** documentar o passo a passo com prints reais do caso WK.
+> **TODO próximo chat:** documentar o passo a passo com prints reais do caso piloto.
 
 ### 2. Integração form da LP → planilha
 
@@ -55,7 +55,7 @@ Opções:
 - **Form direto pra Sheets**: usando integração nativa do builder (limitado)
 - **Zapier/Make**: alternativas pagas
 
-> **TODO próximo chat:** trazer o workflow n8n do WK como modelo.
+> **TODO próximo chat:** trazer o workflow n8n do caso piloto como modelo.
 
 ### 3. Apps Script: status=Cliente → Purchase event
 
@@ -81,17 +81,17 @@ function onEditCheckPurchase(e) {
 
 ## Caso de referência
 
-Ver `playbook/caso-WK.md` para o caso real implementado.
+Ver `playbook/caso-piloto-carpetes.md` para o caso real implementado.
 
 ## Artefatos disponíveis
 
-Em `artefatos-referencia/`:
+Em `templates/planilha/`:
 - `setup-planilha-automatico.gs` — script que monta a planilha
-- `template-leads-WK.csv` — cabeçalhos
-- `template-dropdowns-WK.csv` — valores de dropdowns
-- `INSTRUCOES-importar-planilha-WK.md` — passo a passo de import manual
-- `template-planilha-leads-WK.md` — documentação completa
+- `leads.csv` — cabeçalhos (24 colunas) e uma linha de exemplo
+- `dropdowns.csv` — valores das listas
+- `importar-sem-script.md` — passo a passo de import manual
+- `schema.md` — documentação completa do schema
 
 ## Erros comuns
 
-> **TODO:** listar erros conhecidos baseados em iterações reais com clientes
+Ver `referencias/armadilhas.md`, seções "Página e consentimento" e "Volta da venda".

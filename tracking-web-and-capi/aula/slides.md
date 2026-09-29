@@ -55,7 +55,7 @@ Tópicos:
 - Por que diferenciar valor por canal (Meta vs Google)
 - O que NÃO entra no padrão (varia por cliente)
 
-> **TODO:** trazer cálculo do WK como exemplo numérico
+> **TODO:** trazer o cálculo do caso piloto como exemplo numérico
 
 ### Módulo 5: Auditoria e processo (10 min)
 
@@ -70,7 +70,7 @@ Tópicos:
 
 ## Parte prática (1h)
 
-### Demo 1: Caso WK Carpetes (sem CRM) — 30 min
+### Demo 1: Caso piloto (sem CRM) — 30 min
 
 Passo a passo do caso real:
 - Setup do GTM Web (com prints)
@@ -79,7 +79,7 @@ Passo a passo do caso real:
 - Validação no Meta Test Events
 - Configuração do back-pass via Apps Script
 
-> **TODO:** prints serão fornecidos pelo Jean (V4)
+> **TODO:** prints serão fornecidos pelo usuário (V4)
 
 ### Demo 2: Caso CRM (com Kommo) — 20 min
 

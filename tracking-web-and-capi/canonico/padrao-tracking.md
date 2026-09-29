@@ -12,7 +12,7 @@
 ## 1. Por que existe (a dor)
 
 > **TODO próximo chat:** detalhar a dor da operação atual (200 operadores, falta de padrão, decisões com dados ruins, retrabalho, baixa qualidade entre clientes).
-> Usar a conversa em `artefatos-referencia/conversa-inicial.md` como insumo.
+> Usar `playbook/caso-piloto-carpetes.md` e `referencias/armadilhas.md` como insumo.
 
 ## 2. Stack obrigatória
 
@@ -38,7 +38,7 @@ Toda implementação obrigatoriamente usa:
 
 ## 4. Schema de dados (contrato)
 
-> **TODO próximo chat:** consolidar o schema das 24 colunas da planilha do WK como padrão de dados.
+> **TODO próximo chat:** consolidar o schema das 24 colunas de `templates/planilha/schema.md` como padrão de dados.
 > Definir: nome do campo, tipo, origem, obrigatoriedade, validação.
 
 ## 5. Valores controlados

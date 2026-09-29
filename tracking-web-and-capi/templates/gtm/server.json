@@ -1,22 +1,22 @@
 {
     "exportFormatVersion": 2,
-    "exportTime": "2026-05-17 06:03:44",
+    "exportTime": "2026-05-17 00:00:00",
     "containerVersion": {
-        "path": "accounts/4226126032/containers/252672677/versions/0",
-        "accountId": "4226126032",
-        "containerId": "252672677",
+        "path": "accounts/1000000000/containers/300000000/versions/0",
+        "accountId": "1000000000",
+        "containerId": "300000000",
         "containerVersionId": "0",
         "container": {
-            "path": "accounts/4226126032/containers/252672677",
-            "accountId": "4226126032",
-            "containerId": "252672677",
-            "name": "sGTM | wkcarpetes.com.br",
-            "publicId": "GTM-PNKWBGFC",
+            "path": "accounts/1000000000/containers/300000000",
+            "accountId": "1000000000",
+            "containerId": "300000000",
+            "name": "sGTM | __DOMINIO__",
+            "publicId": "GTM-SRV0000",
             "usageContext": [
                 "SERVER"
             ],
             "fingerprint": "1778994182198",
-            "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/4226126032/containers/252672677/workspaces?apiLink=container",
+            "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/1000000000/containers/300000000/workspaces?apiLink=container",
             "features": {
                 "supportUserPermissions": true,
                 "supportEnvironments": true,
@@ -34,50 +34,50 @@
                 "supportTransformations": true
             },
             "tagIds": [
-                "GTM-PNKWBGFC"
+                "GTM-SRV0000"
             ],
             "taggingServerUrls": [
-                "https://whhhlqap.sac.stape.io"
+                "__SSGTM_URL__"
             ]
         },
         "builtInVariable": [
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "type": "EVENT_NAME",
                 "name": "Event Name"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "type": "CLIENT_NAME",
                 "name": "Client Name"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "type": "CONTAINER_ID",
                 "name": "Container ID"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "type": "REQUEST_METHOD",
                 "name": "Request Method"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "type": "QUERY_STRING",
                 "name": "Query String"
             }
         ],
         "fingerprint": "1778997824271",
-        "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/4226126032/containers/252672677/versions/0?apiLink=version",
+        "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/1000000000/containers/300000000/versions/0?apiLink=version",
         "customTemplate": [
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "templateId": "4",
                 "name": "Facebook Conversion API",
                 "fingerprint": "1778995057472",
@@ -94,8 +94,8 @@
         ],
         "client": [
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "clientId": "1",
                 "name": "GA4",
                 "type": "gaaw_client",
@@ -136,15 +136,15 @@
         ],
         "folder": [
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "folderId": "1",
                 "name": "⚙️ | Configurações",
                 "fingerprint": "1778997824000"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "folderId": "2",
                 "name": "🔵 | Meta CAPI",
                 "fingerprint": "1778997824001"
@@ -152,8 +152,8 @@
         ],
         "variable": [
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "variableId": "1",
                 "name": "00 - Meta CAPI - Pixel Id",
                 "type": "c",
@@ -161,7 +161,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "value",
-                        "value": "444617535160623"
+                        "value": "__META_PIXEL_ID__"
                     }
                 ],
                 "fingerprint": "1778997824100",
@@ -169,8 +169,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "variableId": "2",
                 "name": "00 - Meta CAPI - Access Token",
                 "type": "c",
@@ -187,8 +187,8 @@
                 "notes": "Substitua 'COLE_O_TOKEN_AQUI' pelo Access Token gerado no Meta Events Manager (Conversions API)."
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "variableId": "3",
                 "name": "00 - Meta CAPI - Test Event Code",
                 "type": "c",
@@ -196,7 +196,7 @@
                     {
                         "type": "TEMPLATE",
                         "key": "value",
-                        "value": "TEST36284"
+                        "value": "__TEST_EVENT_CODE__"
                     }
                 ],
                 "fingerprint": "1778997824102",
@@ -205,8 +205,8 @@
                 "notes": "Test Event Code do Meta. Apague o valor (deixe vazio) quando for para producao real."
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "variableId": "4",
                 "name": "ED - client_id",
                 "type": "ed",
@@ -222,8 +222,8 @@
                 "formatValue": {}
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "variableId": "5",
                 "name": "ED - state",
                 "type": "ed",
@@ -241,8 +241,8 @@
         ],
         "trigger": [
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "triggerId": "1",
                 "name": "Event Name = PageView",
                 "type": "CUSTOM_EVENT",
@@ -267,8 +267,8 @@
                 "parentFolderId": "2"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "triggerId": "2",
                 "name": "Event Name = Lead",
                 "type": "CUSTOM_EVENT",
@@ -293,8 +293,8 @@
                 "parentFolderId": "2"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "triggerId": "3",
                 "name": "Event Name = Contact",
                 "type": "CUSTOM_EVENT",
@@ -319,8 +319,8 @@
                 "parentFolderId": "2"
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "triggerId": "4",
                 "name": "Event Name = MQL",
                 "type": "CUSTOM_EVENT",
@@ -347,11 +347,11 @@
         ],
         "tag": [
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "tagId": "1",
                 "name": "00.1 | Meta CAPI - PageView",
-                "type": "cvt_252672677_4",
+                "type": "cvt_300000000_4",
                 "parameter": [
                     {
                         "type": "TEMPLATE",
@@ -499,11 +499,11 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "tagId": "2",
                 "name": "00.2 | Meta CAPI - Lead",
-                "type": "cvt_252672677_4",
+                "type": "cvt_300000000_4",
                 "parameter": [
                     {
                         "type": "TEMPLATE",
@@ -651,11 +651,11 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "tagId": "3",
                 "name": "00.3 | Meta CAPI - Contact",
-                "type": "cvt_252672677_4",
+                "type": "cvt_300000000_4",
                 "parameter": [
                     {
                         "type": "TEMPLATE",
@@ -803,11 +803,11 @@
                 }
             },
             {
-                "accountId": "4226126032",
-                "containerId": "252672677",
+                "accountId": "1000000000",
+                "containerId": "300000000",
                 "tagId": "4",
                 "name": "00.4 | Meta CAPI - MQL",
-                "type": "cvt_252672677_4",
+                "type": "cvt_300000000_4",
                 "parameter": [
                     {
                         "type": "TEMPLATE",

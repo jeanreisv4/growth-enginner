@@ -1,6 +1,6 @@
-# Skill: tracking-web-and-capi — v1.0.0
+# Skill: tracking-web-and-capi — v1.1.0
 
-> owner: growth-engineer | status: active | published: 2026-05-17
+> owner: growth-engineer | status: active | published: 2026-05-17 | atualizada: 2026-09-28
 
 ---
 
@@ -75,10 +75,10 @@ D.4 SSGTM (stape.io)
 - Tem custom domain? (sim/não — se sim, qual):
 
 D.5 Cliente (afeta nome dos containers e links wa.me)
-- Domínio do cliente (ex: wkcarpetes.com.br):
+- Domínio do cliente (ex: exemplo-pisos.com.br):
 - URL completa da LP:
 - URL da página de obrigado:
-- Número WhatsApp do cliente (formato internacional sem +, ex: 5511976262557):
+- Número WhatsApp do cliente (formato internacional sem +, ex: 5511900000000):
 
 D.6 Selectors do form (atributos input name="...")
 - Nome:
@@ -144,56 +144,38 @@ Veja: implementacoes/<sheets.md ou crm-<ferramenta>.md>
 
 **Fase 4 — Geração dos JSONs (Web + Server)**
 
-Partir dos JSONs canônicos do caso WK:
-- Web: `artefatos-referencia/gtm/GTM-KG7X38D6_workspace4_FIXED.json`
-- Server: `artefatos-referencia/gtm/GTM-PNKWBGFC_workspace2_BUILT.json`
+Os templates canônicos ficam em `templates/gtm/web.json` e `templates/gtm/server.json`: são os containers do caso
+piloto com **marcadores** (`__META_PIXEL_ID__`, `__LABEL_LEAD__`, `__SSGTM_URL__`, `__REGRA_MQL__`...) no lugar de
+todo valor do cliente. Nenhum ID de outro cliente pode vazar, porque nenhum está no template.
 
-**Princípio canônico:** nomenclatura de tags/triggers/variáveis, emojis das pastas (🛠️ 🟢 🎬 ⚙️ ⚫ 🟠 🔵 🍪 no Web; ⚙️ 🔵 no Server), estrutura de pastas, prefixos numéricos (`00.1 |`, `00.2 |`, etc) e lógica das tags **não mudam entre clientes**. Só os valores do mapa abaixo são substituídos.
+**Princípio canônico:** nomenclatura de tags, acionadores e variáveis, emojis das pastas (🛠️ 🟢 🎬 ⚙️ ⚫ 🟠 🔵 🍪 no
+Web; ⚙️ 🔵 no Server), prefixos numéricos (`00.1 |`, `00.2 |`) e lógica das tags **não mudam entre clientes**.
 
-**Mapa de substituições — JSON Web (`GTM-KG7X38D6_workspace4_FIXED.json`)**
+1. Preencha o brief a partir do Bloco D, no formato de `templates/brief_exemplo.json`, e grave em
+   `clientes/<cliente>/brief.json`. **O brief nunca leva o token da CAPI** (o script recusa).
+2. Rode para validar (mantém o Test Event Code):
+   `python3 scripts/gerar_containers.py --brief clientes/<cliente>/brief.json --out saida/<cliente>`
+3. Depois da validação no Meta Test Events, gere a versão de produção (Test Event Code vazio):
+   `python3 scripts/gerar_containers.py --brief clientes/<cliente>/brief.json --out saida/<cliente> --producao`
 
-| Valor no template (WK)                | Substituir por (do Bloco D)                          |
-|---------------------------------------|------------------------------------------------------|
-| `WEB \| wkcarpetes.com.br` (nome do container) | `WEB \| <D.5 domínio>`                      |
-| `444617535160623` (Meta Pixel ID)     | D.1 Meta Pixel ID                                    |
-| `1066377963` (Google Ads ID)          | D.1 Google Ads ID                                    |
-| `G-SQ2HXLBL2E` (GA4 Measurement ID)   | D.1 GA4 ID                                           |
-| `u7Y1CP2rlZccEOvFvvwD` (Label Lead)   | D.2 Label Lead                                       |
-| `6ZwcCOztp64cEOvFvvwD` (Label MQL)    | D.2 Label MQL (se não aplicável: remover tag MQL)    |
-| `KG5qCLWhj5ccEOvFvvwD` (Label Contact)| D.2 Label Contact                                    |
-| `seu-nome`, `seu-e-mail`, `seu-telefonewhatsapp` (selectors) | D.6 Selectors do form                 |
-| `seu-ambiente`, `sua-metragem` (selectors qualificadores)    | D.6 Selectors qualificadores (se aplicáveis) |
-| `obrigado` (path da página)           | path extraído de D.5 URL da página de obrigado       |
-| Regra dentro de `cJS - is_mql`        | D.7 Critério MQL traduzido em JavaScript             |
-| `lp.wkcarpetes.com.br` (referências de URL) | D.5 domínio da LP                              |
-| `5511976262557` (WhatsApp em links wa.me) | D.5 WhatsApp do cliente                          |
+Sem critério de MQL (`regra_mql: null`), o script tira as 4 tags de MQL do Web, a do Server, a variável `is_mql` e o
+acionador. Sem `clarity_id`, tira a tag do Clarity. Seletor vazio vira um seletor que não casa com nada.
 
-**Mapa de substituições — JSON Server (`GTM-PNKWBGFC_workspace2_BUILT.json`)**
-
-| Valor no template (WK)                | Substituir por (do Bloco D)                          |
-|---------------------------------------|------------------------------------------------------|
-| `sGTM \| wkcarpetes.com.br` (nome do container) | `sGTM \| <D.5 domínio>`                    |
-| `444617535160623` (variável `00 - Meta CAPI - Pixel Id`) | D.1 Meta Pixel ID                          |
-| Access Token (variável `00 - Meta CAPI - Access Token`)  | D.3 Access Token                           |
-| Test Event Code (variável `00 - Meta CAPI - Test Event Code`) | D.3 Test Event Code (vazio em produção) |
-
-**Validação pré-entrega (obrigatória — bloqueia entrega se falhar):**
-
-- [ ] `grep` nos JSONs gerados: nenhuma string do mapa "template" sobreviveu
-- [ ] Estrutura de pastas com emojis presente (8 pastas no Web, 2 no Server)
-- [ ] Contagem de tags bate com o canônico (Web: 13 tags ativas; Server: 4 tags Meta CAPI + GA4)
-- [ ] JSON sintaticamente válido (importável no GTM)
-- [ ] Tag CAPI tem `inheritEventName: "override"` (não BOOLEAN — bug conhecido do template stape-io)
+**Validações do script (bloqueiam a entrega):** marcador não preenchido; formato do Pixel, do ID do Ads e do GA4;
+rótulo vazio, só com dígitos (ID e rótulo trocados) ou repetido em duas conversões; URL do servidor sem https ou de
+exemplo; Test Event Code no container de produção; seletor vazio no script de captura; número de pastas e de tags
+diferente do canônico; tag CAPI sem `inheritEventName: "override"`. **Avisos:** rótulo fora de 20 caracteres
+(confira letra a letra na conta) e token da CAPI ainda com o texto do template.
 
 **Entrega para o operador:**
 
-1. `gtm-web-<cliente>.json` pronto para import
-2. `gtm-server-<cliente>.json` pronto para import
-3. Resumo do que foi substituído (auditoria rápida pelo coordenador)
-4. Lembrete: publicar versão **com nome claro** (não "Versão N") no GTM antes do go-live
+1. `gtm-web-<cliente>.json` e `gtm-server-<cliente>.json` prontos para importar
+2. `resumo.md` com cada valor substituído e o resultado da validação (auditoria rápida pelo coordenador)
+3. Token da CAPI colado **direto** na variável `00 - Meta CAPI - Access Token` do GTM Server
+4. Publicar versão **com nome claro** (não "Versão N") e rodar o teste de disparo (Modo 2) antes do go-live
 
 **Outros artefatos (Sheets):**
-- Script `setupPlanilha` em `artefatos-referencia/setup-planilha-automatico.gs` (rodar 1x na planilha do cliente)
+- Script `setupPlanilha` em `templates/planilha/setup-planilha-automatico.gs` (rodar 1x na planilha do cliente)
 - Apps Script de Purchase (back-pass) — em construção; ver `implementacoes/sheets.md`
 
 ---
@@ -219,6 +201,20 @@ Solicite (quando aplicável):
 - Export dos JSONs dos containers GTM
 - Print da aba "Visão geral" do Meta Events Manager (sem token!)
 - Print da estrutura da planilha/CRM
+
+**Fase 1b — Testes automáticos (sem criar lead)**
+
+Os scripts ficam na skill irmã `sprint-growth` (mesma pasta do growth-enginner):
+
+- `sprint-growth/scripts/gtm_auditoria.py`: compara as tags do GTM com as conversões da conta (G1 rótulo que não
+  existe, G2 GA4 do servidor repassando evento do Meta, G3 tag pausada ou sem acionador, G4 rótulo repetido).
+- `sprint-growth/scripts/teste_disparo.py`: abre a página sem janela, bloqueia GA4/Meta/Stape, empurra os eventos
+  no dataLayer e lista os hits do Google Ads com o rótulo de cada um.
+- `sprint-growth/scripts/teste_formulario.py`: mostra o que o formulário enviaria (campos ocultos, UTM, gclid) sem
+  enviar. Pega GTM preso no banner de cookies.
+
+Com as MCPs do n8n (GTM, Google Ads, GA4 Admin), leia os containers e a conta direto, sem pedir export. Mudança em
+conta de cliente só com ok explícito do usuário para aquela mudança.
 
 **Fase 2 — Auditoria contra checklist**
 
@@ -279,11 +275,22 @@ Use os erros conhecidos abaixo. Se nenhum bater, faça investigação guiada.
 | Sintoma | Causa provável | Solução |
 |---------|----------------|---------|
 | Tag CAPI dispara mas Meta retorna 400 com "event_name required" | Template do stape com `inheritEventName: true` (BOOLEAN errado) | Mudar pra `inheritEventName: "override"` + setar `eventNameStandard` ou `eventNameCustom` |
-| MQL não dispara na /obrigado | Variáveis JS lendo do DOM em página onde form não existe | Usar sessionStorage: tag HTML captura form data no submit (ver `artefatos-referencia/template-planilha-leads-WK.md`) |
-| EMQ < 7 | Faltam campos em user_data | Adicionar external_id, country, state via userDataList (ver caso WK) |
+| MQL não dispara na /obrigado | Variáveis JS lendo do DOM em página onde form não existe | Usar sessionStorage: tag HTML captura form data no submit (já na tag `cHTML - Persist Form Data` do template) |
+| EMQ < 7 | Faltam campos em user_data | Adicionar external_id, country, state via userDataList (ver `playbook/caso-piloto-carpetes.md`) |
 | Dedup não funciona (eventos contam 2x no Meta) | event_id diferente entre Pixel e CAPI | Garantir variável compartilhada `00.1 - API Event Id` nas duas tags |
 | Cliente reclama "nada chega no Meta" | Tag CAPI pausada / sem trigger / token vencido | Verificar paused, firingTriggerId, valor da variável Access Token |
 | Bad Gateway no SSGTM | Server stape não publicado ou em deploy | Aguardar deploy, ou publicar v1 manual |
+| Tag de conversão do Ads dispara e a conta não conta nada | Rótulo com um caractere a menos, ou ID e rótulo trocados | `gtm_auditoria.py` (G1) + `teste_disparo.py`; corrigir o rótulo copiando da conta |
+| Lead contado duas vezes no Google Ads | Duas conversões principais na mesma categoria, ou duas tags com o mesmo rótulo (G4) | Uma principal por etapa do funil; as outras secundárias |
+| Nada chega ao GTM Server | URL de transporte de exemplo (`gtm.dominio.com.br`) ou sem https | Trocar pela URL do Stape ou do domínio próprio; publicar |
+| GA4 com eventos em dobro | GA4 do servidor disparando nos eventos do Meta (G2) | Acionador da tag GA4 do servidor só no cliente GA4 |
+| GA4 vê uma fração da LP e o lead chega sem UTM | GTM carregado só depois do aceite de cookies (construtor de página) | `teste_formulario.py`; tirar da categoria Marketing / Consent Mode v2 no construtor |
+| Clique no WhatsApp não conta | Widget ou popup abre o `wa.me` por JavaScript, sem clique em link | Acionador no evento do widget (`JoinChat`) ou evento customizado |
+| GA4 com tráfego pago em "Unassigned" | UTM do Meta com ID de campanha em `utm_source`/`utm_medium` | `utm_source=facebook`, `utm_medium=paid_social`, IDs em `utm_id` |
+| Venda não volta para Meta/Google | gclid/fbclid não saem do formulário para o Make/n8n/CRM, ou CTWA sem tracking no CRM | Campos ocultos + cookies `_gcl_aw`/`_fbc`; tracking de CTWA no CRM; Purchase pela CAPI |
+| Upload offline recusado no Google Ads | Conta nova sem Data Manager API | CSV agendado até liberar a API |
+
+Cada linha tem o caso e como foi detectado em `referencias/armadilhas.md`.
 
 **Fase 3 — Correção**
 
@@ -309,4 +316,5 @@ Antes de responder qualquer pergunta:
 - Leia `canonico/checklist-auditoria.md` (critérios)
 - Para Sheets: `implementacoes/sheets.md`
 - Para CRM: `implementacoes/crm-<ferramenta>.md`
-- Para caso real de referência: `playbook/caso-WK.md`
+- Para caso real de referência: `playbook/caso-piloto-carpetes.md`
+- Para erros já vistos em cliente: `referencias/armadilhas.md`

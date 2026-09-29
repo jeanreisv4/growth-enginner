@@ -1,8 +1,8 @@
-# Template: Planilha Padrão de Leads — V4 WK Marketing
+# Template: Planilha Padrão de Leads — V4 Company
 
 > **Objetivo:** padrão único de planilha de tracking de leads, aplicável tanto para LP quanto para Lead Ads do Meta (Forms Nativo).
 >
-> **Cliente piloto:** WK Carpetes
+> **Cliente piloto:** fornecedor B2B de carpetes corporativos
 > **Versão:** 1.0
 > **Última atualização:** 2026-05-17
 
@@ -44,9 +44,9 @@
 ## 2. Configuração de Dropdowns (Validação de Dados)
 
 ### Coluna C: `origem`
-- `LP - carpete-em-placas`
+- `LP - <nome-da-lp>`
 - `LP - <outra-lp>` (adicione conforme crie mais LPs)
-- `FB Form - Pegasus` (ou nome do form atual)
+- `FB Form - <nome do form>` (ou nome do form atual)
 - `FB Form - <outro-form>`
 - `WhatsApp Direto`
 - `Indicação`
@@ -82,7 +82,7 @@
 - `Outro`
 
 ### Coluna U: `vendedor`
-- Lista com os nomes dos vendedores da WK
+- Lista com os nomes dos vendedores do cliente
 - Ex.: `João Silva`, `Maria Costa`, etc.
 
 ---
@@ -191,7 +191,7 @@ Pra migrar os 8 leads atuais sem perder informação:
 | PERDIDO/FORA DO PERFIL | `status` | se checked, status = "Perdido", preencher motivo_perdido |
 | FATURAMENTO | `faturamento` | direto |
 | (não existia) | `lead_id` | gerar manualmente para histórico (ex.: `HIST-001`, `HIST-002`...) |
-| (não existia) | `origem` | inferir: aba LP → "LP - carpete-em-placas", aba FORMS → "FB Form - Pegasus" |
+| (não existia) | `origem` | inferir: aba LP → "LP - <nome-da-lp>", aba FORMS → "FB Form - <nome do form>" |
 
 ---
 
