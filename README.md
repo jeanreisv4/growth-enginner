@@ -1,5 +1,7 @@
 # growth-enginner
 
+![Capa do growth engineer: os comandos das skills sendo digitados e o loop do cliente girando entre projeção, tracking, sprint e check-in](assets/capa.svg)
+
 Skills do Claude Code para o trabalho de growth engineer em agência: projetar, medir, diagnosticar e reportar a
 receita do cliente, do clique à venda. Cada skill é uma etapa de um mesmo loop, e cada uma cobre um conjunto das
 disciplinas do PDI de growth engineer.
@@ -12,6 +14,11 @@ Todo README de skill tem as mesmas três camadas: o **desenho** (as fases, para 
 
 Desenho no formato de modelo qualitativo de crescimento (Reforge): as missões do cargo entram como canais lineares,
 e as skills formam o loop. Cada passo é uma ação, termina onde o próximo começa e deixa uma saída que pode ser medida.
+
+![O loop do growth engineer: as 5 missões do cargo alimentam a projeção, o tracking, a sprint e o check-in, e o desvio volta para a projeção; o claude-seo complementa a sprint](assets/loop.svg)
+
+<details>
+<summary>Ver o desenho em Mermaid</summary>
 
 ```mermaid
 flowchart TB
@@ -40,11 +47,14 @@ flowchart TB
     style L fill:#FFFFFF,stroke:#CCCCCC
 ```
 
+</details>
+
 | Passo | Missão que alimenta | Ação | Saída | Como se mede |
 |---|---|---|---|---|
 | [`projecao-breakeven`](projecao-breakeven/) | Estratégia de tráfego alinhada ao go-to-market | Lê o histórico, faz a entrevista das premissas e dá o veredito | Planilha com meta mês a mês, CAC permitido e o caminho quando não fecha | Mês de breakeven; projetado de leads, MQL e vendas |
 | [`tracking-web-and-capi`](tracking-web-and-capi/) | Atribuição da jornada nas plataformas | Planeja, gera os containers GTM web e servidor pelo template (com validação), audita e conserta Pixel/CAPI, Google Ads, GA4 e CRM | Cada lead e venda chega à plataforma e ao CRM com a origem | Eventos que disparam; conversões com rótulo certo; leads com origem ÷ leads; venda de volta às plataformas |
 | [`sprint-growth`](sprint-growth/) | Auditoria recorrente · Execução de mídia paga | Audita a jornada inteira com 8 agentes especialistas em paralelo (mídia, medição, Clarity, jornada, comercial, mercado), acha a restrição (TOC) e executa pelas MCPs | Plano 5W1H priorizado em R$ e aba Executado | Impacto em R$/mês de cada ação; CPL real por pessoa única |
+| [`claude-seo`](claude-seo/) (complemento) | Auditoria recorrente | SEO completo de terceiros (MIT, AgriciDaniel): auditoria de site com agentes em paralelo, schema, GEO, local, backlinks | Relatório com nota de saúde e plano priorizado | Nota de saúde SEO; itens críticos resolvidos |
 | [`checkin-ropre`](checkin-ropre/) | Operação direta em grandes clientes | Monta o check-in (Resultados, Objetivos, Premissas e riscos, Entregas, Próximos passos) | Deck e documento com a regra de atribuição declarada | Realizado × projetado; o que não foi medido escrito como tal |
 
 ## As disciplinas
@@ -52,6 +62,11 @@ flowchart TB
 As 21 disciplinas do PDI de growth engineer, por domínio. A cor é a profundidade esperada no cargo; as letras dizem
 qual skill exercita a disciplina (**P** projeção, **T** tracking, **S** sprint, **C** check-in). Borda tracejada =
 nenhuma skill cobre ainda.
+
+![As 21 disciplinas do PDI por domínio e profundidade; uma skill por vez acende as disciplinas que exercita](assets/disciplinas.svg)
+
+<details>
+<summary>Ver o mapa em Mermaid</summary>
 
 ```mermaid
 flowchart TB
@@ -93,6 +108,8 @@ flowchart TB
     style N fill:#FFFFFF,stroke:#CCCCCC
 ```
 
+</details>
+
 Legenda: vermelho = Maximizar · azul = Sólido · cinza = Conhecer · tracejado = lacuna.
 
 | Disciplina | Profundidade | Onde a skill exercita |
@@ -115,5 +132,8 @@ Legenda: vermelho = Maximizar · azul = Sólido · cinza = Conhecer · tracejado
 | Comunicação com Cliente | Conhecer | **C**: check-in ROPRE |
 | Gestão de Tarefas e Projetos | Conhecer | **S**: 5W1H com status e aba Executado |
 | Narrativa · Direção Visual · Produto · Gestão de Pessoas | Sólido / Conhecer | Lacunas: nenhuma skill ainda |
+
+Os desenhos animados desta página e os do `claude-seo` saem de [`scripts/desenhos.py`](scripts/desenhos.py) (`python3 scripts/desenhos.py`). Os do `claude-seo` foram refeitos neste visual com o mesmo conteúdo; os originais
+estão no [repositório do autor](https://github.com/AgriciDaniel/claude-seo).
 
 Nenhuma pasta traz dado de cliente: cada skill gera sua cópia pública com o cliente trocado pelo segmento.
