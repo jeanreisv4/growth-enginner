@@ -1,5 +1,11 @@
 # Changelog — tracking-web-and-capi
 
+## v1.1.1 — 2026-09-28
+
+- `README.md`: seção "Como funciona", uma linha por fase com o que entra, o que a skill faz, a ferramenta, o que
+  sai e o que trava.
+- `tests/regressao.py`: confere que todo script citado no README existe (nesta skill ou na `sprint-growth`).
+
 ## v1.1.0 — 2026-09-28
 
 Aprendizados de cinco sprints growth (SaaS de obra, indústria, brindes, distribuidora de peças, móveis planejados)

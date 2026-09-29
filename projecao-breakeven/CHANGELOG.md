@@ -2,6 +2,12 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v7.8.2 · 28/09/2026 · README com "Como funciona"
+
+- **`README.md`**: uma linha por etapa (fonte, modelo e verba, margem, horizonte, frentes extras, cálculo, economia
+  unitária, veredito, entrega, validação) com o que entra, o que a skill faz, a ferramenta, o que sai e o que trava.
+- **`tests/regressao.py`** confere que todo script citado no README existe. Sem mudança de cálculo.
+
 ## v7.8.1 · 28/09/2026 · README com o desenho do workflow
 
 - **`README.md` novo**, com o fluxo em cinco fases (entrevista, cálculo automático, veredito, entrega, validação), a

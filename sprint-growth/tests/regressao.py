@@ -111,5 +111,13 @@ saf, fec = datacrazy.resumo(negs, [{"id": "a", "createdAt": "2026-03-01T10:00:00
 confere("resumo separa safra novo x antigo", saf["2026-09"]["antigo"] == [1, 1] and saf["2026-09"]["novo"] == [1, 0])
 confere("resumo soma valor ganho de cliente antigo", fec["2026-09"]["antigo"][1] == 100)
 
+# README: todo script citado existe (publicar.py não vai para a cópia pública)
+RAIZ = os.path.join(AQUI, "..")
+readme = open(os.path.join(RAIZ, "README.md")).read()
+import re
+faltando = sorted(n for n in set(re.findall(r"\b([a-z_]+\.py)\b", readme)) if n != "publicar.py"
+                  and not any(os.path.exists(os.path.join(RAIZ, d, n)) for d in ("scripts", "tests")))
+confere("README só cita scripts que existem" + (f" (faltam: {faltando})" if faltando else ""), not faltando)
+
 print(f"\n{'TUDO OK' if not falhas else str(len(falhas)) + ' FALHA(S)'}")
 sys.exit(1 if falhas else 0)

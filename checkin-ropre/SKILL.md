@@ -5,7 +5,7 @@ description: Monta o check-in de cliente no modelo ROPRE (Resultados, Objetivos,
 
 # Check-in ROPRE
 
-**Versão 1.5 (22/09/2026).** Histórico em `CHANGELOG.md`. Caminhos relativos à pasta da skill
+**Versão 1.6 (28/09/2026).** Histórico em `CHANGELOG.md`. Caminhos relativos à pasta da skill
 (`.claude/skills/checkin-ropre/`).
 
 O check-in é um ETL, não um relatório escrito à mão:

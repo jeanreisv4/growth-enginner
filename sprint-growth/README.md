@@ -1,6 +1,6 @@
 # sprint-growth
 
-![versão](https://img.shields.io/badge/versão-1.1.1-E50914) ![regressão](https://img.shields.io/badge/regressão-42%20casos-111111)
+![versão](https://img.shields.io/badge/versão-1.1.2-E50914) ![regressão](https://img.shields.io/badge/regressão-43%20casos-111111)
 
 Skill do Claude Code para a **sprint growth** de cliente de agência: audita a jornada inteira, do tráfego à venda,
 acha a restrição do sistema pela Teoria das Restrições e entrega um plano 5W1H priorizado por impacto em receita,
@@ -76,6 +76,27 @@ flowchart TB
 
 Legenda: cinza = informação ou registro · amarelo = decisão · azul = análise · verde = entrega ·
 vermelho = trava ou prioridade · ↺ = onde o loop se fecha. Na seta entre as fases, a saída de cada uma.
+
+## Como funciona
+
+Uma linha por fase do desenho. "Trava" é o que impede a fase seguinte; o roteiro completo está no
+[SKILL.md](SKILL.md) e as armadilhas em [referencias/armadilhas.md](referencias/armadilhas.md).
+
+| Fase | Entra | O que a skill faz | Ferramenta | Sai | Trava |
+|---|---|---|---|---|---|
+| **0 · Memória** | `clientes/<c>/memoria.md`, se existir | Lê inteira antes de perguntar; senão copia o modelo de cliente | [`templates/cliente/`](templates/cliente/) | O que já se sabe: IDs, premissas, regra de atribuição, o que foi executado | — |
+| **1 · Entrevista** | Usuário, uma pergunta por vez | Modelo de negócio, fee, verba, margem pelo DRE, meta, qual fonte é o realizado oficial, como a venda é contada, regra de atribuição da V4 | — | Premissas escritas na memória | Sem realizado oficial, nenhum gráfico |
+| **2 · Fontes** | Backup de leads, CRM, planilhas, contas | Lista período, último dia com dado e confiabilidade de cada base; conta pessoa, não linha; tira teste | [`scripts/leads.py`](scripts/leads.py) | Tabela de fontes; pessoas únicas por canal | Base parada vira "não medido", nunca zero |
+| **3 · Mídia: Google** | Conta de anúncios | Auditoria somente leitura com alertas A1–A10; termos e negativas que não pegam termo convertido | [`ads_auditoria.py`](scripts/ads_auditoria.py), [`termos_negativas.py`](scripts/termos_negativas.py), MCP Google Ads | `ads_resumo.md`, negativas propostas | — |
+| **3 · Mídia: Meta** | Export por anúncio | Criativo × qualidade do lead; CNPJ na Receita; renomeação pelo ID | [`cnpj.py`](scripts/cnpj.py) | CPL real por pessoa única; qualificados por anúncio | — |
+| **4 · Medição** | GTM web e servidor, página | Rótulos contra a conta (G1–G4), disparo real sem lead, formulário interceptado sem envio | [`gtm_auditoria.py`](scripts/gtm_auditoria.py), [`teste_disparo.py`](scripts/teste_disparo.py), [`teste_formulario.py`](scripts/teste_formulario.py) | Onde a medição quebra, com a tag | Medição quebrada vem antes de otimizar |
+| **5 · Jornada e página** | Destinos dos anúncios | Custo por lead por destino; on-page, SEO técnico, oferta do anúncio × página | — | Desenho dos caminhos do lead | — |
+| **6 · Comercial** | CRM pela API | Lead novo × cliente antigo, motivos de perda, time e tempo por etapa, follow-up | [`datacrazy.py`](scripts/datacrazy.py) | Funil real estratificado | — |
+| **7 · Mercado** | Concorrentes dos termos | Agente em segundo plano: posicionamento, preço, oferta, provas | Agent | Referência de mercado | Os 2 preços que mais pesam conferidos à mão |
+| **8 · Decisão** | Achados com número | Restrição pela TOC (do sistema ou da mídia); impacto em R$ × confiança × esforço | [`referencias/priorizacao.md`](referencias/priorizacao.md) | Plano 5W1H com Status | — |
+| **9 · Documento** | Tudo acima | Claude Docs: Diagnóstico e plano, Dados do funil, Leads por CNPJ, Executado | [`referencias/documento.md`](referencias/documento.md) | Documento para o time e o cliente | Gráfico com título que não bate com o número |
+| **10 · Execução** | Plano aprovado | Valida antes (validateOnly, rascunho do GTM), aplica com ok, relê e registra | [`ads_escrita.py`](scripts/ads_escrita.py), MCPs | Linha na aba Executado | Sem ok explícito para aquela mudança, nada muda |
+| **↺ 11 · Fechamento** | O que a sprint ensinou | Memória, armadilhas, checklist, regressão, CHANGELOG, tag, cópia pública conferida | [`tests/regressao.py`](tests/regressao.py) | Nova versão | Regressão falhando |
 
 ## Estrutura
 

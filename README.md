@@ -4,6 +4,10 @@ Skills do Claude Code para o trabalho de growth engineer em agência: projetar, 
 receita do cliente, do clique à venda. Cada skill é uma etapa de um mesmo loop, e cada uma cobre um conjunto das
 disciplinas do PDI de growth engineer.
 
+Todo README de skill tem as mesmas três camadas: o **desenho** (as fases, para ler em 30 segundos), o
+**"Como funciona"** (uma linha por fase: o que entra, o que a skill faz, a ferramenta, o que sai e o que trava) e o
+**detalhe completo** no `SKILL.md` ou, no check-in, na especificação do workflow.
+
 ## O loop
 
 Desenho no formato de modelo qualitativo de crescimento (Reforge): as missões do cargo entram como canais lineares,

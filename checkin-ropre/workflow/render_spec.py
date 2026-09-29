@@ -28,6 +28,27 @@ CORES = {
 }
 
 
+# As cinco fases do resumo no README. Cada etapa pertence a exatamente uma (a validação confere).
+FASES = [
+    {"nome": "1 · Fundação", "ids": ["01", "02", "03", "04"], "curta": "números do período,<br/>com cobertura",
+     "faz": "Abre o período e as premissas, confere até que dia cada fonte tem dado, puxa a base e calcula os indicadores",
+     "trava": "Fonte que não cobre o período: o indicador sai \"não medido\", com o motivo e o último dia com dado"},
+    {"nome": "2 · Leitura em paralelo", "ids": ["05", "06", "07", "08"], "curta": "acordos, riscos,<br/>entregas, saúde",
+     "faz": "Call, WhatsApp, entregas e horas, sinais do cockpit, ao mesmo tempo (nenhum depende do outro)",
+     "trava": "Sem a fonte, o bloco diz que não tem; nada é estimado"},
+    {"nome": "3 · Os cinco blocos", "ids": ["09", "10", "11", "12", "13"], "curta": "R, O, P, E, E<br/>escritos",
+     "faz": "Resultados, Objetivos, Premissas e riscos, Entregas, Próximos passos; cada bloco consome o que precisa",
+     "trava": "Número novo nascendo na escrita: todo valor tem de existir no pacote da etapa 04"},
+    {"nome": "4 · Conferência e entrega", "ids": ["14", "15"], "curta": "check-in<br/>aprovado",
+     "faz": "Reconta direto da base e bloqueia se não bater; entrega o check-in aprovado e o documento de revisão",
+     "trava": "Número que não bate com a base volta como lista de correções"},
+    {"nome": "5 · Deck, em outra skill", "ids": ["16", "17", "18", "19"], "curta": "deck<br/>publicado",
+     "faz": "`checkin-colli` organiza a narrativa; `account-checkin-ropre-v2` compila no design system, faz o QA visual e publica",
+     "trava": "Número recalculado ou \"não medido\" sumindo na diagramação reprova o QA"},
+]
+LOOP = "próximos passos com dono<br/>e prazo voltam como<br/>entregas no check-in seguinte"
+
+
 def dono(e):
     return e.get("executado_por", "este workflow")
 
@@ -59,6 +80,15 @@ def curto(titulo, largura=22):
 
 def etapas_por_id(wf):
     return {e["id"]: e for e in wf["etapas"]}
+
+
+def validar_fases(wf):
+    ids = [e["id"] for e in wf["etapas"]]
+    nas_fases = [i for f in FASES for i in f["ids"]]
+    p = [f"etapa {i} fora das fases do resumo (FASES em render_spec.py)" for i in ids if i not in nas_fases]
+    p += [f"etapa {i} em mais de uma fase" for i in set(nas_fases) if nas_fases.count(i) > 1]
+    p += [f"fase cita etapa {i} que não existe" for i in nas_fases if i not in ids]
+    return p
 
 
 def validar(wf):
@@ -112,7 +142,7 @@ def validar(wf):
     for campo in ("entradas_do_workflow", "saidas_do_workflow", "instrucoes_de_import"):
         if not wf.get(campo):
             problemas.append(f"workflow sem `{campo}`")
-    return problemas
+    return problemas + validar_fases(wf)
 
 
 # ------------------------------------------------------------------ diagrama
@@ -159,6 +189,62 @@ def mermaid(wf):
         "    classDef entrega fill:#1f2937,stroke:#e5e7eb,color:#e5e7eb;",
         "    classDef outra fill:#111827,stroke:#9ca3af,color:#9ca3af,stroke-dasharray:4 3;",
     ]
+    return "\n".join(linhas)
+
+
+def mermaid_resumo(wf):
+    """As cinco fases, no mesmo estilo dos desenhos das outras skills: a saída de cada fase na seta."""
+    classe = {0: "entrada", 1: "calculo", 2: "calculo", 3: "trava", 4: "saida"}
+    linhas = ["flowchart LR",
+              "    classDef entrada fill:#F4F4F4,stroke:#8A8A8A,color:#111",
+              "    classDef calculo fill:#E8F0FE,stroke:#3B6FD8,color:#111",
+              "    classDef saida fill:#E3F6E8,stroke:#2E9A4F,color:#111",
+              "    classDef trava fill:#FDE7E8,stroke:#E50914,color:#111",
+              "    classDef outra fill:#FFFFFF,stroke:#8A8A8A,stroke-dasharray:4 3,color:#111",
+              "    classDef loop fill:#FFFFFF,stroke:#E50914,stroke-dasharray:4 3,color:#E50914",
+              ""]
+    for i, f in enumerate(FASES):
+        nome, faixa = f["nome"].split(" · ", 1)[1], f'{f["ids"][0]}–{f["ids"][-1]}' if len(f["ids"]) > 1 else f["ids"][0]
+        c = "outra" if all(dono(e) != "este workflow" for e in wf["etapas"] if e["id"] in f["ids"]) else classe[i]
+        linhas.append(f'    F{i}["<b>{nome}</b><br/>etapas {faixa}"]:::{c}')
+    for i in range(len(FASES) - 1):
+        linhas.append(f'    F{i} -->|"{FASES[i]["curta"]}"| F{i + 1}')
+    linhas.append(f'    F{len(FASES) - 1} -.-> L(("↺ {LOOP}")):::loop')
+    return "\n".join(linhas)
+
+
+def tabela_fases(wf):
+    """Como funciona: entradas de fora da fase, saídas que saem dela, servidores chamados."""
+    E = etapas_por_id(wf)
+    nomes = {x["chave"]: x["no_v4os"] for x in wf["servidores"]}
+    linhas = ["| Fase | Etapas | Entra | O que faz | Servidores | Sai | Trava |",
+              "| --- | --- | --- | --- | --- | --- | --- |"]
+    for f in FASES:
+        dentro = set(f["ids"])
+        entra, de_etapas = [], set()
+        for i in f["ids"]:
+            for x in E[i]["entradas"]:
+                refs = set()
+                for m in re.finditer(r"\((\d\d)(?: a (\d\d))?", x):
+                    ini_, fim_ = int(m.group(1)), int(m.group(2) or m.group(1))
+                    refs |= {f"{n:02d}" for n in range(ini_, fim_ + 1)}
+                if refs:
+                    de_etapas |= refs - dentro
+                else:
+                    entra.append(x)
+        if de_etapas:
+            entra.append(("saídas das etapas " if len(de_etapas) > 1 else "saída da etapa ") + ", ".join(sorted(de_etapas)))
+        consumidas = {c["de"] for c in wf["conexoes"] if c["de"] in dentro and c["para"] in dentro}
+        sai = [x for i in f["ids"] if i not in consumidas for x in E[i]["saidas"]]
+        serv = []
+        for i in f["ids"]:
+            for t in E[i].get("ferramentas", []):
+                n = nomes.get(t["servidor"], t["servidor"])
+                if n not in serv:
+                    serv.append(n)
+        uniq = lambda xs: "; ".join(dict.fromkeys(xs)).replace("|", "\\|") or "—"
+        linhas.append(f'| **{f["nome"]}** | {", ".join(f["ids"])} | {uniq(entra)} | {f["faz"]} | '
+                      f'{", ".join(serv) or "—"} | {uniq(sai)} | {f["trava"]} |')
     return "\n".join(linhas)
 
 
@@ -279,11 +365,30 @@ def spec(dados):
         "",
         "🔧 = etapa que chama ferramenta (MCP) durante a execução.",
         "",
+        "O grafo tem cinco trechos, e a ordem entre eles não é estética:",
+        "",
+    ] + [f'{i}. **{f["nome"].split(" · ", 1)[1]} ({", ".join(f["ids"])}).** {f["faz"]}. Trava: {f["trava"]}.'
+         for i, f in enumerate(FASES, 1)] + [
+        "",
+        "O que o check-in cobra do trecho do deck vale como contrato, e está escrito no briefing de cada",
+        "etapa: número não se recalcula na diagramação, \"não medido\" não vira travessão nem some por falta",
+        "de espaço, e o QA visual confere também **conteúdo** — todo número do deck existe no check-in aprovado.",
+        "",
+        "## As etapas",
+        "",
+        tabela_etapas(wf),
+        "",
         "## Como levar para o V4OS",
         "",
         wf["instrucoes_de_import"]["formato"],
         "",
         passos_import(wf),
+        "",
+        "## O que só quem está dentro da plataforma responde",
+        "",
+        "O repositório vai até onde dá para ir de fora. Cada ponto tem um fallback escrito na etapa.",
+        "",
+        tabela_pendencias(wf),
         "",
         "---",
         "",
@@ -420,14 +525,10 @@ def preencher(texto, marca, conteudo):
 
 def atualizar_readme(wf):
     texto = open(README, encoding="utf-8").read()
-    texto = preencher(texto, "diagrama", "```mermaid\n" + mermaid(wf) + "\n```")
-    texto = preencher(texto, "etapas", tabela_etapas(wf))
+    texto = preencher(texto, "resumo", "```mermaid\n" + mermaid_resumo(wf) + "\n```")
+    texto = preencher(texto, "fases", tabela_fases(wf))
     leis = "\n".join(f"{i}. {lei}" for i, lei in enumerate(wf["leis"], 1))
     texto = preencher(texto, "leis", leis)
-    texto = preencher(texto, "entradas", tabela_entradas(wf))
-    texto = preencher(texto, "import", passos_import(wf))
-    texto = preencher(texto, "ferramentas", tabela_ferramentas(wf))
-    texto = preencher(texto, "pendencias", tabela_pendencias(wf))
     texto = preencher(texto, "servidores", tabela_servidores(wf))
     open(README, "w", encoding="utf-8").write(texto)
 

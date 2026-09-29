@@ -12,7 +12,7 @@ Confere em cada planilha, recalculando as fórmulas com pycel:
   5. o número de meses é o horizonte pedido.
 Precisa de pandas, openpyxl e pycel (python3 -m pip install --user pandas openpyxl pycel).
 """
-import json, os, subprocess, sys, tempfile, warnings
+import json, os, re, subprocess, sys, tempfile, warnings
 warnings.filterwarnings("ignore")
 import openpyxl
 from pycel import ExcelCompiler
@@ -239,6 +239,11 @@ def main():
         falhas = [str(e)]
     total += len(falhas)
     print(f"{'OK   ' if not falhas else 'FALHA'} demo" + "".join(f"\n      - {f}" for f in falhas[:12]))
+    readme = open(os.path.join(SKILL, "README.md")).read()   # todo script citado no README existe
+    faltando = sorted(n for n in set(re.findall(r"\b([a-z_]+\.py)\b", readme)) if n != "publicar.py"
+                      and not any(os.path.exists(os.path.join(SKILL, d, n)) for d in ("scripts", "gerador", "tests")))
+    total += len(faltando)
+    print(f"{'OK   ' if not faltando else 'FALHA'} README só cita scripts que existem" + (f" (faltam: {faltando})" if faltando else ""))
     print(f"\n{'Tudo certo.' if not total else f'{total} falha(s).'}  Arquivos em {tmp}")
     sys.exit(1 if total else 0)
 

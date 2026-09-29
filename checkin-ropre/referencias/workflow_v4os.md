@@ -136,6 +136,42 @@ flowchart TD
 
 🔧 = etapa que chama ferramenta (MCP) durante a execução.
 
+O grafo tem cinco trechos, e a ordem entre eles não é estética:
+
+1. **Fundação (01, 02, 03, 04).** Abre o período e as premissas, confere até que dia cada fonte tem dado, puxa a base e calcula os indicadores. Trava: Fonte que não cobre o período: o indicador sai "não medido", com o motivo e o último dia com dado.
+2. **Leitura em paralelo (05, 06, 07, 08).** Call, WhatsApp, entregas e horas, sinais do cockpit, ao mesmo tempo (nenhum depende do outro). Trava: Sem a fonte, o bloco diz que não tem; nada é estimado.
+3. **Os cinco blocos (09, 10, 11, 12, 13).** Resultados, Objetivos, Premissas e riscos, Entregas, Próximos passos; cada bloco consome o que precisa. Trava: Número novo nascendo na escrita: todo valor tem de existir no pacote da etapa 04.
+4. **Conferência e entrega (14, 15).** Reconta direto da base e bloqueia se não bater; entrega o check-in aprovado e o documento de revisão. Trava: Número que não bate com a base volta como lista de correções.
+5. **Deck, em outra skill (16, 17, 18, 19).** `checkin-colli` organiza a narrativa; `account-checkin-ropre-v2` compila no design system, faz o QA visual e publica. Trava: Número recalculado ou "não medido" sumindo na diagramação reprova o QA.
+
+O que o check-in cobra do trecho do deck vale como contrato, e está escrito no briefing de cada
+etapa: número não se recalcula na diagramação, "não medido" não vira travessão nem some por falta
+de espaço, e o QA visual confere também **conteúdo** — todo número do deck existe no check-in aprovado.
+
+## As etapas
+
+| # | Etapa | Categoria | Executada por | Leis | Chama ferramenta |
+| --- | --- | --- | --- | --- | --- |
+| 01 | Abrir o período e as premissas | Briefing | este workflow | 2 | sim |
+| 02 | Conferir a cobertura das fontes | Dados | este workflow | 1 | sim |
+| 03 | Puxar a base do período | Dados | este workflow | 1, 2 | sim |
+| 04 | Calcular os indicadores do período | Análise | este workflow | 1, 2, 3 | — |
+| 05 | Resumo de call → briefing | Briefing | este workflow · catálogo `Resumo de call → briefing` | — | — |
+| 06 | Varredura do grupo de WhatsApp | Pesquisa | este workflow | — | sim |
+| 07 | Entregas e horas | Dados | este workflow | 3 | sim |
+| 08 | Sinais do cockpit | Pesquisa | este workflow | — | sim |
+| 09 | R · Resultados | Análise | este workflow | 2, 3, 4 | — |
+| 10 | O · Objetivos | Análise | este workflow | 3, 4 | sim |
+| 11 | P · Premissas e Riscos | Análise | este workflow | 3, 4 | — |
+| 12 | E · Entregas | Análise | este workflow | 3, 4 | — |
+| 13 | E · Próximos Passos | Análise | este workflow | 4 | — |
+| 14 | Conferência dos números | Revisão | este workflow | 1, 2, 3, 4 | — |
+| 15 | Entregar para o deck do design system | Entrega | este workflow | 3, 4 | sim |
+| 16 | Preparar o conteúdo para o deck | Entrega | `checkin-colli` | 3, 4 | — |
+| 17 | Compilar as páginas no design system | Entrega | `account-checkin-ropre-v2` | 4 | sim |
+| 18 | QA visual | Revisão | `account-checkin-ropre-v2` | 3, 4 | sim |
+| 19 | Publicar e entregar | Entrega | `account-checkin-ropre-v2` | 4 | sim |
+
 ## Como levar para o V4OS
 
 Este arquivo é a especificação neutra do workflow, não o export do Studio. Quem constrói lá dentro — o harness ou uma pessoa — cria uma etapa por item de `etapas` e uma conexão por item de `conexoes`, seguindo os passos abaixo. Quando houver um workflow exportado do Studio para servir de molde, o mapeamento vira mecânico.
@@ -147,6 +183,24 @@ Este arquivo é a especificação neutra do workflow, não o export do Studio. Q
 5. Etapa com `origem: outra_skill` não é criada aqui: é a etapa correspondente da skill em `executado_por`, e o `briefing` é o contrato que o check-in cobra dela.
 6. Ligue as `conexoes` (de → para). Etapas com o mesmo antecessor correm em paralelo.
 7. Antes de publicar, rode num período já fechado e compare com a implementação de referência, número a número (seção *Como validar*).
+
+## O que só quem está dentro da plataforma responde
+
+O repositório vai até onde dá para ir de fora. Cada ponto tem um fallback escrito na etapa.
+
+| O que falta | Por quê | Quem responde |
+| --- | --- | --- |
+| schema de export do Studio | para o mapeamento deste JSON ser mecânico em vez de manual | V4OS |
+| catálogo completo de etapas | 06, 07 e 08 podem ter template pronto; só `Resumo de call → briefing` foi reusada | V4OS |
+| como uma etapa declara a ferramenta MCP que chama | vale para toda etapa marcada 🔧 | V4OS |
+| ferramentas do V4 OS (contexto do projeto) | para a etapa 01 pegar o projeto do contexto em vez do formulário, e para a 15 acionar a próxima skill | V4OS |
+| como uma etapa aciona outra skill | é a passagem 15 → 16 | V4OS |
+| contrato de entrada de `checkin-colli` e de `account-checkin-ropre-v2` | até saber o formato que elas esperam, o check-in entrega no de referencias/checkin.exemplo.json | dono das skills |
+| ferramentas do eKyte | o servidor existe e está ligado no V4OS; faltam os nomes das ferramentas de entregas e horas para a etapa 07 — até lá, entram pela entrada `entregas_do_periodo` | V4OS |
+| ferramentas de health score, NPS e churn do cockpit | etapa 08; só `cockpit_list_projects` é conhecida | V4OS |
+| onde as calls do projeto ficam registradas | `consultar_calls_por_tipo` voltou vazio no primeiro cliente | V4OS |
+| produto do workflow | cabeçalho está como *a confirmar* | quem publica |
+| token pessoal do Flow de quem roda | Dados Flow e Catálogo de Produtos usam o token pessoal e vêm desligados no chat; sem ele, 02, 03 e 10 não respondem | quem roda |
 
 ---
 

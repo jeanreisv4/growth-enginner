@@ -3,6 +3,18 @@
 Cada versão muda o que o cliente vê no check-in. Antes de publicar uma versão nova, rode
 `python3 tests/regressao.py`.
 
+## v1.6 · 28/09/2026 · README em camadas
+
+O README mostrava as 19 etapas logo na entrada. Agora ele segue o padrão das outras skills do growth-enginner.
+
+- **Resumo em cinco fases** (fundação, leitura em paralelo, os cinco blocos, conferência, deck), com a saída de
+  cada fase na seta e o loop fechando nos próximos passos que voltam como entregas no check-in seguinte.
+- **"Como funciona"**: uma linha por fase com o que entra, o que faz, os servidores, o que sai e o que trava.
+  Entradas, saídas e servidores saem das etapas do JSON; nada escrito à mão diverge dele.
+- **O detalhe desceu para a especificação** (`referencias/workflow_v4os.md`): o desenho etapa a etapa, a tabela
+  das etapas, os cinco trechos, o import e as pendências da plataforma. Nada foi apagado.
+- `render_spec.py` valida que toda etapa pertence a exatamente uma fase do resumo.
+
 ## v1.5 · 22/09/2026 · Os servidores com o nome que têm no V4OS
 
 O painel *Ferramentas deste chat* do V4OS mostrou os servidores como eles aparecem lá dentro, e

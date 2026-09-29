@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.2 (28/09/2026)
+
+- README: seção "Como funciona", uma linha por fase (e por frente da auditoria) com o que entra, o que a skill faz,
+  a ferramenta, o que sai e o que trava.
+- Regressão: confere que todo script citado no README existe (43 casos).
+
 ## v1.1.1 (28/09/2026)
 
 - **README com o desenho do workflow no formato de loop** (referência: modelos qualitativos de crescimento da

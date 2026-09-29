@@ -115,5 +115,17 @@ with tempfile.TemporaryDirectory() as d:
     confere("CLI gera os dois JSONs e o resumo", r.returncode == 0 and sorted(os.listdir(d)) ==
             ["b.json", "gtm-server-exemplo-pisos-premium.json", "gtm-web-exemplo-pisos-premium.json", "resumo.md"])
 
+# README: todo script citado existe (nesta skill ou na irmã sprint-growth, quando ela está ao lado)
+readme = open(os.path.join(RAIZ, "README.md")).read()
+irma = os.path.join(RAIZ, "..", "sprint-growth")
+def existe(nome):
+    for base in (RAIZ, irma):
+        for pasta in ("scripts", "tests"):
+            if os.path.exists(os.path.join(base, pasta, nome)):
+                return True
+    return not os.path.isdir(irma)  # skill instalada sozinha: não dá para conferir a irmã
+faltando = sorted(n for n in set(re.findall(r"\b([a-z_]+\.py)\b", readme)) if not existe(n))
+confere("README só cita scripts que existem" + (f" (faltam: {faltando})" if faltando else ""), not faltando)
+
 print(f"\n{'TUDO OK' if not falhas else str(len(falhas)) + ' FALHA(S)'}")
 sys.exit(1 if falhas else 0)
