@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Regressão da skill sprint-growth com dados sintéticos (sem rede). Rodar: python3 tests/regressao.py"""
-import json, os, subprocess, sys, tempfile
+import glob, json, os, re, subprocess, sys, tempfile
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(AQUI, "..", "scripts"))
@@ -65,6 +65,11 @@ confere("A1 aponta o Lead zerado e não o MQL", any("00.2 Lead" in t for c, t in
 var = {"01 - Google Ads - Lead": {"parameter": [{"key": "value", "value": "AbCdEfGIjKlMnOpQr-"}]}}
 confere("resolver lê o valor da variável", resolver("{{01 - Google Ads - Lead}}", var) == "AbCdEfGIjKlMnOpQr-")
 confere("resolver mantém literal", resolver("abc", var) == "abc")
+from gtm_auditoria import disparo_e_excecao
+g5 = disparo_e_excecao([{"name": "02 - GADS - WhatsApp", "firingTriggerId": ["43"], "blockingTriggerId": ["43"]},
+                        {"name": "01 - GAds - Cadastro", "firingTriggerId": ["24"], "blockingTriggerId": ["43"]}],
+                       {"43": "POP UP - lead_whatsapp"})
+confere("G5: mesmo acionador como disparo e exceção", len(g5) == 1 and "lead_whatsapp" in g5[0][1])
 
 # termos_negativas ponta a ponta: recusa negativa que pega termo convertido
 with tempfile.TemporaryDirectory() as d:
@@ -111,8 +116,86 @@ saf, fec = datacrazy.resumo(negs, [{"id": "a", "createdAt": "2026-03-01T10:00:00
 confere("resumo separa safra novo x antigo", saf["2026-09"]["antigo"] == [1, 1] and saf["2026-09"]["novo"] == [1, 0])
 confere("resumo soma valor ganho de cliente antigo", fec["2026-09"]["antigo"][1] == 100)
 
-# README: todo script citado existe (publicar.py não vai para a cópia pública)
+# consolidar: validação, faixa de impacto, ordem, divergência entre frentes
+import consolidar
+base_ach = {"id": "X-01", "titulo": "t", "evidencia": "e", "etapa": "trafego", "tipo": "otimizacao", "confianca": "alta",
+            "correcao": "c", "esforco": "1 h", "verificacao": "v", "impacto": None}
+with tempfile.TemporaryDirectory() as d:
+    os.makedirs(os.path.join(d, "achados"))
+    def grava(nome, obj):
+        json.dump(obj, open(os.path.join(d, "achados", nome), "w"))
+    grava("google-ads.json", {"frente": "google-ads", "fontes": [], "numeros": {"leads_google": {"valor": 212, "unidade": "conversões", "fonte": "Ads"}},
+          "achados": [dict(base_ach, id="ADS-01", impacto={"volume": 100, "ganho_min": 0.1, "ganho_max": 0.2, "taxas_seguintes": 0.5, "ticket": 1000}),
+                      dict(base_ach, id="ADS-02", tipo="medicao", etapa="medicao")],
+          "nao_medido": ["offline"], "perguntas": ["qual conta?"]})
+    grava("fontes.json", {"frente": "fontes", "numeros": {"leads_google": {"valor": 131, "unidade": "pessoas", "fonte": "backup"}}, "achados": []})
+    grava("meta-ads.json", {"frente": "meta-ads", "achados": [dict(base_ach, id="META-01", esforco="rápido")]})
+    res = consolidar.consolidar(d, ["fontes", "google-ads", "meta-ads", "comercial"])
+    confere("consolidar recusa esforço fora da lista", any("META-01" in p and "esforço" in p for p in res["problemas"]))
+    confere("consolidar lista frente faltando", set(res["faltando"]) == {"meta-ads", "comercial"})
+    confere("consolidar põe medição antes de impacto", [a["id"] for a in res["achados"]] == ["ADS-02", "ADS-01"])
+    confere("consolidar calcula faixa de impacto", res["achados"][1]["impacto_rs"] == (5000.0, 10000.0))
+    confere("consolidar aponta divergência plataforma × backup", [v["numero"] for v in res["divergencias"]] == ["leads_google"])
+    confere("consolidar junta não medido e perguntas", len(res["nao_medido"]) == 1 and len(res["perguntas"]) == 1)
+    confere("markdown do consolidado sai com ranking", "| 1 | ADS-02 |" in consolidar.markdown(res))
+confere("impacto sem base = None", consolidar.faixa(None) is None)
+
+# clarity: leitura tolerante e alertas C1–C6 (sem rede)
+import clarity
+resp = [{"metricName": "Traffic", "information": [
+            {"totalSessionCount": "1000", "totalBotSessionCount": "400", "distantUserCount": "900", "PagesPerSessionPercentage": 1.4}]}]
+resp_url = [{"metricName": "Traffic", "information": [{"totalSessionCount": "200", "totalBotSessionCount": "0", "URL": "https://lp.x/"},
+                                                      {"totalSessionCount": "10", "totalBotSessionCount": "0", "URL": "https://x/pouca"}]},
+            {"metricName": "Rage Click Count", "information": [{"sessionsWithMetricPercentage": 7.5, "URL": "https://lp.x/"},
+                                                               {"sessionsWithMetricPercentage": 50, "URL": "https://x/pouca"}]},
+            {"metricName": "QuickbackClick", "information": [{"sessionsWithMetricPercentage": 12, "sessionsWithoutMetricPercentage": 88, "URL": "https://lp.x/"}]},
+            {"metricName": "DeadClickCount", "information": [{"campoNovo": 3, "URL": "https://lp.x/"}]}]
+resp_disp = [{"metricName": "Traffic", "information": [{"totalSessionCount": "700", "Device": "Mobile"}, {"totalSessionCount": "300", "Device": "PC"}]},
+             {"metricName": "ScrollDepth", "information": [{"averageScrollDepth": 30, "Device": "Mobile"}, {"averageScrollDepth": 60, "Device": "PC"}]}]
+tab, estranhos = clarity.linhas(resp_url)
+lp = tab[(("URL", "https://lp.x/"),)]
+confere("clarity normaliza nome de métrica com espaço", lp.get("clique_raiva") == 7.5)
+confere("clarity ignora o percentual 'without'", lp.get("volta_rapida") == 12)
+confere("clarity lista campo não reconhecido", "DeadClickCount.campoNovo" in estranhos)
+with tempfile.TemporaryDirectory() as d:
+    os.makedirs(os.path.join(d, "raw"))
+    for dia, nome, r in (("2026-09-28", "total", resp), ("2026-09-29", "total", resp), ("2026-09-29", "url", resp_url),
+                         ("2026-09-29", "dispositivo", resp_disp)):
+        json.dump({"coletado_em": dia + "T12:00:00+00:00", "dias": 1, "dimensoes": [], "resposta": r},
+                  open(os.path.join(d, "raw", f"{dia}_{nome}.json"), "w"))
+    planos, _, datas = clarity.acumular(d)
+    confere("clarity soma sessões de coletas diárias", planos["total"][()]["sessoes"] == 2000)
+    cods = [c for c, _ in clarity.alertas(planos)]
+    confere("clarity C1 robôs acima de 30%", "C1" in cods)
+    confere("clarity C2 raiva e C4 volta rápida na LP", "C2" in cods and "C4" in cods)
+    confere("clarity ignora página com poucas sessões", not any("pouca" in t for _, t in clarity.alertas(planos)))
+    confere("clarity C6 rolagem do celular", "C6" in cods)
+    clarity.resumo(d, 30)
+    confere("clarity grava resumo com campo não reconhecido", "campoNovo" in open(os.path.join(d, "clarity_resumo.md")).read())
+
+# agentes: frontmatter, somente leitura, scripts citados e cópia instalada
 RAIZ = os.path.join(AQUI, "..")
+ESCRITA = re.compile(r"__\w*(create|update|delete|publish|activate|mutate|upload|trash|send|boost|finalize)", re.I)
+agentes = sorted(glob.glob(os.path.join(RAIZ, "agentes", "sprint-*.md")))
+confere("8 agentes de frente", len(agentes) == 8)
+FRENTES_AG = {"sprint-" + f for f in consolidar.FRENTES}
+for p in agentes:
+    txt = open(p, encoding="utf-8").read()
+    nome = os.path.basename(p)[:-3]
+    fm = txt.split("---")[1] if txt.startswith("---") else ""
+    campos = dict(l.split(":", 1) for l in fm.strip().splitlines() if ":" in l)
+    confere(f"{nome}: name bate com o arquivo e com uma frente", campos.get("name", "").strip() == nome and nome in FRENTES_AG)
+    confere(f"{nome}: tem description e tools", campos.get("description", "").strip() and campos.get("tools", "").strip())
+    confere(f"{nome}: nenhuma ferramenta de escrita liberada", not ESCRITA.search(campos.get("tools", "")))
+    faltam = [n for n in set(re.findall(r"scripts/([a-z_]+\.py)", txt)) if not os.path.exists(os.path.join(RAIZ, "scripts", n))]
+    confere(f"{nome}: scripts citados existem" + (f" (faltam {faltam})" if faltam else ""), not faltam)
+    confere(f"{nome}: grava achados no contrato", f"achados/{nome[7:]}.json" in txt)
+if os.path.basename(os.path.dirname(os.path.abspath(RAIZ))) == "skills":  # só na instalação local, não na cópia pública
+    import instalar_agentes
+    dif = instalar_agentes.diferencas(instalar_agentes.destino_padrao())
+    confere("agentes instalados batem com a fonte" + (f" ({dif})" if dif else ""), not dif)
+
+# README: todo script citado existe (publicar.py não vai para a cópia pública)
 readme = open(os.path.join(RAIZ, "README.md")).read()
 import re
 faltando = sorted(n for n in set(re.findall(r"\b([a-z_]+\.py)\b", readme)) if n != "publicar.py"

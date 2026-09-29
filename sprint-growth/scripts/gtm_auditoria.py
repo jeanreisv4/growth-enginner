@@ -9,6 +9,8 @@ Alertas:
   G2 tag do GA4 no servidor disparando em nome de evento do Meta (PageView/Lead/Contact/MQL...) → evento duplicado no GA4
   G3 tag pausada ou sem acionador
   G4 duas tags de conversão do Ads apontando para o mesmo rótulo
+  G5 o mesmo acionador como disparo e como exceção da tag: a exceção vence e a tag nunca dispara nele
+     (pop-up de WhatsApp da distribuidora de peças: a tag do Google Ads tinha o evento do pop-up nos dois campos)
 Lembrete que o script não enxerga: se o GTM é injetado por construtor de página (GreatPages etc.), ver se está
 preso no banner de cookies — use scripts/teste_formulario.py na página.
 """
@@ -16,6 +18,16 @@ import argparse, json, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mcp_http import MCP
+
+def disparo_e_excecao(tags, nomes_trig):
+    """G5: acionador que está em firingTriggerId e em blockingTriggerId da mesma tag."""
+    al = []
+    for t in tags:
+        for tid in sorted(set(t.get("firingTriggerId", [])) & set(t.get("blockingTriggerId", []))):
+            al.append(("G5", f"\"{t['name']}\" tem \"{nomes_trig.get(tid, tid)}\" como disparo e como exceção: "
+                             "a exceção vence e a tag nunca dispara nesse acionador."))
+    return al
+
 
 EVENTOS_META = {"PageView", "Lead", "Contact", "MQL", "CompleteRegistration", "Purchase", "InitiateCheckout",
                 "AddToCart", "ViewContent", "Schedule", "SubmitApplication", "Subscribe", "StartTrial"}
@@ -68,6 +80,7 @@ def main():
         trig = {t["triggerId"]: t for t in gtm.call("gtm_list_triggers", base).get("trigger", [])}
         var = {v["name"]: v for v in gtm.call("gtm_list_variables", base).get("variable", [])}
         raw[papel] = {"workspace": ws, "tags": tags, "triggers": list(trig.values()), "variables": list(var.values())}
+        al += [(c, f"[{papel}] {m}") for c, m in disparo_e_excecao(tags, {k: v["name"] for k, v in trig.items()})]
         for t in tags:
             if t.get("paused"):
                 al.append(("G3", f"[{papel}] tag pausada: {t['name']}"))

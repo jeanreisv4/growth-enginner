@@ -12,6 +12,8 @@ Público: time da V4 e o cliente. Português, frases curtas, número com unidade
 5. **Funil real** — desenho de funil (pessoas por etapa, % que segue) + tabela por canal.
 6. **Mídia** (Google, Meta) — só o que está aberto; o corrigido vai para Executado.
 7. **Jornada e páginas** — desenho dos caminhos do lead (origem → página → onde cai → resultado, verde/vermelho).
+   Logo abaixo, **Comportamento na página (Clarity)**: alertas C1–C6 nas páginas que recebem mídia, com o período
+   coberto (a API só dá 24–72 h por coleta) escrito ao lado.
 8. **Medição e rastreamento** (tabela: ponto · situação · efeito).
 9. **Segurança**.
 10. **Plano priorizado** (ranking em R$ com status).

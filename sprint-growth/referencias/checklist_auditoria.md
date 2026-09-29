@@ -19,19 +19,26 @@ feito e o que ficou "não medido".
 - [ ] Termos: gasto por intenção, login/concorrente/fora do produto · `scripts/termos_negativas.py`
 - [ ] Anúncios: promessa × página; caminho exibido; títulos com a busca
 
-## Meta
-- [ ] Gasto e leads por criativo e mês (export ou conector)
+## Meta (agente `sprint-meta-ads`)
+- [ ] Gasto e leads por criativo e mês (conector do Meta ou export)
 - [ ] Qualidade do lead por criativo (porte, CNPJ, qualificação) cruzando com o backup
 - [ ] Campanhas fora do export (IDs no backup que não estão no export)
 - [ ] Marcação de MQL do formulário nativo continua viva
 - [ ] UTMs com nome, não ID
 
 ## Medição e integração
-- [ ] GTM web/servidor · `scripts/gtm_auditoria.py` (G1–G4)
+- [ ] GTM web/servidor · `scripts/gtm_auditoria.py` (G1–G5)
 - [ ] Disparo real com rótulo certo · `scripts/teste_disparo.py`
 - [ ] Formulário leva UTM/gclid e GTM carrega sem aceite · `scripts/teste_formulario.py`
 - [ ] GA4: eventos principais que disparam; vínculo com Ads; "Unassigned"
 - [ ] Lead chega ao destino (planilha, n8n, CRM, painel) com origem e vira a etapa seguinte
+
+## Clarity (`scripts/clarity.py`, agente `sprint-clarity`)
+- [ ] Token do projeto no `config.json` do cliente (arquivo fora do repositório) · primeira coleta com `--dias 3`
+- [ ] Robôs acima de 30% das sessões, e de qual canal (C1)
+- [ ] Raiva, clique morto, volta rápida e erro de script nas páginas que recebem mídia (C2–C5)
+- [ ] Rolagem do celular × computador (C6); formulário abaixo da dobra no celular
+- [ ] Campos não reconhecidos no resumo (nome de campo da API conferido na primeira coleta real)
 
 ## Página e SEO
 - [ ] Um `<title>`, description, H1/H2 com as palavras compradas, og, schema

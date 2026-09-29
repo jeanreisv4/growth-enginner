@@ -1,5 +1,31 @@
 # Changelog
 
+## v2.0 (29/09/2026)
+
+A auditoria passa a rodar em agentes especialistas, no desenho do claude-seo (skill que orquestra, agentes que
+auditam em paralelo, contrato de saída consolidado por script).
+- **8 agentes em `agentes/`**, somente leitura, um por frente: `sprint-fontes` (onda 1: pessoas únicas, canal,
+  CNPJ, `base/pessoas.json`), e na onda 2 `sprint-google-ads`, `sprint-meta-ads`, `sprint-medicao` (com a skill
+  `tracking-web-and-capi` carregada), `sprint-clarity`, `sprint-jornada`, `sprint-comercial` e `sprint-mercado`.
+  Ferramentas das MCPs liberadas por nome, só as de leitura.
+- **Contrato de achados** (`referencias/contrato_achados.md`): JSON por frente com fontes, não medido, números
+  com chaves comuns, achados (etapa, tipo, confiança, insumos de impacto, esforço, verificação) e perguntas.
+- `consolidar.py`: confere o contrato, ordena (segurança e medição primeiro, depois impacto máximo em R$) e aponta
+  a mesma métrica divergindo entre frentes (ex.: lead da plataforma × pessoa única do backup).
+- `clarity.py`: Microsoft Clarity pela Data Export API, coleta diária que respeita as 10 chamadas por dia e
+  acumula; alertas C1–C6 (robôs, raiva, clique morto, volta rápida, erro de script, rolagem no celular).
+- `instalar_agentes.py`: copia os agentes para `.claude/agents/` do projeto e confere a cópia.
+- Meta pelo conector do claude.ai (leitura), além do export.
+- `SKILL.md` em 7 etapas (0 a 6): as seções por frente viraram agentes; comandos para rodar uma frente só.
+- Regressão: 103 casos (agentes sem ferramenta de escrita, scripts citados existem, cópia instalada bate).
+
+## v1.1.3 (29/09/2026)
+
+Da execução pós-sprint da distribuidora de peças automotivas.
+- `gtm_auditoria.py`: alerta **G5**, o mesmo acionador como disparo e como exceção da tag (a exceção vence).
+- Armadilhas: G5; conversões do Google hospedadas dão MUTATE_NOT_ALLOWED e saem do lance pela meta da campanha.
+- Regressão: 44 casos.
+
 ## v1.1.2 (28/09/2026)
 
 - README: seção "Como funciona", uma linha por fase (e por frente da auditoria) com o que entra, o que a skill faz,

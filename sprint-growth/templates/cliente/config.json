@@ -3,6 +3,9 @@
   "google_ads": {"conta": "", "mcp": "googleads_diretas", "campanhas_ativas": []},
   "gtm": {"conta": "", "web": "", "server": ""},
   "ga4": {"propriedade": ""},
+  "meta": {"conta": "", "conjunto_de_dados": ""},
+  "clarity": {"projeto": "", "chave_arquivo": "~/.config/sprint-growth/<cliente>_clarity.key"},
+  "crm": {"tipo": "", "chave_arquivo": "", "pipelines": []},
   "site": "",
   "testes": {"telefones": [], "nomes": [], "emails": []}
 }

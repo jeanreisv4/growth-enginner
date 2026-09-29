@@ -1,19 +1,23 @@
 # sprint-growth
 
-![versão](https://img.shields.io/badge/versão-1.1.2-E50914) ![regressão](https://img.shields.io/badge/regressão-43%20casos-111111)
+![versão](https://img.shields.io/badge/versão-2.0-E50914) ![regressão](https://img.shields.io/badge/regressão-103%20casos-111111) ![agentes](https://img.shields.io/badge/agentes-8-111111)
 
 Skill do Claude Code para a **sprint growth** de cliente de agência: audita a jornada inteira, do tráfego à venda,
 acha a restrição do sistema pela Teoria das Restrições e entrega um plano 5W1H priorizado por impacto em receita,
 com as correções executadas pelas MCPs (Google Ads, GTM, GA4) e registradas numa aba "Executado".
 
-- Mídia: Google Ads pela API (conversões, invasão, lances, índice de qualidade, parcela, sitelinks, destinos,
-  termos e negativas) e Meta por export (criativo × qualidade do lead, inclusive CNPJ na Receita).
-- Medição: GTM web e servidor contra as conversões da conta, disparo real das tags e envio do formulário
-  interceptado (sem criar lead); origem do anúncio até o CRM.
-- Jornada e comercial: destino, on-page, formulário, CRM (DataCrazy pela API), lead novo × cliente antigo, motivos
-  de perda, time e tempo de cada etapa.
-- Receita: realizado da fonte oficial, CPL real por pessoa única da mídia paga, breakeven pela skill
-  `projecao-breakeven`.
+A partir da v2.0, a auditoria roda em **oito agentes especialistas**, um por frente, cada um com o próprio
+contexto e somente leitura. A conversa principal entrevista, decide, escreve o documento e executa com o ok do
+usuário. O desenho segue o do [claude-seo](../claude-seo/): uma skill que orquestra, agentes que auditam em
+paralelo e um contrato de saída que um script consolida.
+
+- Mídia: Google Ads pela API (conversões, invasão, lances, qualidade, parcela, sitelinks, destinos, termos e
+  negativas) e Meta pelo conector ou export (criativo × qualidade do lead, inclusive CNPJ na Receita).
+- Medição: GTM web e servidor contra as conversões da conta, disparo real das tags, formulário interceptado (sem
+  criar lead), GA4, Pixel/CAPI e a origem do anúncio até o CRM.
+- Comportamento: Microsoft Clarity (robôs, cliques de raiva e mortos, volta rápida, erro de script, rolagem).
+- Jornada e comercial: destino, on-page, CRM (DataCrazy pela API), lead novo × cliente antigo, perdas, tempos.
+- Receita: realizado da fonte oficial, CPL real por pessoa única, breakeven pela skill `projecao-breakeven`.
 
 ## Workflow
 
@@ -26,22 +30,20 @@ flowchart TB
     classDef trava fill:#FDE7E8,stroke:#E50914,color:#111
     classDef loop fill:#FFFFFF,stroke:#E50914,stroke-dasharray:4 3,color:#E50914
 
-    subgraph P["0–2 · Preparação"]
+    subgraph P["0–1 · Preparação"]
         direction LR
-        P0["Memória<br/>do cliente"]:::entrada --> P1["Entrevista<br/>uma pergunta<br/>por vez"]:::entrada --> P2{"Qual é o<br/>realizado<br/>oficial?"}:::decisao --> P3["Fontes<br/>pessoa única<br/>sem teste"]:::calculo
+        P0["Memória<br/>do cliente"]:::entrada --> P1["Entrevista<br/>uma pergunta<br/>por vez"]:::entrada --> P2{"Qual é o<br/>realizado<br/>oficial?"}:::decisao
     end
 
-    subgraph A["3–7 · Auditoria, em paralelo"]
+    subgraph A["2 · Auditoria por agentes (somente leitura)"]
         direction LR
-        A1["Mídia<br/>Google e Meta<br/>CPL real, CNPJ"]:::calculo
-        A2["Medição<br/>GTM, disparo,<br/>formulário, CRM"]:::calculo
-        A3["Jornada<br/>destino, página,<br/>oferta"]:::calculo
-        A4["Comercial<br/>novo × antigo,<br/>perdas, tempos"]:::calculo
-        A5["Mercado<br/>agente em<br/>segundo plano"]:::calculo
-        A1 ~~~ A2 ~~~ A3 ~~~ A4 ~~~ A5
+        A0["Onda 1<br/>sprint-fontes<br/>pessoas únicas"]:::calculo
+        A2["Onda 2, em paralelo<br/>google-ads · meta-ads<br/>medicao · clarity<br/>jornada · comercial<br/>mercado"]:::calculo
+        A3["consolidar.py<br/>ranking, divergências,<br/>não medido"]:::saida
+        A0 -->|"base de<br/>pessoas"| A2 -->|"achados/*.json"| A3
     end
 
-    subgraph D["8 · Decisão"]
+    subgraph D["3 · Decisão"]
         direction LR
         D1{"Restrição<br/>(TOC)"}:::decisao
         D1 -->|do sistema| D2["Explorar,<br/>subordinar,<br/>elevar"]:::trava
@@ -50,21 +52,21 @@ flowchart TB
         D3 --> D4
     end
 
-    subgraph X["9–10 · Documento e execução"]
+    subgraph X["4–5 · Documento e execução"]
         direction LR
         X1["Claude Docs<br/>Diagnóstico · Dados<br/>CNPJ · Executado"]:::saida --> X2{"Ok explícito<br/>para esta<br/>mudança?"}:::decisao
         X2 -->|sim| X3["Valida, aplica,<br/>relê e registra"]:::saida
         X2 -->|não| X1
     end
 
-    subgraph F["11 · Fechamento"]
+    subgraph F["6 · Fechamento"]
         direction LR
-        F1["Memória,<br/>armadilhas,<br/>checklist"]:::entrada --> F2["Regressão,<br/>CHANGELOG, tag"]:::trava --> F3["Cópia pública<br/>conferida"]:::saida
+        F1["Memória,<br/>armadilhas,<br/>agentes"]:::entrada --> F2["Regressão,<br/>CHANGELOG, tag"]:::trava --> F3["Cópia pública<br/>conferida"]:::saida
         F3 -.-> F4(("↺ a próxima<br/>sprint começa<br/>pela memória")):::loop
     end
 
-    P -->|"premissas e fontes<br/>confiáveis"| A
-    A -->|"achados com<br/>número e fonte"| D
+    P -->|"premissas, IDs e<br/>bloco de entrada"| A
+    A -->|"achados com número,<br/>fonte e confiança"| D
     D -->|"plano priorizado<br/>em R$"| X
     X -->|"Executado<br/>registrado"| F
     style P fill:#FFFFFF,stroke:#CCCCCC
@@ -79,36 +81,55 @@ vermelho = trava ou prioridade · ↺ = onde o loop se fecha. Na seta entre as f
 
 ## Como funciona
 
-Uma linha por fase do desenho. "Trava" é o que impede a fase seguinte; o roteiro completo está no
-[SKILL.md](SKILL.md) e as armadilhas em [referencias/armadilhas.md](referencias/armadilhas.md).
+Uma linha por fase do desenho e uma por agente. "Trava" é o que impede a fase seguinte; o roteiro completo está
+no [SKILL.md](SKILL.md), cada frente no seu arquivo em [agentes/](agentes/) e as armadilhas em
+[referencias/armadilhas.md](referencias/armadilhas.md).
 
 | Fase | Entra | O que a skill faz | Ferramenta | Sai | Trava |
 |---|---|---|---|---|---|
-| **0 · Memória** | `clientes/<c>/memoria.md`, se existir | Lê inteira antes de perguntar; senão copia o modelo de cliente | [`templates/cliente/`](templates/cliente/) | O que já se sabe: IDs, premissas, regra de atribuição, o que foi executado | — |
-| **1 · Entrevista** | Usuário, uma pergunta por vez | Modelo de negócio, fee, verba, margem pelo DRE, meta, qual fonte é o realizado oficial, como a venda é contada, regra de atribuição da V4 | — | Premissas escritas na memória | Sem realizado oficial, nenhum gráfico |
-| **2 · Fontes** | Backup de leads, CRM, planilhas, contas | Lista período, último dia com dado e confiabilidade de cada base; conta pessoa, não linha; tira teste | [`scripts/leads.py`](scripts/leads.py) | Tabela de fontes; pessoas únicas por canal | Base parada vira "não medido", nunca zero |
-| **3 · Mídia: Google** | Conta de anúncios | Auditoria somente leitura com alertas A1–A10; termos e negativas que não pegam termo convertido | [`ads_auditoria.py`](scripts/ads_auditoria.py), [`termos_negativas.py`](scripts/termos_negativas.py), MCP Google Ads | `ads_resumo.md`, negativas propostas | — |
-| **3 · Mídia: Meta** | Export por anúncio | Criativo × qualidade do lead; CNPJ na Receita; renomeação pelo ID | [`cnpj.py`](scripts/cnpj.py) | CPL real por pessoa única; qualificados por anúncio | — |
-| **4 · Medição** | GTM web e servidor, página | Rótulos contra a conta (G1–G4), disparo real sem lead, formulário interceptado sem envio | [`gtm_auditoria.py`](scripts/gtm_auditoria.py), [`teste_disparo.py`](scripts/teste_disparo.py), [`teste_formulario.py`](scripts/teste_formulario.py) | Onde a medição quebra, com a tag | Medição quebrada vem antes de otimizar |
-| **5 · Jornada e página** | Destinos dos anúncios | Custo por lead por destino; on-page, SEO técnico, oferta do anúncio × página | — | Desenho dos caminhos do lead | — |
-| **6 · Comercial** | CRM pela API | Lead novo × cliente antigo, motivos de perda, time e tempo por etapa, follow-up | [`datacrazy.py`](scripts/datacrazy.py) | Funil real estratificado | — |
-| **7 · Mercado** | Concorrentes dos termos | Agente em segundo plano: posicionamento, preço, oferta, provas | Agent | Referência de mercado | Os 2 preços que mais pesam conferidos à mão |
-| **8 · Decisão** | Achados com número | Restrição pela TOC (do sistema ou da mídia); impacto em R$ × confiança × esforço | [`referencias/priorizacao.md`](referencias/priorizacao.md) | Plano 5W1H com Status | — |
-| **9 · Documento** | Tudo acima | Claude Docs: Diagnóstico e plano, Dados do funil, Leads por CNPJ, Executado | [`referencias/documento.md`](referencias/documento.md) | Documento para o time e o cliente | Gráfico com título que não bate com o número |
-| **10 · Execução** | Plano aprovado | Valida antes (validateOnly, rascunho do GTM), aplica com ok, relê e registra | [`ads_escrita.py`](scripts/ads_escrita.py), MCPs | Linha na aba Executado | Sem ok explícito para aquela mudança, nada muda |
-| **↺ 11 · Fechamento** | O que a sprint ensinou | Memória, armadilhas, checklist, regressão, CHANGELOG, tag, cópia pública conferida | [`tests/regressao.py`](tests/regressao.py) | Nova versão | Regressão falhando |
+| **0 · Memória** | `clientes/<c>/memoria.md`, se existir | Lê inteira antes de perguntar; senão copia o modelo de cliente | [`templates/cliente/`](templates/cliente/) | IDs, premissas, regra de atribuição, o que foi executado | — |
+| **1 · Entrevista** | Usuário, uma pergunta por vez | Modelo de negócio, fee, verba, margem pelo DRE, meta, realizado oficial, como a venda é contada, atribuição da V4 | — | Premissas na memória e o bloco de entrada dos agentes | Sem realizado oficial, nenhum gráfico |
+| **2 · Agentes** | Bloco de entrada | Onda 1 (fontes) e onda 2 (as frentes que se aplicam, em paralelo); cada agente grava `achados/<frente>.json` + `.md` | [`instalar_agentes.py`](scripts/instalar_agentes.py), [`contrato_achados.md`](referencias/contrato_achados.md) | Achados com número, fonte, confiança e correção proposta | Agente não fala com o usuário: o que falta vem em `perguntas` |
+| **2 · Consolidação** | `achados/*.json` | Confere o contrato, ordena (segurança e medição primeiro, depois R$), aponta a mesma métrica divergindo entre frentes | [`consolidar.py`](scripts/consolidar.py) | `consolidado.md` e `.json` | Arquivo recusado volta ao agente; divergência vira pergunta de qual fonte manda |
+| **3 · Decisão** | Consolidado | Restrição pela TOC (do sistema ou da mídia); impacto em R$ × confiança × esforço; os 2 maiores achados conferidos à mão | [`priorizacao.md`](referencias/priorizacao.md) | Plano 5W1H com Status | — |
+| **4 · Documento** | Tudo acima | Claude Docs: Diagnóstico e plano, Dados do funil, Leads por CNPJ, Executado | [`documento.md`](referencias/documento.md) | Documento para o time e o cliente | Gráfico com título que não bate com o número |
+| **5 · Execução** | Plano aprovado | Valida antes (validateOnly, rascunho do GTM), aplica com ok, relê e registra | [`ads_escrita.py`](scripts/ads_escrita.py), MCPs | Linha na aba Executado | Sem ok explícito para aquela mudança, nada muda |
+| **↺ 6 · Fechamento** | O que a sprint ensinou | Memória, armadilhas, checklist, agentes, regressão, CHANGELOG, tag, cópia pública conferida | [`regressao.py`](tests/regressao.py) | Nova versão | Regressão falhando |
+
+| Agente (onda) | Entra | O que faz | Ferramenta | Sai |
+|---|---|---|---|---|
+| [`sprint-fontes`](agentes/sprint-fontes.md) (1) | Backup de leads, planilhas, realizado oficial | Período e confiabilidade de cada base; pessoa única sem teste; canal; CNPJ | [`leads.py`](scripts/leads.py), [`cnpj.py`](scripts/cnpj.py) | `base/pessoas.json`, `leads_*` por pessoa |
+| [`sprint-google-ads`](agentes/sprint-google-ads.md) (2) | Conta e MCC | Alertas A1–A10, termos e negativas, anúncio × página, CPL real | [`ads_auditoria.py`](scripts/ads_auditoria.py), [`termos_negativas.py`](scripts/termos_negativas.py), MCP Google Ads | Achados `ADS-`, negativas propostas |
+| [`sprint-meta-ads`](agentes/sprint-meta-ads.md) (2) | Conta ou export | Criativo × qualidade do lead, segunda conta, anomalias, CPL real | Conector Meta Ads (leitura) | Achados `META-` |
+| [`sprint-medicao`](agentes/sprint-medicao.md) (2) | GTM, GA4, Ads, conjunto de dados, LPs | G1–G5, disparo real, formulário interceptado, GA4, Pixel/CAPI, lead até o CRM | [`gtm_auditoria.py`](scripts/gtm_auditoria.py), [`teste_disparo.py`](scripts/teste_disparo.py), [`teste_formulario.py`](scripts/teste_formulario.py), skill `tracking-web-and-capi` | Achados `MED-` |
+| [`sprint-clarity`](agentes/sprint-clarity.md) (2) | Token do projeto | Coleta diária econômica; alertas C1–C6 nas páginas de mídia | [`clarity.py`](scripts/clarity.py) | Achados `CLA-` |
+| [`sprint-jornada`](agentes/sprint-jornada.md) (2) | Site, LPs, destinos | Custo por destino, oferta × página, on-page, SEO técnico básico, velocidade | render do claude-seo, GA4 | Achados `JOR-`, caminhos do lead |
+| [`sprint-comercial`](agentes/sprint-comercial.md) (2) | CRM ou export | Novo × antigo, funil por etapa, perdas, tempos, follow-up, receita (piso) | [`datacrazy.py`](scripts/datacrazy.py) | Achados `COM-`, dados do funil |
+| [`sprint-mercado`](agentes/sprint-mercado.md) (2) | Termos e concorrentes | H1, preço com unidade, teste, CTA, provas, anúncios ativos | WebSearch, Biblioteca de Anúncios | Achados `MER-` |
+
+## Instalação
+
+    cp -r sprint-growth <projeto>/.claude/skills/
+    python3 <projeto>/.claude/skills/sprint-growth/scripts/instalar_agentes.py   # copia agentes/ para <projeto>/.claude/agents/
+
+Abra uma conversa nova para o Claude Code carregar os agentes. Uma frente só: "sprint ads do cliente X",
+"audita só o GTM do cliente X".
 
 ## Estrutura
 
-- `SKILL.md`: o roteiro em 12 etapas (0 a 11).
-- `referencias/`: armadilhas (40+ casos), checklist, priorização (TOC + impacto em R$), documento, execução,
-  ferramentas (MCPs, BrasilAPI, DataCrazy) e negativas base.
+- `SKILL.md`: o roteiro em 7 etapas (0 a 6) e a condução dos agentes.
+- `agentes/`: um agente por frente (fonte única; instalados por `scripts/instalar_agentes.py`).
+- `referencias/`: contrato de achados, armadilhas, checklist, priorização (TOC + impacto em R$), documento,
+  execução, ferramentas (MCPs, Clarity, BrasilAPI, DataCrazy) e negativas base.
 - `scripts/`:
   - `mcp_http.py`, `ads_auditoria.py`, `termos_negativas.py`, `ads_escrita.py`: Google Ads;
   - `gtm_auditoria.py`, `teste_disparo.py`, `teste_formulario.py`: medição;
+  - `clarity.py`: Microsoft Clarity;
   - `leads.py`: pessoa única, teste e canal;
   - `datacrazy.py`: CRM (download, histórico, novo × antigo);
   - `cnpj.py`: qualificação B2B pela Receita;
+  - `consolidar.py`: junta os achados das frentes;
+  - `instalar_agentes.py`: instala e confere os agentes;
   - `publicar.py`: gera a cópia pública.
 - `templates/cliente/` e `tests/regressao.py`.
 

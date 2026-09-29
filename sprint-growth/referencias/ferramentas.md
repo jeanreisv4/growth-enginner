@@ -15,10 +15,13 @@ Configuração local: `~/.config/sprint-growth/config.json` (chmod 600, fora do 
 | GTM | MCP n8n `gtm` | listar/editar tags, variáveis, versões, publicar | publicar pede ok; workspace muda depois de versionar |
 | GA4 dados | `analytics-mcp` | relatórios, eventos por página | — |
 | GA4 admin | MCP n8n `ga4admin` | eventos principais, vínculo com Ads, dimensões | corpo dos recursos vai como objeto |
-| Meta | exports CSV do gerenciador (ou conector claude.ai, se autorizado) | gasto e resultado por anúncio | export pode vir filtrado; conferir IDs |
+| Meta | conector Meta Ads do claude.ai (leitura: entidades, insights, anomalias, conjunto de dados) ou exports CSV | gasto e resultado por anúncio, qualidade do conjunto de dados | `ads_get_ad_entities` pode devolver `next_actions` (executar as de leitura); export pode vir filtrado; conferir IDs |
+| Clarity | Data Export API (`scripts/clarity.py`), token por projeto | robôs, fricção, rolagem, tempo por página, dispositivo e canal | 10 chamadas/projeto/dia; só 1–3 dias; 1.000 linhas; UTC |
+| SEO e render | claude-seo (`~/.claude/skills/seo/scripts/claude-seo run render_page.py`) | HTML renderizado de SPA, on-page | opcional; auditoria completa é `/seo audit` |
 | Páginas | `curl` + `teste_formulario.py` / `teste_disparo.py` (Playwright via `uvx`) | on-page, envio do formulário, disparo das tags | PageSpeed API tem cota diária |
 | Documento | Claude Docs | aba de diagnóstico, aba Executado, gráficos e desenhos | — |
-| Mercado | Agent (general-purpose) em segundo plano | concorrentes, preços, trial | conferir à mão os preços decisivos |
+| Mercado | agente `sprint-mercado` (WebSearch, WebFetch, Biblioteca de Anúncios) | concorrentes, preços, trial | conferir à mão os preços decisivos |
+| Agentes | `agentes/sprint-*.md` → `.claude/agents/` por `scripts/instalar_agentes.py` | uma frente por agente, somente leitura, em paralelo | carregam no início da conversa; não falam com o usuário |
 
 ## DataCrazy (CRM)
 - API https://api.g1.datacrazy.io/api/v1, Bearer. **Exige User-Agent de curl** (urllib padrão → 403).

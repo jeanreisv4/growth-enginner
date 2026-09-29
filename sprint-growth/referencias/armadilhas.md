@@ -61,6 +61,9 @@ Formato: o que aconteceu · como detectar · o que fazer. Cliente entre parênte
 
 - **Rótulo com um caractere a menos.** A tag disparava, mas o rótulo não existia: "00.2 Lead" zerou o trimestre
   e o Google só aprendia com o MQL (SaaS de diário de obra). `gtm_auditoria.py` G1 + `teste_disparo.py`.
+- **Mesmo acionador como disparo e como exceção.** A tag do Google Ads do pop-up de WhatsApp tinha o evento do
+  pop-up nos dois campos: a exceção vence e a conversão nunca saiu, enquanto Meta e GA4 contavam (distribuidora de peças automotivas).
+  `gtm_auditoria.py` G5 + `teste_disparo.py` depois de publicar.
 - **Duas conversões principais na mesma categoria.** Lead e MQL principais = cada MQL conta 2 (SaaS de diário de obra). A2.
 - **Categoria sem lance.** "Enviar formulário" não era biddable na meta da conta; as campanhas só contavam ligação
   (indústria de plásticos). Conferir `campaign_conversion_goal`.
@@ -72,6 +75,11 @@ Formato: o que aconteceu · como detectar · o que fazer. Cliente entre parênte
 - **Eventos principais que nunca disparam.** GA4 com key events de template e os eventos reais desmarcados (SaaS de diário de obra).
 - **Pixel com evento fantasma.** Meta reportando add-to-cart em página sem carrinho (brindes personalizados).
 - **Mídia apontando para o site errado.** Julho inteiro no site B2B sem checkout (brindes personalizados).
+- **Clarity não é histórico.** A Data Export API só devolve as últimas 24–72 h e 10 chamadas por projeto por dia
+  (a cota é do projeto: outra ferramenta usando o mesmo token come a sua). Colete no primeiro dia da sprint e
+  todo dia depois; com menos de 7 dias acumulados, a confiabilidade é média. `clarity.py` não repete chamada do dia.
+- **Campo do Clarity com nome não documentado.** A documentação só mostra os campos de Traffic; os de fricção são
+  lidos pelo padrão do nome. Se o resumo listar campo não reconhecido, ajuste `clarity.linhas()` antes de concluir.
 
 ## Funil e comercial
 
@@ -85,9 +93,16 @@ Formato: o que aconteceu · como detectar · o que fazer. Cliente entre parênte
 
 ## Execução
 
+- **Agente não conversa.** O agente de frente não pergunta ao usuário; o que falta vem em `perguntas` no JSON.
+  Não o use para validar mudança nem para pedir ok: execução é sempre da conversa principal.
+- **Agente novo só aparece em conversa nova.** Depois de `instalar_agentes.py`, a conversa aberta não enxerga o
+  agente; até lá, rode a frente com `general-purpose` passando o arquivo do agente como instrução.
+
 - **Publicar GTM, criar fluxo no n8n, extrair código de painel**: o modo automático pode negar. Parar, explicar,
   deixar com o usuário. Nunca contornar.
 - **Upload de conversão offline** em conta nova: API recusa (Data Manager API). Gerar CSV para upload manual.
-- **Conversões do YouTube** não mudam pela API.
+- **Conversões do YouTube** não mudam pela API. Nem as do Google hospedadas (ações locais, ligações de campanha
+  inteligente, metas do Universal Analytics, instalação de app): MUTATE_NOT_ALLOWED. Tire do lance pela meta da
+  campanha (`campaign_conversion_goal.biddable = false` por categoria), que a API aceita (distribuidora de peças automotivas).
 - **Workspace do GTM usado** depois de criar versão: pegar o workspace novo antes de editar.
 - **n8n corta resposta grande** (IncompleteRead) ou devolve 502: `mcp_http.py` tenta de novo; reduza a consulta.

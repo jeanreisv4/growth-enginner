@@ -44,7 +44,7 @@ flowchart TB
 |---|---|---|---|---|
 | [`projecao-breakeven`](projecao-breakeven/) | Estratégia de tráfego alinhada ao go-to-market | Lê o histórico, faz a entrevista das premissas e dá o veredito | Planilha com meta mês a mês, CAC permitido e o caminho quando não fecha | Mês de breakeven; projetado de leads, MQL e vendas |
 | [`tracking-web-and-capi`](tracking-web-and-capi/) | Atribuição da jornada nas plataformas | Planeja, gera os containers GTM web e servidor pelo template (com validação), audita e conserta Pixel/CAPI, Google Ads, GA4 e CRM | Cada lead e venda chega à plataforma e ao CRM com a origem | Eventos que disparam; conversões com rótulo certo; leads com origem ÷ leads; venda de volta às plataformas |
-| [`sprint-growth`](sprint-growth/) | Auditoria recorrente · Execução de mídia paga | Audita a jornada inteira, acha a restrição (TOC) e executa pelas MCPs | Plano 5W1H priorizado em R$ e aba Executado | Impacto em R$/mês de cada ação; CPL real por pessoa única |
+| [`sprint-growth`](sprint-growth/) | Auditoria recorrente · Execução de mídia paga | Audita a jornada inteira com 8 agentes especialistas em paralelo (mídia, medição, Clarity, jornada, comercial, mercado), acha a restrição (TOC) e executa pelas MCPs | Plano 5W1H priorizado em R$ e aba Executado | Impacto em R$/mês de cada ação; CPL real por pessoa única |
 | [`checkin-ropre`](checkin-ropre/) | Operação direta em grandes clientes | Monta o check-in (Resultados, Objetivos, Premissas e riscos, Entregas, Próximos passos) | Deck e documento com a regra de atribuição declarada | Realizado × projetado; o que não foi medido escrito como tal |
 
 ## As disciplinas
