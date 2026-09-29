@@ -1,12 +1,19 @@
 # projecao-breakeven
 
-![versão](https://img.shields.io/badge/versão-7.8.2-E50914) ![regressão](https://img.shields.io/badge/regressão-19%20casos-111111)
+![Capa da projeção-breakeven: perguntas sendo digitadas e um gráfico em que o resultado do mês sai do vermelho para o verde e o acumulado de caixa e o de LTV cruzam o zero](assets/capa.svg)
+
+![versão](https://img.shields.io/badge/versão-7.9.4-E50914) ![regressão](https://img.shields.io/badge/regressão-24%20casos-111111)
 
 Skill do Claude Code que responde **em que mês o projeto se paga**. Lê o histórico do cliente (planilha padrão
 V4, CRM, export de mídia, GA4), conduz a entrevista das premissas, calcula as taxas efetivas, dá o veredito de
 realismo e entrega a planilha .xlsx de projeção pronta para apresentar, com projetado × realizado.
 
 ## Workflow
+
+![Fluxo da projeção-breakeven: entrevista, taxas efetivas, economia unitária, veredito realista, com rampa ou irrealista com o caminho, planilha e validação, com o realizado recalibrando as taxas](assets/fluxo.svg)
+
+<details>
+<summary>Ver o desenho detalhado (fases, decisões e travas)</summary>
 
 ```mermaid
 flowchart TB
@@ -60,6 +67,12 @@ flowchart TB
 Legenda: cinza = informação do usuário · amarelo = decisão · azul = cálculo automático · verde = entrega ·
 vermelho = trava ou alerta · ↺ = onde o loop se fecha. Na seta entre as fases, a saída de cada uma.
 
+</details>
+
+## A cadeia que a planilha calcula
+
+![A cadeia da aba de projeção: investimento, marketing da verba ao MQL, vendas do atendimento à receita e financeiro até o payback, com a alavanca de cada etapa](assets/cadeia.svg)
+
 ## Como funciona
 
 Uma linha por etapa do desenho. "Trava" é o que impede a etapa seguinte; o detalhe de cada pergunta e de cada
@@ -91,6 +104,7 @@ regra de cálculo está no [SKILL.md](SKILL.md).
 - `referencias/`: `inside_sales.md`, `ecommerce.md` e benchmarks por setor (JSON, com fonte).
 - `scripts/`: `breakeven_pilot.py` (detectar e projetar), `gerar_template.py`, `ga4_resumo.py`,
   `metodologia_crm.py`, `metodologia_mercado.py`.
+- `scripts/desenhos.py`: gera os desenhos animados de `assets/`.
 - `gerador/`: montagem da planilha (`build_workbook.py`, `projecao_builder.py`).
 - `tests/regressao.py` + `tests/fixtures/` (dados sintéticos).
 

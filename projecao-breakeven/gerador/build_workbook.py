@@ -141,7 +141,18 @@ def _simplificar_is(cfg, p):
         troca_['sqls'] = dict(src="={c}{mqls}*{c}{mql_sql}")
         rot_branca = {"con_lead": "Conexão lead (preencha quando medir)", "con_mql": "Conexão MQL (preencha quando medir)"}
         cfg['premises'] = [(k, rot_branca[k], None, f) if k in brancas else (k, lab, v, f) for k, lab, v, f in cfg['premises']]
-    if p.get('con_lead_mensal') and not p.get('sem_conexao') and not p.get('atendimento'):   # conexão com alvo de mercado, fora da cadeia
+    if p.get('con_mql_mensal') or p.get('con_lead_medida'):
+        # Conexão medida por fora da planilha padrão: as duas taxas viram linha editável mês a mês, para o cliente
+        # ver o atendimento subir ou cair. A de MQL está na cadeia (SQLs = MQLs × conexão × conectado → SQL);
+        # a de lead é informativa, porque o MQL é critério de formulário e não depende de alguém ter ligado.
+        n_ = int(p.get('n_months', 12))
+        if p.get('con_lead_medida'):
+            troca_['con_lead'] = dict(kind='input', src=Ln(p['con_lead_medida'], n_))
+            cfg['premises'] = [x for x in cfg['premises'] if x[0] != 'con_lead']
+        if p.get('con_mql_mensal'):
+            troca_['con_mql'] = dict(kind='input', src=Ln(p['con_mql_mensal'], n_))
+            cfg['premises'] = [x for x in cfg['premises'] if x[0] != 'con_mql']
+    if p.get('con_lead_mensal') and not p.get('sem_conexao') and not p.get('atendimento') and not p.get('con_lead_medida'):   # conexão com alvo de mercado, fora da cadeia
         troca_['con_lead'] = dict(kind='input', src=Ln(p['con_lead_mensal'], int(p.get('n_months', 12))))
         cfg['premises'] = [x for x in cfg['premises'] if x[0] != 'con_lead']
     if p.get('fee_plano'):   # fee mês a mês (ex.: sobe quando o CRM entra no fee)
@@ -175,6 +186,73 @@ def _simplificar_is(cfg, p):
                                    if x[0].startswith("GMV GERADO") else x for x in orig_kpis(ctx)]
         cfg['charts'] = cfg['charts'] + [dict(type='line', title="Faturamento (GMV) por origem: novos leads, recompra e reativação",
                                               series=[('gmv', RED, False), ('gmv_recompra', GREEN, False), ('gmv_reativ', GRAY, False)], y_fmt=FMT_BRL)]
+    rec = p.get('recorrencia')
+    if rec:
+        # Assinatura (SaaS). O funil entrega assinaturas NOVAS; a receita do mês é a BASE INTEIRA × mensalidade.
+        # base_t = base_(t-1) × (1 − churn_t) + novas_t. A safra nova não sofre churn no mês em que entra.
+        # O erro clássico (e o que estava na planilha antiga da RDO Pro) é aplicar o churn só na safra nova:
+        # assim a base acumulada nunca perde ninguém e a receita infla mês a mês.
+        n_ = int(p.get('n_months', 12))
+        ch = list(rec.get('churn') or [])
+        ch = [ch[min(k, len(ch) - 1)] for k in range(n_)] if ch else [0.0] * n_
+        troca_.setdefault('vendas', {})['label'] = "[QNTD] ASSINATURAS NOVAS NO MÊS"
+        troca_.setdefault('vendas_ger', {})['label'] = "[QNTD] ASSINATURAS ORIGINADAS PELOS SQLS DO MÊS"
+        troca_.setdefault('custo_venda', {})['label'] = "[R$] CAC (CUSTO POR ASSINATURA NOVA)"
+        troca_.setdefault('conv_funil', {})['label'] = "[%] CONVERSÃO DO FUNIL (LEAD → ASSINATURA)"
+        troca_.setdefault('ticket', {})['label'] = "[R$] MENSALIDADE MÉDIA"
+        troca_.setdefault('gmv', {}).update(label="[R$] MRR (BASE × MENSALIDADE)", src="={c}{base_ass}*{c}{ticket}",
+                                            tot='sum', real="{c}{base_ass}*{c}{ticket}")
+        # com receita recorrente, "quantas vendas zeram o mês" é quantos ASSINANTES a base precisa ter, não quantas vendas novas
+        troca_.setdefault('vendas_be', {}).update(label="[QNTD] BASE DE ASSINANTES NECESSÁRIA PARA ZERAR O MÊS",
+                                                  src="=IFERROR(ROUNDUP({c}{fat_be}/{c}{ticket},0),0)")
+        i = next(j for j, x in enumerate(cfg['premises']) if x[0] == 'lag')
+        cfg['premises'].insert(i, ("base0", "Assinantes já ativos no início do Mês 1 (base herdada)", rec.get('base_inicial', 0) or 0, FMT_INT))
+        bloco_rec = [
+          ('churn', "[%] CHURN MENSAL DA BASE", 'input', Ln(ch, n_), FMT_PCT1, 'avg', '""'),
+          ('base_ass', "[QNTD] BASE DE ASSINANTES (FIM DO MÊS)", 'calcf',
+           ("={P_base0}*(1-{c}{churn})+{c}{vendas}", "={p}{base_ass}*(1-{c}{churn})+{c}{vendas}"), FMT_INT, 'last', '""'),
+          ('cancel', "[QNTD] CANCELAMENTOS NO MÊS", 'calcf',
+           ("={P_base0}*{c}{churn}", "={p}{base_ass}*{c}{churn}"), FMT_INT, 'sum', '""'),
+        ]
+        j = next(k for k, m in enumerate(cfg['metrics']) if m[0] == 'ticket')
+        cfg['metrics'][j:j] = bloco_rec
+        # --- Valor de vida (LTV). O bloco financeiro de cima conta só o caixa que entra DENTRO das colunas da
+        # planilha, e isso corta cada safra na borda do calendário: quem assina no último mês aparece com um mês
+        # de receita, não com a vida inteira. Em assinatura essa é a leitura errada para decidir — a certa é
+        # LTV/CAC. O LTV por assinante sai da própria tabela (MC do mês ÷ base ÷ churn), então já carrega margem
+        # e comissão como estiverem configuradas, e o cliente consegue auditar a conta na linha de cima.
+        bloco_ltv = [
+          ('sec', "FINANCEIRO · VALOR DE VIDA (LTV) — O QUE A SAFRA DO MÊS VALE ATÉ O FIM", 'financeiro'),
+          ('ltv_unit', "[R$] LTV LÍQUIDO POR ASSINANTE (MC MENSAL ÷ CHURN)", 'calc',
+           "=IFERROR({c}{mc_cons}/{c}{base_ass}/{c}{churn},0)", FMT_BRL, 'avg', '""'),
+          ('ltv_mes', "[R$] VALOR DE VIDA GERADO NO MÊS (ASSINATURAS NOVAS × LTV)", 'calc',
+           "={c}{vendas}*{c}{ltv_unit}", FMT_BRL, 'sum', '""'),
+          ('ltv_cac', "[X] LTV ÷ CAC (1,00X = A SAFRA PAGA O QUE CUSTOU)", 'calc',
+           "=IFERROR({c}{ltv_mes}/{c}{custo_cons},0)", FMT_X, 'div:ltv_mes/custo_cons', '""'),
+          ('res_ltv', "[R$] RESULTADO POR LTV NO MÊS (VALOR DE VIDA − CUSTO)", 'calc',
+           "={c}{ltv_mes}-{c}{custo_cons}", FMT_BRL, 'sum', '""'),
+          # começa no mesmo déficit da linha de caixa: aquele dinheiro foi gasto de verdade e não some por
+          # trocarmos a régua. Sem isso o acumulado por LTV zeraria cedo demais.
+          ('cum_ltv', "[R$] RESULTADO POR LTV ACUMULADO", 'calcf',
+           ("={P_acum0}+{c}{res_ltv}", "={p}{cum_ltv}+{c}{res_ltv}"), FMT_BRL, 'last', '""'),
+        ]
+        k = next(i for i, m in enumerate(cfg['metrics']) if m[0] == 'sec'
+                 and isinstance(m[1], str) and m[1].startswith("FINANCEIRO · QUANTO FALTA"))
+        cfg['metrics'][k:k] = bloco_ltv
+        cfg['bold_rows'] = set(cfg.get('bold_rows') or ()) | {'cum_ltv', 'ltv_cac'}
+        cfg['signed_rows'] = list(cfg.get('signed_rows') or ()) + ['res_ltv', 'cum_ltv']
+        cfg['x_rows'] = list(cfg.get('x_rows') or ()) + ['ltv_cac']
+        orig_k = cfg['kpis']
+        cfg['kpis'] = lambda ctx: orig_k(ctx) + [
+          ("LTV LÍQUIDO POR ASSINANTE", f"=IFERROR(INDEX({ctx.rng('ltv_unit')},1,{ctx.n}),0)", FMT_BRL, "MC mensal ÷ churn"),
+          ("CAC (FEE + MÍDIA ÷ ASSINATURAS NOVAS)", f"=IFERROR({ctx.tot('custo_cons')}/{ctx.tot('vendas')},0)", FMT_BRL, "custo cheio por assinatura nova"),
+          ("LTV ÷ CAC", f"=IFERROR({ctx.tot('ltv_mes')}/{ctx.tot('custo_cons')},0)", FMT_X, "1,0x = a safra paga o que custou"),
+          (f"RESULTADO POR LTV · {ctx.n} MESES", f"={ctx.tot('res_ltv')}", FMT_BRL, "valor de vida gerado − custo do período"),
+        ]
+        cfg['charts'] = cfg['charts'] + [dict(type='line', title="Resultado acumulado: caixa no período × valor de vida (LTV)",
+                                              series=[('cum_cons', RED, False), ('cum_ltv', GREEN, False)], y_fmt=FMT_BRL)]
+        cfg['charts'] = cfg['charts'] + [dict(type='line', title="Base de assinantes e assinaturas novas por mês",
+                                              series=[('base_ass', RED, False), ('vendas', GRAY, False)], y_fmt=FMT_INT)]
     org = p.get('organico')
     if org:
         # orgânico (SEO, social, indicação): entradas × conversão viram leads; o funil corre sobre os totais (pagos + orgânicos).
@@ -819,6 +897,14 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
         else:
             con_lead, conex = 1.0, "a fonte não tem a linha Conexões: conexão lead 100% (informativa)"
         sem_conexao = "Conexões" in (det.get('etapas_ausentes_na_fonte') or [])
+        # Conexão medida por fora da planilha padrão (--conexao-lead/--conexao-mql). Serve ao cliente cujo time atende
+        # DEPOIS da qualificação: a linha "Conexões" da planilha entra antes do MQL e ali ficaria no lugar errado.
+        # Ela não muda volume: só decompõe MQL → SQL em MQL → MQL conectado → SQL, que é como esta aba já rotula a etapa.
+        con_med = pc.get('conexao_medida') or None
+        if con_med and (con_med.get('lead') or con_med.get('mql')):
+            sem_conexao = False
+        else:
+            con_med = None
         conexao_so_lead = conexao_so_lead and not sem_conexao
         # connect rate só entra quando existe: a fonte traz a linha de visitas na página, ou o usuário informou --connect-rate.
         # Em formulário nativo (sem landing page) a linha seria 100% fixo e some, e o lead vem direto do clique.
@@ -833,7 +919,9 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
                  + "dias do mês 30; taxas e ticket seguem a rampa do piloto, mês a mês, nas células amarelas.")
         prem = dict(fee=pc['fee'], midia=pc['midia_mensal'], comissao=pc['comissao'], margem=pc['margem'],
                     connect=min(env['connect']['atual'] or 1.0, 1.0) if not sem_lp else 1.0, organicas=0,
-                    con_lead=con_lead, con_mql=1.0, cresc=cresc, teto=teto, lag=lag, acum0=acum0, dias=30)
+                    con_lead=(con_med['lead'][0] if (con_med and con_med.get('lead')) else con_lead),
+                    con_mql=(con_med['mql'][0] if (con_med and con_med.get('mql')) else 1.0),
+                    cresc=cresc, teto=teto, lag=lag, acum0=acum0, dias=30)
         saz_ = pc.get('sazonalidade') or {}
         mult_cpm = (list(saz_.get('cpm') or []) + [1.0] * n)[:n]
         mult_dem = (list(saz_.get('demanda') or []) + [1.0] * n)[:n]
@@ -842,9 +930,19 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
         sql_usado = [min(v * m, 1.0) if v is not None else None for v, m in zip(sql_base, mult_dem)]   # a demanda do mês entra na taxa usada
         # conexão na cadeia: quem vira SQL é quem o time falou (MQL ou não). Só existe com a linha Conexões na fonte.
         atendimento = 'conexao' in env
+        mql_sql_ = col('conexao_sql') if atendimento else col('mql_sql')
+        con_mql_mes = con_lead_mes = None
+        if con_med:
+            esticar = lambda xs: [xs[min(k, len(xs) - 1)] for k in range(n)] if xs else None
+            con_mql_mes, con_lead_mes = esticar(con_med.get('mql')), esticar(con_med.get('lead'))
+            if con_mql_mes:   # SQLs na aba = MQLs x conexao x (conectado -> SQL); o produto tem de dar o mesmo do piloto
+                mql_sql_ = [(v / c if (v is not None and c) else v) for v, c in zip(mql_sql_, con_mql_mes)]
+                acima = [k + 1 for k, v in enumerate(mql_sql_) if v is not None and v > 1.0]
+                if acima:
+                    sys.exit(f"--conexao-mql deixa 'MQL conectado → SQL' acima de 100% no(s) mês(es) {acima}: "
+                             f"a conexão informada é menor que a própria taxa MQL → SQL do funil. Confira o número medido.")
         monthly = dict(cpm=cpm_usado, ctr=col('ctr'), lead_mql=col('lead_mql'), sql_venda=sql_usado, ticket=col('ticket'),
-                       conv_lp=col('clique_lead') if sem_lp else col('visita_lead'),
-                       mql_sql=col('conexao_sql') if atendimento else col('mql_sql'))
+                       conv_lp=col('clique_lead') if sem_lp else col('visita_lead'), mql_sql=mql_sql_)
         title, rotulo = "Projeção Inside Sales", "Inside Sales"
         propria = float(pc['comissao']) >= 0.999 and not pc.get('crm')
         formulas = ("Impressões = Mídia ÷ CPM × 1.000 · Cliques = Impressões × CTR · "
@@ -857,6 +955,7 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
                        "GMV = Vendas × Ticket · Receita = GMV × Comissão · Resultado MC = Receita × Margem · ")
                     + "Resultado do mês = MC − (Fee + Mídia) · Receita necessária = Custo ÷ Margem · Payback = 1º mês com acumulado ≥ 0.")
         extra = dict(sem_lp=sem_lp, sem_conexao=sem_conexao, conexao_so_lead=conexao_so_lead, atendimento=atendimento,
+                     con_mql_mensal=con_mql_mes, con_lead_medida=con_lead_mes,
                      connect_mensal=None if sem_lp else col('connect'))
     else:
         if sp:
@@ -1012,10 +1111,18 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
                 acum += x; rot.append(f"{ABREV[mes]}/{ano}"); ac.append(acum)
                 if acum >= 0: break
             if rot: payback_estendido = {'rotulos': rot, 'acumulado': ac}
-    p = dict(sheet=rotulo, title=title, legado=legado, payback_estendido=payback_estendido, verba_plano=verba_plano, sazonalidade=pc.get('sazonalidade'), cpm_crescimento=pc.get('cpm_crescimento'), con_lead_mensal=(col('conexao') if any(col('conexao')) else (col('con_lead') if any(col('con_lead')) else None)), organico=pc.get('organico'), crm=pc.get('crm'), fee_plano=pc.get('fee_plano'),
+    _rec_v = (v.get('recorrencia') or {}) if pc.get('recorrencia') else {}
+    p = dict(sheet=rotulo, title=title, legado=legado, payback_estendido=payback_estendido, verba_plano=verba_plano, sazonalidade=pc.get('sazonalidade'), cpm_crescimento=pc.get('cpm_crescimento'), con_lead_mensal=(col('conexao') if any(col('conexao')) else (col('con_lead') if any(col('con_lead')) else None)), organico=pc.get('organico'), crm=pc.get('crm'), recorrencia=pc.get('recorrencia'), fee_plano=pc.get('fee_plano'),
              subtitle=(f"{esc(cliente)}   ·   Cenário {esc(cenario)}   ·   {labels[0]} a {labels[-1]}   ·   Meta de breakeven: {rot_mes(mes_alvo)}   ·   {v['status']}"
-                       f"   ·   no azul a partir de: {rot_mes(azul_cont) if azul_cont else nunca}"
-                       f"   ·   acumulado zera: {rot_mes(zera) if zera else nunca}"),
+                       # Com recorrência, as datas ganham a régua ao lado: a de caixa conta só o que entra dentro do
+                       # horizonte; a de LTV credita cada assinatura pelo que ela vale até cancelar. As duas são verdade
+                       # e costumam discordar por muitos meses, então nenhuma aparece sozinha.
+                       + (f"   ·   CAIXA — no azul: {rot_mes(azul_cont) if azul_cont else nunca}, acumulado zera: {rot_mes(zera) if zera else nunca}"
+                          f"   ·   LTV — no azul: {rot_mes(_rec_v.get('ltv_no_azul_continuo_desde')) if _rec_v.get('ltv_no_azul_continuo_desde') else nunca}, "
+                          f"acumulado zera: {rot_mes(_rec_v.get('ltv_acumulado_zera_em')) if _rec_v.get('ltv_acumulado_zera_em') else nunca}"
+                          if _rec_v else
+                          f"   ·   no azul a partir de: {rot_mes(azul_cont) if azul_cont else nunca}"
+                          f"   ·   acumulado zera: {rot_mes(zera) if zera else nunca}")),
              meta_line=f"Atualizado em {{today}}   ·   Fonte: planilha de indicadores (aba {esc(det.get('aba'))})" + (" e GA4" if ga4.get('meses') else "") + f"   ·   Janela das taxas: {esc(', '.join(janela))}   ·   Detalhes na aba Premissas",
              footer=f"Projeção {rotulo} · {cliente} · agência", prem=prem, monthly=monthly, target=mes_alvo,
              metodologia=metodologia, historico=historico, pilot_ref=pilot_ref, base_ref=base_ref, n_months=n,

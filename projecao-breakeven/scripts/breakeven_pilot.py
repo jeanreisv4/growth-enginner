@@ -73,10 +73,17 @@ REALIZADO = {}      # {mês da projeção: resultado realizado}: meses já vivid
 ORGANICO = None     # {'visitas': [por mês a partir do M1], 'conversao': taxa, 'origem': str, 'metrica': str}:
                     # leads orgânicos (SEO, social, indicação) somados aos pagos antes de lead → MQL
 CRM = None          # recompra e reativação da base (inside sales); ver crm_json no --help
+REAL_FIN = {}       # {mês da projeção: (MC realizada, custo realizado)}: a régua de LTV precisa dos dois separados,
+                    # não só do resultado líquido, porque o LTV por assinante sai de MC ÷ base ÷ churn.
 VOL_REAL = {}       # {mês da projeção: {"Leads", "Vendas"}} realizados, para a base do CRM andar com o que aconteceu
 FEE_PLANO = None    # fee mês a mês (--fee-plano); ex.: fee sobe quando entra o CRM
 CPM_CRESC = None    # (crescimento mensal, teto, último mês): o CPM base sobe com a saturação do público enquanto a verba escala (premissa do usuário, sem benchmark)
 SAZ = None          # {'demanda': [...], 'cpm': [...]} multiplicadores mês a mês (Black Friday, Natal); depois da lista, 1
+CONEXAO_MEDIDA = None  # conexao medida fora da planilha padrao: {'lead': [...], 'mql': [...]}. Informativa no piloto;
+                       # no gerador ela decompoe MQL -> SQL em MQL -> MQL conectado -> SQL, sem mudar volume.
+RECORRENCIA = None  # assinatura (SaaS): {'churn': [taxa por mês], 'base_inicial': N}. Com ela, as "vendas" do funil
+                    # são ASSINATURAS NOVAS, a base acumula mês a mês e a receita do mês é base × mensalidade (o ticket).
+                    # Convenção declarada: base_t = base_(t-1) × (1 − churn_t) + novas_t; a safra nova não sofre churn no mês em que entra.
 VERBA_PLANO = None  # verba mês a mês (--verba-plano); depois do último mês do plano, repete o último valor
 TAXA_MAX = 1.0    # taxa de etapa não pode passar de 100%: quando a fonte dá mais, o denominador está subcontado
 
@@ -543,6 +550,7 @@ def projetar_curva(levers, modelo, fee, midia, margem, comissao, acumulado_inici
     lag = fração das vendas que cai no mês do lead; crescimento_midia = crescimento mensal da verba (0.10 = +10%/mês)."""
     cadeia = alavancas(modelo)
     linhas, acum, pend = [], acumulado_inicial, 0.0
+    base_ass = float(RECORRENCIA["base_inicial"]) if RECORRENCIA else 0.0
     if CRM:   # coortes de clientes por mês de compra (s = 1 é o Mês 1); compras de antes do Mês 1 entram pela idade no Mês 1
         base_leads = float(CRM["base"].get("leads_sem_compra") or 0)
         coortes = {1 - int(i): float(n_) for i, n_ in CRM.get("coortes_pre", [])}
@@ -579,6 +587,12 @@ def projetar_curva(levers, modelo, fee, midia, margem, comissao, acumulado_inici
         pend = geradas * (1 - lag)
         receita = vendas * (lv["ticket"] or 0.0)
         extra = {}
+        if RECORRENCIA:   # assinatura: o funil entrega assinaturas NOVAS; a receita do mês é a base inteira × mensalidade
+            ch = RECORRENCIA["churn"][min(t, len(RECORRENCIA["churn"])) - 1]
+            base_ass = base_ass * (1 - ch) + vendas
+            receita = base_ass * (lv["ticket"] or 0.0)
+            extra = {"assinaturas_novas": round(vendas, 2), "churn_mes": round(ch, 4),
+                     "base_assinantes": round(base_ass, 2), "mrr": round(receita, 2)}
         receita_total = receita
         if CRM:
             b, tx = CRM["base"], CRM["taxas"]
@@ -629,6 +643,29 @@ def quarters(linhas):
     return out
 
 
+def _payback_ltv(linhas, churn, real_fin, horizonte, acumulado_inicial=0.0):
+    """Payback na régua de VALOR DE VIDA: cada assinatura nova é creditada pelo que vale até cancelar.
+    A régua de caixa conta só o que entra dentro do horizonte e corta cada safra na borda do calendário —
+    em assinatura isso responde a pergunta errada, porque quem assina no último mês aparece com um mês de receita.
+    LTV do mês = MC do mês ÷ base ÷ churn (a mesma conta que a planilha mostra, para o cliente auditar)."""
+    res, acum, out = [], float(acumulado_inicial), {}   # o déficit já gasto entra aqui também: foi caixa de verdade
+    for t, l in enumerate(linhas, start=1):
+        ch = churn[min(t, len(churn)) - 1]
+        base = l.get("base_assinantes") or 0.0
+        # Mês já vivido entra pela MC e pelo custo REALIZADOS, como a linha consolidada da planilha — e não pelo
+        # resultado líquido de caixa, que subestimaria a safra: o realizado do mês não contém o valor futuro dela.
+        mc, custo = REAL_FIN.get(t, (l["resultado_mc"], l["custo"]))
+        ltv = (mc / base / ch) if (base and ch) else 0.0
+        r = (l.get("assinaturas_novas") or 0.0) * ltv - custo
+        res.append(r); acum += r
+        out.setdefault("_acum", []).append(acum)
+    acs = out.pop("_acum")
+    return {"ltv_mes_no_azul": next((t for t, x in enumerate(res, 1) if x >= 0), None),
+            "ltv_no_azul_continuo_desde": next((t for t in range(1, len(res) + 1) if all(x >= 0 for x in res[t - 1:])), None),
+            "ltv_acumulado_zera_em": next((t for t, x in enumerate(acs, 1) if x >= 0), None),
+            "ltv_resultado_horizonte": round(float(acumulado_inicial) + sum(res[:horizonte]), 2)}
+
+
 def veredito(env, modelo, fee, midia, margem, comissao, mes_alvo, horizonte, acumulado_inicial, lag, ticket_manual=None, crescimento_midia=0.0, midia_teto=None):
     """Compara o cenário de taxas atuais com rampas dentro do envelope histórico e diz em que mês o breakeven fica realista.
     O cenário entregue é sempre a rampa completa até o mês de referência (alpha = 1), com a verba crescendo pelo percentual informado."""
@@ -675,6 +712,33 @@ def veredito(env, modelo, fee, midia, margem, comissao, mes_alvo, horizonte, acu
     v["no_azul_continuo_desde"] = next((t for t in range(1, len(res) + 1) if all(x >= 0 for x in res[t - 1:])), None)
     v["acumulado_zera_em"] = next((l["mes"] for l in longo if l["acumulado"] >= 0), None)
     v["horizonte"] = horizonte
+    if RECORRENCIA:
+        # Economia unitária da assinatura. Numa base recorrente o payback de calendário corta o cliente na virada do ano,
+        # então LTV/CAC e payback de CAC são a leitura que decide, e vão declarados ao lado do payback do contrato.
+        ch = RECORRENCIA["churn"]; ch_reg = ch[-1]                       # churn em regime (último do plano)
+        mens = ticket_alvo                                              # mensalidade no mês-alvo
+        lt = (1.0 / ch_reg) if ch_reg > 0 else None                     # tempo de vida, em meses
+        ltv = (mens * comissao * margem * lt) if lt else None           # LTV líquido (já com margem de contribuição)
+        novas = sum(l.get("assinaturas_novas", 0.0) for l in cenario)
+        custo_tot = sum(l["custo"] for l in cenario)
+        midia_tot = sum(l["midia"] for l in cenario)
+        cac_cheio = (custo_tot / novas) if novas else None              # fee + mídia por assinatura nova
+        cac_midia = (midia_tot / novas) if novas else None              # só mídia
+        v["recorrencia"] = {
+            "churn_regime": ch_reg, "mensalidade_mes_alvo": round(mens, 2),
+            "lifetime_meses": round(lt, 1) if lt else None,
+            "ltv_liquido": round(ltv, 2) if ltv else None,
+            "assinaturas_novas_horizonte": round(novas, 1),
+            "base_assinantes_fim": round(cenario[-1].get("base_assinantes", 0.0), 1),
+            "mrr_fim": round(cenario[-1].get("mrr", 0.0), 2),
+            "cac_cheio": round(cac_cheio, 2) if cac_cheio else None,
+            "cac_midia": round(cac_midia, 2) if cac_midia else None,
+            "ltv_sobre_cac_cheio": round(ltv / cac_cheio, 2) if (ltv and cac_cheio) else None,
+            "ltv_sobre_cac_midia": round(ltv / cac_midia, 2) if (ltv and cac_midia) else None,
+            "payback_cac_meses": round(cac_cheio / (mens * comissao * margem), 1) if (cac_cheio and mens and margem) else None,
+            **_payback_ltv(longo, RECORRENCIA["churn"], REAL_FIN, horizonte, acumulado_inicial),
+            "convencao": "base_t = base_(t-1) x (1 - churn_t) + novas_t; receita do mes = base_t x mensalidade. A safra nova nao sofre churn no mes em que entra.",
+        }
     v["mes_referencia"] = env["_referencia"]["mes"]; v["mes_referencia_motivo"] = env["_referencia"]["motivo"]
     # Trava de sanidade: a projeção do mês-alvo contra o melhor mês que o cliente já entregou.
     # O teto é de receita, não de capacidade: se a verba subiu, passar dele é legítimo — por isso o alerta diz as duas coisas.
@@ -808,6 +872,12 @@ def main():
                    help="o que é contado na entrada do funil orgânico: 'visitas orgânicas' (site), 'cliques no link da bio' (social), 'conversas iniciadas'...")
     p.add_argument("--crm", help="inside sales: JSON com o CRM (início, ticket, taxas de recompra/cross-sell/e-mail/reativação, base inicial e coortes)")
     p.add_argument("--fee-plano", help="fee mês a mês a partir do Mês 1, separado por vírgula (ex.: 6901,9901 quando o CRM entra no fee); repete o último")
+    p.add_argument("--conexao-lead", help="conexao medida FORA da planilha padrao (lead atendido pelo time): um valor ou o plano mes a mes por virgula. Informativa: nao muda o volume do funil.")
+    p.add_argument("--conexao-mql", help="conexao medida FORA da planilha padrao (MQL atendido): um valor ou o plano mes a mes. A etapa MQL -> SQL passa a ser lida como MQL conectado -> SQL, com o mesmo volume.")
+    p.add_argument("--recorrencia", action="store_true",
+                   help="assinatura (SaaS): as vendas do funil viram assinaturas NOVAS, a base acumula e a receita do mês é base x mensalidade (o ticket). Exige --churn.")
+    p.add_argument("--churn", help="churn mensal da base de assinantes: um valor (ex.: 0.08) ou o plano mes a mes separado por virgula (ex.: 0.10,0.09,0.08); repete o ultimo")
+    p.add_argument("--base-inicial", type=float, default=0.0, help="assinantes ja ativos no Mes 1 (base herdada); padrao 0")
     p.add_argument("--verba-plano", help="verba mês a mês separada por vírgula, a partir do Mês 1 (ex.: 2000,4000,5000,5000); substitui crescimento e teto")
     p.add_argument("--midia-teto", type=float, help="teto da verba mensal; o crescimento para ao atingir esse valor")
     p.add_argument("--lag", type=float, default=1.0, help="fração das vendas no mês do lead (1 = sem lag)")
@@ -829,10 +899,30 @@ def main():
     p.add_argument("--out", default="premissas.json")
     a = p.parse_args()
 
-    global VERBA_PLANO, RAMPA_ATE, RAMPA_DESDE, ORGANICO, CRM, FEE_PLANO, SAZ, CPM_CRESC
+    global VERBA_PLANO, RAMPA_ATE, RAMPA_DESDE, ORGANICO, CRM, FEE_PLANO, SAZ, CPM_CRESC, RECORRENCIA, CONEXAO_MEDIDA
     if a.crm:
         if a.modelo != "inside_sales": sys.exit("--crm vale para inside sales")
         CRM = json.load(open(a.crm, encoding="utf-8"))
+    if a.conexao_lead or a.conexao_mql:
+        # A planilha padrao V4 so tem a linha "Conexoes", que entra ANTES do MQL. Em cliente cujo time atende
+        # DEPOIS da qualificacao (RDO Pro: o MQL sai do formulario, o time atende e so entao libera o trial),
+        # aquela linha colocaria a etapa no lugar errado -- e la os MQLs passam das conexoes, o que denuncia a ordem.
+        # Aqui a conexao entra medida, por fora: nao muda o volume projetado, so decompoe MQL -> SQL em
+        # MQL -> MQL conectado -> SQL, que e como o gerador ja rotula a etapa ("MQL CON. -> SQL").
+        if a.modelo != "inside_sales": sys.exit("--conexao-lead/--conexao-mql valem para inside sales")
+        def plano(v):
+            if not v: return None
+            xs = [float(x) for x in str(v).replace(";", ",").split(",") if x.strip() != ""]
+            if any(not 0.0 < x <= 1.0 for x in xs): sys.exit("--conexao-*: cada valor precisa ficar entre 0 e 1 (0.52 = 52%)")
+            return xs
+        CONEXAO_MEDIDA = {"lead": plano(a.conexao_lead), "mql": plano(a.conexao_mql)}
+    if a.recorrencia:
+        if not a.churn: sys.exit("--recorrencia exige --churn (o churn mensal da base; sem ele a base nunca perde ninguem)")
+        ch = [float(x) for x in str(a.churn).replace(";", ",").split(",") if x.strip() != ""]
+        if any(not 0.0 <= x < 1.0 for x in ch): sys.exit("--churn: cada valor precisa ficar entre 0 e 1 (0.08 = 8% ao mes)")
+        RECORRENCIA = {"churn": ch, "base_inicial": float(a.base_inicial)}
+    elif a.churn:
+        sys.exit("--churn so vale junto de --recorrencia")
     if a.fee_plano:
         FEE_PLANO = [float(x) for x in a.fee_plano.split(",") if x.strip()]
     RAMPA_ATE = a.rampa_ate
@@ -908,6 +998,7 @@ def main():
         if m["status"] in ("fechado", "corrente") and (m.get("Investimento") or 0) > 0:
             REALIZADO[t] = (m.get(rec_key_) or 0) * a.comissao * a.margem - (m.get(LINHAS_FIXAS["fee"]) or 0) - (m.get("Investimento") or 0)
             VOL_REAL[t] = {"Leads": float(m.get("Leads") or 0), "Vendas": float(m.get(MODELOS[a.modelo]["etapas"][-1]) or 0)}
+            REAL_FIN[t] = ((m.get(rec_key_) or 0) * a.comissao * a.margem, (m.get(LINHAS_FIXAS["fee"]) or 0) + (m.get("Investimento") or 0))
             tx["alertas"].append(f"M{t} ({m['mes']}/{m['ano']}{', parcial' if m['status'] == 'corrente' else ''}) entra pelo realizado: resultado de R$ {REALIZADO[t]:,.0f}.")
     if split(a.modelo):  # a divisão da verba fica constante na projeção (premissa comercial editável no template)
         MODELOS[a.modelo]["participacao_meta"] = env["_split"]["participacao_meta_na_verba"]
@@ -984,7 +1075,7 @@ def main():
         "premissas_confirmadas": {"fee": a.fee, "midia_mensal": a.midia, "margem": a.margem, "comissao": a.comissao,
                                   "ticket": ticket, "mes_alvo": a.mes_alvo, "horizonte": a.horizonte,
                                   "lag": a.lag, "acumulado_inicial": a.acumulado_inicial, "crescimento_midia": a.crescimento_midia, "midia_teto": a.midia_teto, "connect_rate": a.connect_rate,
-                                  "definicao_breakeven": a.definicao_breakeven, "fixadas": a.fixar, "alvos_mercado": a.alvo, "verba_plano": VERBA_PLANO, "sazonalidade": SAZ, "cpm_crescimento": list(CPM_CRESC) if CPM_CRESC else None, "rampa_ate": K_rampa(a.mes_alvo), "rampa_desde": RAMPA_DESDE, "inicio": a.inicio, "organico": ORGANICO, "fee_historico": a.fee_historico, "crm": CRM, "fee_plano": FEE_PLANO,
+                                  "definicao_breakeven": a.definicao_breakeven, "fixadas": a.fixar, "alvos_mercado": a.alvo, "verba_plano": VERBA_PLANO, "sazonalidade": SAZ, "cpm_crescimento": list(CPM_CRESC) if CPM_CRESC else None, "rampa_ate": K_rampa(a.mes_alvo), "rampa_desde": RAMPA_DESDE, "inicio": a.inicio, "organico": ORGANICO, "fee_historico": a.fee_historico, "crm": CRM, "fee_plano": FEE_PLANO, "recorrencia": RECORRENCIA, "conexao_medida": CONEXAO_MEDIDA,
                                   "realizado_usado": {str(k): round(x, 2) for k, x in REALIZADO.items()},
                                   "regra_taxas": (f"janela de {a.janela} mês(es) fechado(s)" + (" + mês corrente parcial" if a.incluir_corrente else "") + ", ponderada por volume; rampa até a mediana do período comparável")},
         "detectado": detectado, "historico": meses, "historico_resultado": hist_result,

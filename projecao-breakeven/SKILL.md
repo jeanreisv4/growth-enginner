@@ -5,7 +5,7 @@ description: Projeção de breakeven de mídia paga a partir do histórico do cl
 
 # Projeção de breakeven
 
-**Versão 7.8.2 (28/09/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
+**Versão 7.9.4 (29/09/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
 
 A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não espera o usuário lembrar o que precisa informar. A segunda é a execução automática: com as premissas confirmadas, ela roda o piloto, dá o veredito e preenche o template, sem etapa manual.
 
@@ -92,6 +92,47 @@ A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não esp
 - `scripts/metodologia_mercado.py --benchmarks ... --analise analise.json` monta as seções da aba Premissas (análise, tabela, descartados, fontes no fim) para o `--metodologia-extra`.
 
 **1.6.4 Datas comemorativas e ofertas.** Meça a sazonalidade do produto, não do varejo em geral: Google Trends do termo exato (geo BR, 5 anos, mês contra a média do ano e semana da Black Friday contra as 8 anteriores) e IBGE PMC do setor. Entra como `--sazonalidade-demanda`. Ganho de oferta (desconto, brinde, parcelamento) não entra sem dado de conversão: vira estratégia no texto. multimídia automotiva: central multimídia sobe cerca de 5% na Black Friday, e os +90% são de smart TV.
+
+**1.6.5 Assinatura (SaaS) e PLG.** Se a receita é **recorrente** (mensalidade, plano, assinatura), o modelo transacional
+não serve: `vendas × ticket` cobra o cliente uma vez e esquece que ele paga de novo no mês seguinte. Rode com
+`--recorrencia --churn <taxa ou plano> [--base-inicial N]`: as vendas do funil viram **assinaturas novas**, a base
+acumula (`base_t = base_(t-1) × (1 − churn_t) + novas_t`) e a receita do mês é **base × mensalidade**. Pergunte:
+- **a mensalidade e o plano** — qual plano as vendas reais fecharam, mensal ou anual. Não use o plano de cima como ticket
+  só porque ele existe: na RDO Pro a planilha do cliente usava R$ 350 e as duas vendas reais foram R$ 169.
+- **o churn mensal**, e **de onde ele vem**. Quase nunca é medido. Sem medição, use a faixa do segmento por ACV
+  (SMB abaixo de US$ 1k de ACV roda 6% a 10% ao mês) e escreva que é aproximação. Churn abaixo da faixa precisa de prova.
+- **a base já ativa** no Mês 1 (`--base-inicial`), contando só o que é atribuível à V4.
+- **quantos assinantes ativos o fee exige.** Divida fee + verba pela MC de um assinante: é a conta de estrutura da
+  assinatura, e ela costuma dar o veredito antes de qualquer taxa.
+
+**Entregue as duas leituras, e diga o que cada uma responde.** Com `--recorrencia` a aba ganha, além do bloco
+financeiro de caixa, o bloco **VALOR DE VIDA (LTV)**. O de caixa conta só o que entra dentro das colunas da planilha
+e corta cada safra na borda do calendário — quem assina no último mês aparece com um mês de receita. O de LTV credita
+cada assinatura nova pelo que ela vale até cancelar. **Em assinatura, a de LTV é a que diz se vale a pena adquirir;
+a de caixa é a que diz quanto o contrato consome no caminho.** As duas podem discordar de sinal e as duas são verdade:
+na RDO Pro, com margem de 30%, o caixa de 12 meses deu −R$ 108,8 mil e o valor de vida +R$ 142,8 mil. Nunca entregue
+só uma.
+
+**O payback sai nas duas réguas, e o subtítulo mostra as duas.** Não basta ter a linha de LTV na tabela: se as datas
+de payback lerem só caixa, a planilha dá a resposta certa num lugar e a errada no outro. As duas partem do mesmo
+déficit histórico e os meses já vividos entram pela MC e pelo custo realizados. Na RDO Pro deu onze meses de diferença.
+
+**Leia a economia unitária, não só o payback de calendário.** O veredito ganha o bloco `recorrencia` com lifetime, LTV,
+CAC cheio e de mídia, LTV/CAC e payback de CAC. **Com LTV/CAC abaixo de 1, mais verba aumenta o prejuízo por cliente**,
+e a conversa é de preço, churn ou conversão — não de mídia. Acima de 1, a verba é o acelerador e aí os degraus valem.
+
+**PLG não é o funil linear.** Em produto self-serve o trial converte sozinho e a demonstração é exceção, não etapa
+obrigatória. Antes de mapear, olhe a **porta de entrada declarada** pelo lead: na RDO Pro, 37% pediam compra direta,
+sem trial e sem demo, estável nos três meses. Cobrar trial e demo de quem já queria comprar inventa etapa no caminho de
+quem estava com o cartão na mão. E **ativação é momento de produto** (primeiro uso de verdade), dentro do trial e antes
+de qualquer humano — não uma etapa depois da demo.
+
+**1.6.6 Conexão quando o time atende depois da qualificação.** A linha `Conexões` da planilha padrão entra **antes do
+MQL**. Em cliente cujo MQL sai do formulário e o atendimento vem depois (SaaS com trial, por exemplo), ela ficaria no
+lugar errado. **Teste antes de encaixar: divida conexões por MQLs em cada mês do histórico.** Passou de 100%, a conexão
+é sobre o lead e vem antes (multimídia automotiva). Ficou abaixo com folga, ela vem **depois** do MQL — e aí não use a linha da fonte:
+meça no painel ou no CRM e informe com `--conexao-lead` e `--conexao-mql` (valor único ou plano mês a mês). Isso não
+muda volume, só decompõe `MQL → SQL` em `MQL → MQL conectado → SQL` e deixa as seis linhas de conexão vivas e editáveis.
 
 **1.7 Ticket e ciclo de venda (só se necessário).** Se a fonte não tem vendas suficientes, peça o ticket. Se o usuário souber o ciclo de venda, pergunte a fração das vendas que fecha ainda no mês do lead (`--lag`). Sem isso, use 1,0 e registre como premissa; com 1,0 a linha "vendas originadas pelos SQLs do mês" some da aba, porque seria cópia de "vendas fechadas no mês".
 

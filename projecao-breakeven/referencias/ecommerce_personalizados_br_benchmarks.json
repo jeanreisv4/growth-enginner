@@ -1,0 +1,140 @@
+{
+ "titulo": "MARGEM, CONVERSÃO E TICKET · E-COMMERCE DE PRODUTO PERSONALIZADO NO BRASIL",
+ "levantado_em": "2026-09-26",
+ "perfil": "Loja D2C de brinde personalizado (garrafas, copos, canecas) na Nuvemshop, ticket de item avulso na casa de R$ 90. Referência do cliente: Gocase.",
+ "nota_tabela": "NÃO EXISTE relatório público com amostra declarada de MARGEM da categoria de personalizados no Brasil. A margem abaixo é construída de baixo para cima a partir de preço de tabela de fornecedor, e por isso tem confiança média-baixa. Conversão, ticket e CPM têm fonte com amostra.",
+ "colunas": [
+  "PREMISSA",
+  "FONTE",
+  "BENCHMARK ENCONTRADO",
+  "PERÍODO ANALISADO",
+  "TAXA UTILIZADA",
+  "JUSTIFICATIVA"
+ ],
+ "spans": [
+  [
+   "B",
+   "B"
+  ],
+  [
+   "C",
+   "D"
+  ],
+  [
+   "E",
+   "G"
+  ],
+  [
+   "H",
+   "H"
+  ],
+  [
+   "I",
+   "I"
+  ],
+  [
+   "J",
+   "N"
+  ]
+ ],
+ "linhas": [
+  [
+   "Margem de contribuição",
+   "Luminati Brindes (tabela de fornecedor); Printful, Print-on-demand profit margins (set/2026)",
+   "Garrafa TAO Colors 600ml a partir de R$ 15/un em 500 unidades com aplicação de logo. Printful: margem BRUTA de 10% a 40% em drinkware quando o fornecedor produz, 40% a 55% em presentes personalizados",
+   "Tabelas vigentes em set/2026. Printful não declara amostra (fonte média-fraca)",
+   "40% (faixa 35% a 48%)",
+   "Construção de baixo para cima sobre ticket de R$ 90: peça em branco mais personalização e embalagem custam R$ 25 a 30, o que dá margem BRUTA de 65% a 72%; tirando gateway (3,5%) e imposto (5%), a contribuição fica em 48% a 55% SEM frete; com frete absorvido em parte dos pedidos, cai para 35% a 42%. O FRETE É O QUE DECIDE SE ESTE NEGÓCIO TEM 50% OU 35% DE MARGEM — não é o custo da garrafa. A faixa do Printful é mais baixa porque lá o fornecedor fica com a margem de produção; quem compra peça em branco e personaliza fica com as duas."
+  ],
+  [
+   "Taxa de conversão",
+   "Prax Analytics, Benchmark de conversão por setor (2025); Nuvemshop, NuvemCommerce",
+   "Prax, mediana de +1.000 lojas brasileiras com faturamento acima de R$ 50 mil/mês: Acessórios 1,00%, Papelaria 1,30%, Casa e Decoração 0,40%, Cosméticos 2,10%. Nuvemshop: 0,75% para loja que fatura até R$ 100 mil/mês e 1,17% acima disso",
+   "Prax: 2025, +1.000 lojas BR, medianas por setor. Nuvemshop: base declarada de forma conflitante (1.500 negócios numa página, 150 mil lojas noutra)",
+   "1,30% (cenários 1 e 2) e 2,10% (cenário 3)",
+   "NÃO EXISTE vertical 'presentes' ou 'personalizados' em nenhuma fonte brasileira — os proxies são Acessórios, Papelaria e Casa/Decoração. O CLIENTE ESTÁ EM 0,84%, QUE É A MEDIANA DO PRÓPRIO PORTE (0,75% da Nuvemshop para loja abaixo de R$ 100 mil/mês). A conversão dele NÃO está quebrada. Os 1,30% são a melhor vertical comparável (Papelaria); os 2,10% são Cosméticos, o teto do que existe em D2C brasileiro, e por isso ficam só no cenário otimista."
+  ],
+  [
+   "Ticket médio",
+   "Nuvemshop, Radar D2C (ago/2026); ABComm (2025)",
+   "D2C na Nuvemshop: R$ 288,04 em ago/2026, com 2,81 milhões de pedidos e GMV crescendo 50,3%. E-commerce brasileiro total: R$ 536,60 em 2025 (438,9 milhões de pedidos, R$ 235,5 bilhões)",
+   "Radar D2C: base de 100 mil+ lojas ativas. ABComm: mercado inteiro",
+   "R$ 288 e R$ 400",
+   "Usar o R$ 288 da Nuvemshop e NÃO o R$ 536 da ABComm: o número da ABComm inclui marketplace e eletroeletrônico, que puxam o ticket e não se parecem com uma loja de garrafa. O cliente está em R$ 90, que é um terço da média do universo dele. O R$ 400 do cenário 2 pressupõe KIT (3 a 4 peças no mesmo pedido) — e esse uplift é a ÚNICA premissa desta projeção SEM FONTE: não existe dado publicado de quanto kit levanta o ticket em personalizados, nem na Prax nem na Nuvemshop. É hipótese a testar, e o teste é barato: montar 2 ou 3 kits e medir em 30 dias."
+  ],
+  [
+   "CPM e custo de mídia",
+   "Superads, Facebook Ads CPM Brazil; Tinuiti (via citação)",
+   "Mediana de CPM do Meta no Brasil: US$ 3,46 entre jul/2025 e jul/2026, faixa de US$ 1,77 a 7,45 (global US$ 20,59). Inflação de Meta Ads em 2026: +12,15% no Brasil",
+   "Superads: US$ 3 bilhões em investimento, milhares de contas, medianas anonimizadas",
+   "CPM R$ 20,85 na verba de R$ 5.000",
+   "O CLIENTE ESTÁ NA MEDIANA: R$ 17,35 em agosto contra ~R$ 18,50 de mediana de mercado. A mídia dele não está cara. O CPM de R$ 20,85 usado aqui já embute saturação medida no próprio cliente (ver a linha abaixo)."
+  ],
+  [
+   "Saturação do custo por sessão",
+   "Dados do próprio cliente (agosto e setembro de 2026)",
+   "Agosto: R$ 1.280,51 investidos e 1.900 sessões, CPS de R$ 0,67. Setembro: R$ 441,36 e 756 sessões, CPS de R$ 0,58",
+   "Dois meses — amostra frágil, mas é medida, não assumida",
+   "k = 0,135",
+   "CPS = CPS_base × (verba / verba_base) elevado a 0,135. Saturação LEVE. Declarada como fórmula para poder ser contestada. Com dois pontos só, tratar como ordem de grandeza: o que ela diz é que o custo por sessão sobe devagar quando a verba cresce, não que seja imune."
+  ],
+  [
+   "ROAS de breakeven",
+   "Derivado da margem; mediana de ROAS via Triple Whale (fonte secundária)",
+   "Mediana de ROAS por canal: Google 3,52x, Meta 1,86x, TikTok 1,41x. ROAS médio de e-commerce 2,87x, com cerca de metade das lojas abaixo de 2,0x",
+   "Página do Triple Whale não abriu (403); número veio de citação de terceiro",
+   "2,50 (a 40% de margem)",
+   "ROAS de breakeven = 1 dividido pela margem de contribuição. A 40% dá 2,50x; a 15% daria 6,67x. A MEDIANA DE MERCADO DO META NO BRASIL É 1,86x — ou seja, NA MÉDIA DO MERCADO UMA LOJA DE TICKET R$ 90 COM 40% DE MARGEM PERDE DINHEIRO NA PRIMEIRA COMPRA. Isso é estrutural da categoria e explica por que a Gocase opera sob demanda com 90% da receita em personalizado: margem alta é o que paga o CAC."
+  ],
+  [
+   "Referência da categoria (Gocase)",
+   "Diário do Nordeste / Victor Ximenes (14/01/2025); Consumidor Moderno (2021, atualizado 2023)",
+   "Crescimento de 300% no faturamento em 2024, com projeção de +100% em 2025; holding investindo R$ 50 milhões. Produção SOB DEMANDA, cerca de 2 milhões de artigos por ano, vendas divididas em aproximadamente um terço capinhas, um terço garrafas térmicas e um terço malas. Cerca de 90% da receita vem de produtos personalizados",
+   "A empresa NÃO abre cifras — margem, ticket e faturamento absoluto são SEM FONTE",
+   "—",
+   "Serve para validar o MODELO, não para tirar número. O que ela confirma: produção sob demanda, personalização como quase toda a receita, e garrafa térmica como UMA das três pernas — ela não vende um item, vende um conjunto com a mesma identidade visual. É exatamente a lógica do kit que o cenário 2 pressupõe."
+  ]
+ ],
+ "descartados": [
+  "'1,44% é a média de conversão do e-commerce brasileiro (E-commerce Radar)' e '3,6% é o topo (Compass)': aparecem no blog da própria Nuvemshop e em dezenas de outros sites, mas o relatório primário, o ano e a amostra não foram encontrados em três tentativas. É folclore de mercado — não usar.",
+  "'Ticket médio ABComm de R$ 470 em 2023' citado pela Loja Integrada: conflita com o dado da própria ABComm (R$ 536,60 em 2025) e não tem link primário.",
+  "Faixa de margem de 50% a 75% em tumbler inox (custo US$ 8-12, venda US$ 25-50): vem de sites comerciais e CONTRADIZ o número do próprio Printful (10% a 40% em drinkware). São números de marca premium tipo Stanley e Yeti, não de loja de personalizado.",
+  "babitonhela.com como fonte de estrutura de custo de e-commerce brasileiro: apareceu em cinco buscas diferentes com números redondos e sem nenhuma fonte primária. Assinatura de conteúdo gerado — descartado como citação.",
+  "CPC de Meta para e-commerce no Brasil: as duas fontes achadas (R$ 0,30 a 1,50 e R$ 0,80 a 3,00) são blogs de agência sem amostra e se contradizem.",
+  "Conversão separada por tráfego pago versus orgânico: NENHUMA fonte brasileira faz esse corte. A Prax não separa, a Nuvemshop não separa."
+ ],
+ "fontes": [
+  {
+   "texto": "Prax Analytics · Benchmark de taxa de conversão por setor · Acessórios 1,00%, Papelaria 1,30%, Cosméticos 2,10% · +1.000 lojas BR · 2025",
+   "link": "https://www.prax.ai/blog/benchmark-taxa-de-conversao"
+  },
+  {
+   "texto": "Nuvemshop · Radar D2C · ticket médio R$ 288,04 em ago/2026 · base de 100 mil+ lojas ativas",
+   "link": "https://www.nuvemshop.com.br/radar-ecommerce-d2c"
+  },
+  {
+   "texto": "Superads · Facebook Ads CPM Brazil · mediana US$ 3,46 · US$ 3 bi em investimento · 2025-2026",
+   "link": "https://www.superads.ai/facebook-ads-costs/cpm-cost-per-mille/brazil"
+  },
+  {
+   "texto": "Printful · Print-on-demand profit margins · drinkware 10% a 40%, presentes personalizados 40% a 55% · set/2026",
+   "link": "https://www.printful.com/blog/what-is-a-good-profit-margin-for-print-on-demand"
+  },
+  {
+   "texto": "Luminati Brindes · garrafa TAO Colors 600ml a partir de R$ 15/un em 500 unidades · tabela de fornecedor",
+   "link": "https://www.luminatibrindes.com.br/tags/garrafas-personalizadas.php"
+  },
+  {
+   "texto": "ABComm via Mundo do Marketing · e-commerce BR 2025: R$ 235,5 bi, ticket médio R$ 536,60",
+   "link": "https://mundodomarketing.com.br/e-commerce-brasileiro-cresce-15-3-e-fatura-r-235-5-bilhoes-em-2025"
+  },
+  {
+   "texto": "Diário do Nordeste · Gocase: crescimento de 300% em 2024, R$ 50 mi de investimento, produção sob demanda · 14/01/2025",
+   "link": "https://diariodonordeste.verdesmares.com.br/opiniao/colunistas/victor-ximenes/grupo-cearense-dono-da-gocase-investe-r-50-milhoes-e-abre-ate-100-vagas-em-fortaleza-1.3604090"
+  },
+  {
+   "texto": "Consumidor Moderno · Gocase: ~90% da receita em personalizados, 1 milhão de clientes, 120 países · 2021, atualizado 2023",
+   "link": "https://consumidormoderno.com.br/personalizacao-gocase/"
+  }
+ ]
+}

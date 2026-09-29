@@ -2,6 +2,92 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v7.9.4 · 29/09/2026 · Desenhos animados no README
+
+O usuário pediu para a projeção os desenhos animados que a sprint-growth ganhou (estilo do claude-seo, vermelho V4).
+- `scripts/desenhos.py` gera `assets/capa.svg` (perguntas digitadas; resultado do mês saindo do vermelho para o verde;
+  acumulado de caixa e de LTV cruzando o zero; veredito alternando), `assets/fluxo.svg` (entrevista → taxas →
+  economia unitária → três vereditos → planilha → validação, com o realizado recalibrando) e `assets/cadeia.svg`
+  (a cadeia da aba com as cores dos blocos e a alavanca de cada etapa).
+- README: selo corrigido para a versão atual; o Mermaid detalhado fica recolhido.
+- Regressão: os três SVG precisam bater com o gerador.
+
+## v7.9.3 · 29/09/2026 · O payback também na régua de LTV
+
+O usuário, olhando a linha "RESULTADO POR LTV NO MÊS": "se não considerou o LTV no payback? em dez já está se pagando".
+A linha existia desde a v7.9.2 e já virava positiva em out/2026 — mas as **datas de payback** do subtítulo liam só caixa
+(no azul out/2027, acumulado zera jan/2029), então a planilha mostrava a resposta certa num lugar e a errada no outro.
+
+- **Veredito ganha as datas por LTV** (`ltv_mes_no_azul`, `ltv_no_azul_continuo_desde`, `ltv_acumulado_zera_em`,
+  `ltv_resultado_horizonte`), calculadas sobre os mesmos 48 meses da régua de caixa.
+- **Subtítulo mostra as duas réguas** quando há recorrência: "CAIXA — no azul X, acumulado zera Y · LTV — no azul Z,
+  acumulado zera W". Sem recorrência, nada muda.
+- **As duas partem do mesmo déficit histórico.** O acumulado por LTV começa no `acum0`, igual ao de caixa: o dinheiro
+  já gasto não some por trocarmos a régua. Sem isso ele zerava cedo demais (M3 em vez de M5, na RDO Pro).
+- **Mês já vivido entra pela MC e pelo custo REALIZADOS** (`REAL_FIN`), não pelo resultado líquido de caixa. Substituir
+  pelo líquido subestimava a safra, porque o realizado do mês não contém o valor futuro dela.
+- RDO Pro: caixa no azul em out/2027 e acumulado zerando em jan/2029; por LTV, no azul em out/2026 e acumulado zerado
+  em jan/2027. Onze meses de diferença na mesma planilha — e por isso nenhuma das duas pode aparecer sozinha.
+
+## v7.9.2 · 29/09/2026 · Valor de vida (LTV) na aba, ao lado do caixa
+
+O usuário, olhando a RDO Pro: "a assinatura que entrou num mês também conta no mês seguinte, tem recorrência do
+pagamento; você trouxe como pagamento único; é a visão de LTV sobre CAC". A base **já** acumulava desde a v7.9
+(10 → 151 assinantes, MRR de R$ 3,4 mil a R$ 53 mil) — o que faltava era o **veredito**: o bloco financeiro contava
+só o caixa que entra dentro das 12 colunas, e isso corta cada safra na borda do calendário. Quem assina no último
+mês aparecia com um mês de receita, não com a vida inteira. O piloto calculava LTV/CAC desde a v7.9 e o número
+nunca chegava na planilha.
+
+- **Bloco novo "FINANCEIRO · VALOR DE VIDA (LTV)"** quando há recorrência: LTV líquido por assinante, valor de vida
+  gerado no mês (assinaturas novas × LTV), LTV ÷ CAC do mês, resultado por LTV e resultado por LTV acumulado.
+- **O LTV sai da própria tabela** (`MC do mês ÷ base ÷ churn`), então carrega margem e comissão como estiverem
+  configuradas e o cliente audita a conta na linha de cima, em vez de receber um número vindo de fora.
+- **Quatro cartões novos** (LTV por assinante, CAC cheio, LTV ÷ CAC, resultado por LTV) e um **gráfico** comparando
+  as duas curvas de acumulado: caixa no período × valor de vida.
+- **Grid de KPI adaptativo** (`gerador/projecao_builder.py`): a fileira se alarga de 4 a 6 cartões conforme o total,
+  até 12 em duas fileiras, e falha com mensagem clara acima disso. Antes, o 11º cartão escrevia em cima da legenda
+  e estourava em `MergedCell object attribute value is read-only`.
+- **Regra:** em assinatura, entregue as duas leituras e diga o que cada uma responde. O caixa no período diz quanto
+  o contrato consome no caminho; o valor de vida diz se vale a pena adquirir. Na RDO Pro, com margem real de 30%,
+  o caixa de 12 meses fecha em −R$ 108,8 mil e o valor de vida em +R$ 142,8 mil. As duas são verdade.
+
+## v7.9.1 · 29/09/2026 · Conexão medida fora da planilha padrão
+
+O usuário pediu as seis linhas de conexão (lead atendido, leads conectados, custo por lead conectado, e as três de MQL)
+preenchidas na RDO Pro. Elas já apareciam — a skill sempre mostra essa visão — mas em branco, porque a fonte não tem a
+linha `Conexões`. E **acrescentar essa linha à fonte colocaria a etapa no lugar errado**: na planilha padrão ela entra
+antes do MQL, e na RDO Pro o time atende **depois** da qualificação (o MQL sai do formulário, alguém atende, e só então
+o trial é liberado). O sintoma de que a ordem estava invertida: os MQLs da janela (42) passavam das conexões (28).
+
+- **`--conexao-lead` e `--conexao-mql` no piloto**: a conexão entra medida, por fora da fonte, como valor único ou plano
+  mês a mês. **Não muda o volume projetado** — só decompõe `MQL → SQL` em `MQL → MQL conectado → SQL`, que é como o
+  gerador já rotulava a etapa ("MQL CON. → SQL"). O gerador divide a taxa do piloto pela conexão do mês, então a
+  multiplicação da aba continua dando exatamente o número do piloto, e recusa a combinação se o resultado passar de 100%.
+- As duas linhas viram **input mês a mês** (amarelo), para o cliente ver o atendimento subir ou cair.
+- **Regra que saiu daqui:** antes de encaixar a conexão na cadeia, divida conexões por MQLs em cada mês. Passou de 100%,
+  a conexão vem antes do MQL; ficou abaixo com folga, ela vem depois — e aí a linha da planilha padrão não serve.
+
+## v7.9 · 29/09/2026 · Assinatura: receita recorrente, churn e economia unitária
+
+Primeiro cliente de SaaS (RDO Pro, diário de obra, PLG). O modelo transacional da skill — `vendas × ticket` no mês —
+subestima assinatura por construção: ele cobra o cliente uma vez e esquece que o assinante paga de novo no mês seguinte.
+
+- **`--recorrencia` no piloto.** Com ela, as "vendas" do funil viram **assinaturas novas**, a base acumula e a receita do
+  mês é **base × mensalidade** (o ticket). Convenção declarada: `base_t = base_(t-1) × (1 − churn_t) + novas_t` — a safra
+  nova não sofre churn no mês em que entra. Acompanham `--churn` (um valor ou o plano mês a mês) e `--base-inicial`.
+- **O erro que isso corrige.** A planilha que o cliente usava aplicava o churn **só na safra nova** (`=(F20-F20*F25)+E26`),
+  então a base acumulada nunca perdia ninguém. Em 12 meses isso inflava a receita em 18% e era o que fazia o
+  acumulado fechar no azul. Toda projeção de assinatura precisa mostrar a base encolhendo, não só crescendo.
+- **Economia unitária no veredito** (bloco `recorrencia`): lifetime, LTV líquido, CAC cheio (fee + mídia) e CAC só de
+  mídia, LTV/CAC das duas formas, e payback de CAC em meses. **Para assinatura essa é a leitura que decide** — o payback
+  de calendário corta o cliente na virada do ano e responde a pergunta errada.
+- **Linhas novas na aba do cliente:** churn mensal (editável), base de assinantes no fim do mês, cancelamentos no mês,
+  e o MRR no lugar do faturamento. "Vendas necessárias para zerar o mês" vira **base de assinantes necessária**, que é o
+  que de fato zera um mês de receita recorrente. Gráfico novo de base × assinaturas novas.
+- **`tests/regressao.py`**: caso `inside_sales_recorrencia` e o compilador do teste com `cycles=True` — a planilha tem
+  linhas que leem a coluna anterior da própria linha (acumulado, base), o Excel resolve sem iterar e o detector de ciclo
+  do pycel é que era conservador demais.
+
 ## v7.8.2 · 28/09/2026 · README com "Como funciona"
 
 - **`README.md`**: uma linha por etapa (fonte, modelo e verba, margem, horizonte, frentes extras, cálculo, economia

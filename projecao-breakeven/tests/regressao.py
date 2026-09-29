@@ -17,6 +17,10 @@ warnings.filterwarnings("ignore")
 import openpyxl
 from pycel import ExcelCompiler
 
+# Linha encadeada coluna a coluna (base de assinantes, acumulado) faz o pycel descer 12 níveis por célula
+# e somar com a cadeia do funil; o padrão do CPython (1000) estoura antes de a fórmula estar errada.
+sys.setrecursionlimit(20000)
+
 SKILL = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 FIX = os.path.join(SKILL, "tests", "fixtures")
 PILOTO = os.path.join(SKILL, "scripts", "breakeven_pilot.py")
@@ -84,6 +88,14 @@ CASOS = [
          extra_gerador=[], series={"[2] GMV · RECOMPRA DA BASE (WHATSAPP + CROSS-SELL)": "receita_recompra",
                                    "[3] GMV · REATIVAÇÃO (E-MAIL PARA LEADS + INATIVOS)": "receita_reativacao"},
          exige=["[QNTD] LEADS SEM COMPRA NA BASE (INÍCIO DO MÊS)", "[R$] GMV TOTAL (NOVOS + RECOMPRA + REATIVAÇÃO)"]),
+    # assinatura (SaaS): a receita do mês é a BASE de assinantes x mensalidade, não as vendas do mês.
+    # Guarda o erro clássico: churn aplicado só na safra nova deixa a base acumulada sem perder ninguém.
+    dict(nome="inside_sales_recorrencia", modelo="inside_sales", csv="indicadores_inside_sales.csv", aba="Inside Sales",
+         receita="[R$] MRR (BASE × MENSALIDADE)",
+         extra_piloto=["--recorrencia", "--churn", "0.10,0.08,0.06", "--base-inicial", "5"],
+         extra_gerador=[], series={"[QNTD] BASE DE ASSINANTES (FIM DO MÊS)": "base_assinantes"},
+         exige=["[%] CHURN MENSAL DA BASE", "[QNTD] BASE DE ASSINANTES (FIM DO MÊS)",
+                "[QNTD] ASSINATURAS NOVAS NO MÊS", "[QNTD] CANCELAMENTOS NO MÊS", "[R$] MRR (BASE × MENSALIDADE)"]),
     dict(nome="inside_sales_legado", modelo="inside_sales", csv="indicadores_inside_sales.csv", aba="Inside Sales",
          receita="[R$] FATURAMENTO (VENDAS × TICKET)", extra_piloto=[],
          extra_gerador=["--legado", os.path.join(FIX, "legado_inside_sales.json")],
@@ -113,7 +125,9 @@ def rodar(cmd, cwd):
 
 
 def conferir_planilha(path, aba, rot_receita=None, projecao=None, exige=(), metodologia=(), sem=(), series=None, valores=None):
-    wb = openpyxl.load_workbook(path); exc = ExcelCompiler(filename=path); falhas = []
+    # cycles=True: a planilha tem linhas que leem a COLUNA ANTERIOR da propria linha (resultado acumulado,
+    # base de assinantes). O Excel resolve sem iterar; o detector de ciclo do pycel e que e conservador demais.
+    wb = openpyxl.load_workbook(path); exc = ExcelCompiler(filename=path, cycles=True); falhas = []
     for nome in wb.sheetnames:
         ws = wb[nome]
         for row in ws.iter_rows():
@@ -244,6 +258,13 @@ def main():
                       and not any(os.path.exists(os.path.join(SKILL, d, n)) for d in ("scripts", "gerador", "tests")))
     total += len(faltando)
     print(f"{'OK   ' if not faltando else 'FALHA'} README só cita scripts que existem" + (f" (faltam: {faltando})" if faltando else ""))
+    sys.path.insert(0, os.path.join(SKILL, "scripts"))   # desenhos do README batem com o gerador
+    import desenhos
+    for nome, fn in (("capa.svg", desenhos.capa), ("fluxo.svg", desenhos.fluxo), ("cadeia.svg", desenhos.cadeia)):
+        arq = os.path.join(SKILL, "assets", nome)
+        ok = os.path.exists(arq) and open(arq, encoding="utf-8").read() == fn()
+        total += 0 if ok else 1
+        print(f"{'OK   ' if ok else 'FALHA'} assets/{nome} bate com scripts/desenhos.py")
     print(f"\n{'Tudo certo.' if not total else f'{total} falha(s).'}  Arquivos em {tmp}")
     sys.exit(1 if total else 0)
 

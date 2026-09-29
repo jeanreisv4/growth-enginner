@@ -192,7 +192,12 @@ def build_sheet(ws, cfg, logo_path):
 
     # ---- 02 KPI cards (3 colunas cada, a partir de G: deixa respiro entre as premissas e os cartões)
     KPI_COL0, cards = 7, cfg['kpis'](ctx)
-    POR_LINHA = 5 if len(cards) > 8 else 4   # no máximo duas fileiras; 7 cartões ficam 4 + 3, não 5 + 2
+    # No máximo DUAS fileiras: a terceira bate na legenda da linha 17. A fileira se alarga conforme o número de
+    # cartões (4 a 6 por fileira, 12 no total), e 7 cartões ficam 4 + 3, não 5 + 2. Cada cartão ocupa 3 colunas,
+    # então 6 por fileira vai até a coluna X e ainda cabe na grade de 12 meses.
+    POR_LINHA = min(6, max(4, -(-len(cards) // 2)))
+    if len(cards) > 2 * POR_LINHA:
+        raise SystemExit(f"{len(cards)} cartões de KPI não cabem em duas fileiras (máximo 12).")
     for i, (label, formula, fmt, sub) in enumerate(cards):
         col0 = KPI_COL0 + 3 * (i % POR_LINHA)
         c1, c2 = get_column_letter(col0), get_column_letter(col0 + 2)
