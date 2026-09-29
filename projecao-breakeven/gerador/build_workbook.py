@@ -190,7 +190,7 @@ def _simplificar_is(cfg, p):
     if rec:
         # Assinatura (SaaS). O funil entrega assinaturas NOVAS; a receita do mês é a BASE INTEIRA × mensalidade.
         # base_t = base_(t-1) × (1 − churn_t) + novas_t. A safra nova não sofre churn no mês em que entra.
-        # O erro clássico (e o que estava na planilha antiga da RDO Pro) é aplicar o churn só na safra nova:
+        # O erro clássico (e o que estava na planilha antiga da SaaS de diário de obra) é aplicar o churn só na safra nova:
         # assim a base acumulada nunca perde ninguém e a receita infla mês a mês.
         n_ = int(p.get('n_months', 12))
         ch = list(rec.get('churn') or [])
@@ -725,8 +725,11 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
     if 'rampa' not in d or 'envelope' not in d:
         sys.exit("premissas.json sem 'rampa'/'envelope': gere-o com a versão atual do piloto (modo projetar).")
     n = len(d.get('projecao') or [])
-    if not 1 <= n <= 12:
-        sys.exit(f"premissas.json traz {n} meses de projeção; o template aceita de 1 a 12.")
+    # A grade é paramétrica (grade_colunas(n)), então o limite é de leitura, não de layout: acima de 18 colunas
+    # a tabela deixa de caber numa tela e vira rolagem lateral na reunião. Estendemos além de 12 quando o usuário
+    # pede a projeção até o mês em que o caixa vira (multimídia automotiva, SaaS de diário de obra) — aí o horizonte é a resposta, não a moldura.
+    if not 1 <= n <= 18:
+        sys.exit(f"premissas.json traz {n} meses de projeção; o template aceita de 1 a 18.")
     if det.get('modelo') not in (None, modelo):
         sys.exit(f"premissas.json foi gerado para o modelo {det.get('modelo')}, não {modelo}.")
     faltam = [k for k in ('fee', 'midia_mensal', 'margem', 'comissao', 'ticket', 'mes_alvo') if pc.get(k) is None]

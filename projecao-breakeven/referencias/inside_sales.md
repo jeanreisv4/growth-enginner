@@ -70,7 +70,7 @@ Depois, o usuário pediu dezembro ("precisa breakevar até dezembro; se não tiv
 
 **Regra que saiu da multimídia automotiva (v7.0):** a aba de projeção segue o modelo padrão e mostra o valor usado no mês; premissa que varia fica na aba Premissas, em tabela mês a mês (CPM base × multiplicador × CPM usado; SQL → venda da rampa × sazonalidade × taxa usada). O usuário: "o ideal é sempre manter nas premissas os dados que a gente quer observar, para não ficar poluído na projeção". Cada conta tem frentes diferentes (mídia, SEO, CRM, social, remarketing): pergunte o que está contratado antes de montar os blocos.
 
-**RDO Pro** (29/09/2026). SaaS de diário de obra, PLG, planos Standard R$ 209/mês (anual 169) e Plus R$ 350 (anual 309),
+**SaaS de diário de obra** (29/09/2026). SaaS de diário de obra, PLG, planos Standard R$ 209/mês (anual 169) e Plus R$ 350 (anual 309),
 checkout na Hotmart, trial de 7 dias sem cartão. Fee R$ 5.941,81. **Primeiro cliente de assinatura da skill** — daí o
 `--recorrencia` da v7.9. Três lições que valem para o próximo SaaS:
 
@@ -85,6 +85,6 @@ checkout na Hotmart, trial de 7 dias sem cartão. Fee R$ 5.941,81. **Primeiro cl
    (MQL → trial de 20,3%) congelaria o defeito dentro da previsão. A separação certa é medir **quem consegue chegar**:
    de quem chegava ao painel, 50,0% viravam trial, estável em 44%/50%/56%. Os dois números viraram dois cenários.
 
-**Regra que saiu da RDO Pro:** antes de aceitar uma taxa de etapa baixa, pergunte se ela é **comportamento** ou
+**Regra que saiu da SaaS de diário de obra:** antes de aceitar uma taxa de etapa baixa, pergunte se ela é **comportamento** ou
 **encanamento quebrado**. Se for encanamento, o número certo é a taxa de quem passa pelo cano que funciona, e o
 conserto vira cenário — com a diferença entre as duas linhas medindo, em reais, quanto vale a correção.

@@ -2,6 +2,18 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v7.9.5 · 29/09/2026 · Horizonte até 18 meses, quando a pergunta é "quando o caixa vira"
+
+O usuário, na SaaS de diário de obra: "faz a projeção até o caixa no azul". Com o fee pesado e receita recorrente, o mês só vira no M14
+— fora das 12 colunas. A grade já era paramétrica (`grade_colunas(n)`), então o 12 era **guarda, não layout**.
+
+- **O template aceita de 1 a 18 meses.** Acima de 18 a tabela deixa de caber numa tela e vira rolagem lateral na
+  reunião, e aí o limite volta a fazer sentido. Entre 13 e 18, o horizonte é a resposta à pergunta, não a moldura.
+- Rótulos, colunas de total, cartões, gráficos e o bloco de meta acompanham o número de meses sem ajuste manual.
+- Use com `--rampa-ate` para a rampa continuar terminando onde foi combinado, em vez de esticar junto com o horizonte.
+- SaaS de diário de obra: tabela de set/2026 a out/2027 (14 meses), mês no azul em out/2027 com +R$ 472, e o acumulado de caixa
+  zerando só em jan/2029 — esse continua no gráfico de payback estendido, fora da tabela.
+
 ## v7.9.4 · 29/09/2026 · Desenhos animados no README
 
 O usuário pediu para a projeção os desenhos animados que a sprint-growth ganhou (estilo do claude-seo, vermelho V4).
@@ -23,15 +35,15 @@ A linha existia desde a v7.9.2 e já virava positiva em out/2026 — mas as **da
 - **Subtítulo mostra as duas réguas** quando há recorrência: "CAIXA — no azul X, acumulado zera Y · LTV — no azul Z,
   acumulado zera W". Sem recorrência, nada muda.
 - **As duas partem do mesmo déficit histórico.** O acumulado por LTV começa no `acum0`, igual ao de caixa: o dinheiro
-  já gasto não some por trocarmos a régua. Sem isso ele zerava cedo demais (M3 em vez de M5, na RDO Pro).
+  já gasto não some por trocarmos a régua. Sem isso ele zerava cedo demais (M3 em vez de M5, na SaaS de diário de obra).
 - **Mês já vivido entra pela MC e pelo custo REALIZADOS** (`REAL_FIN`), não pelo resultado líquido de caixa. Substituir
   pelo líquido subestimava a safra, porque o realizado do mês não contém o valor futuro dela.
-- RDO Pro: caixa no azul em out/2027 e acumulado zerando em jan/2029; por LTV, no azul em out/2026 e acumulado zerado
+- SaaS de diário de obra: caixa no azul em out/2027 e acumulado zerando em jan/2029; por LTV, no azul em out/2026 e acumulado zerado
   em jan/2027. Onze meses de diferença na mesma planilha — e por isso nenhuma das duas pode aparecer sozinha.
 
 ## v7.9.2 · 29/09/2026 · Valor de vida (LTV) na aba, ao lado do caixa
 
-O usuário, olhando a RDO Pro: "a assinatura que entrou num mês também conta no mês seguinte, tem recorrência do
+O usuário, olhando a SaaS de diário de obra: "a assinatura que entrou num mês também conta no mês seguinte, tem recorrência do
 pagamento; você trouxe como pagamento único; é a visão de LTV sobre CAC". A base **já** acumulava desde a v7.9
 (10 → 151 assinantes, MRR de R$ 3,4 mil a R$ 53 mil) — o que faltava era o **veredito**: o bloco financeiro contava
 só o caixa que entra dentro das 12 colunas, e isso corta cada safra na borda do calendário. Quem assina no último
@@ -48,15 +60,15 @@ nunca chegava na planilha.
   até 12 em duas fileiras, e falha com mensagem clara acima disso. Antes, o 11º cartão escrevia em cima da legenda
   e estourava em `MergedCell object attribute value is read-only`.
 - **Regra:** em assinatura, entregue as duas leituras e diga o que cada uma responde. O caixa no período diz quanto
-  o contrato consome no caminho; o valor de vida diz se vale a pena adquirir. Na RDO Pro, com margem real de 30%,
+  o contrato consome no caminho; o valor de vida diz se vale a pena adquirir. Na SaaS de diário de obra, com margem real de 30%,
   o caixa de 12 meses fecha em −R$ 108,8 mil e o valor de vida em +R$ 142,8 mil. As duas são verdade.
 
 ## v7.9.1 · 29/09/2026 · Conexão medida fora da planilha padrão
 
 O usuário pediu as seis linhas de conexão (lead atendido, leads conectados, custo por lead conectado, e as três de MQL)
-preenchidas na RDO Pro. Elas já apareciam — a skill sempre mostra essa visão — mas em branco, porque a fonte não tem a
+preenchidas na SaaS de diário de obra. Elas já apareciam — a skill sempre mostra essa visão — mas em branco, porque a fonte não tem a
 linha `Conexões`. E **acrescentar essa linha à fonte colocaria a etapa no lugar errado**: na planilha padrão ela entra
-antes do MQL, e na RDO Pro o time atende **depois** da qualificação (o MQL sai do formulário, alguém atende, e só então
+antes do MQL, e na SaaS de diário de obra o time atende **depois** da qualificação (o MQL sai do formulário, alguém atende, e só então
 o trial é liberado). O sintoma de que a ordem estava invertida: os MQLs da janela (42) passavam das conexões (28).
 
 - **`--conexao-lead` e `--conexao-mql` no piloto**: a conexão entra medida, por fora da fonte, como valor único ou plano
@@ -69,7 +81,7 @@ o trial é liberado). O sintoma de que a ordem estava invertida: os MQLs da jane
 
 ## v7.9 · 29/09/2026 · Assinatura: receita recorrente, churn e economia unitária
 
-Primeiro cliente de SaaS (RDO Pro, diário de obra, PLG). O modelo transacional da skill — `vendas × ticket` no mês —
+Primeiro cliente de SaaS (SaaS de diário de obra, diário de obra, PLG). O modelo transacional da skill — `vendas × ticket` no mês —
 subestima assinatura por construção: ele cobra o cliente uma vez e esquece que o assinante paga de novo no mês seguinte.
 
 - **`--recorrencia` no piloto.** Com ela, as "vendas" do funil viram **assinaturas novas**, a base acumula e a receita do

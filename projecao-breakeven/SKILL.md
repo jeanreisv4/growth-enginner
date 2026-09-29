@@ -5,7 +5,7 @@ description: Projeção de breakeven de mídia paga a partir do histórico do cl
 
 # Projeção de breakeven
 
-**Versão 7.9.4 (29/09/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
+**Versão 7.9.5 (29/09/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
 
 A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não espera o usuário lembrar o que precisa informar. A segunda é a execução automática: com as premissas confirmadas, ela roda o piloto, dá o veredito e preenche o template, sem etapa manual.
 
@@ -43,7 +43,7 @@ A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não esp
 
 **1.4 Margem e take rate.** Confirme a margem de contribuição. Pergunte se a receita registrada já é do cliente (comissão = 1) ou se é GMV sobre o qual ele recebe comissão (ex.: agência de turismo). **Confirme a margem em reais, com uma venda concreta:** "numa venda de R$ 22 mil, quanto sobra para o cliente depois de pagar fornecedor e custos da venda?". Percentual solto é ambíguo. Na EZ, a margem passou por três leituras (15% × 40% = 6%, depois 20% sobre o valor cheio, depois 15% × 20% = 3%), e cada uma trocou o veredito. Só a pergunta em reais fechou a dúvida. Quando a comissão já é a margem, a planilha esconde a linha de margem. Se a margem varia por produto, pergunte de que produto vieram as vendas da V4.
 
-**1.4.1 Horizonte.** Por padrão, a projeção vai do Mês 1 até dezembro do ano corrente (`--horizonte`), sem meses do ano seguinte. Se o acumulado só zera depois de dezembro, ofereça estender a planilha até o mês do payback (no máximo 12 meses). Nesse caso a meta passa a ser esse mês (`--mes-alvo`), mas a rampa mantém o fim combinado (`--rampa-ate`), para os números não mudarem só porque a meta andou. Foi o que o usuário pediu na EZ: "me entrega até o mês que ela breakeva". Se o cliente entrou na V4 num mês específico, esse é o Mês 1 (`--inicio-contrato`), e os meses anteriores ficam como "antes da V4".
+**1.4.1 Horizonte.** Por padrão, a projeção vai do Mês 1 até dezembro do ano corrente (`--horizonte`), sem meses do ano seguinte. Se o acumulado só zera depois de dezembro, ofereça estender a planilha até o mês do payback. O template aceita de 1 a 18 meses: até 12 é o padrão, e de 13 a 18 quando a pergunta do usuário é o mês em que o caixa vira (SaaS de diário de obra: mês no azul só no M14). Nesse caso use `--rampa-ate` para a rampa terminar onde foi combinado, em vez de esticar com o horizonte. Nesse caso a meta passa a ser esse mês (`--mes-alvo`), mas a rampa mantém o fim combinado (`--rampa-ate`), para os números não mudarem só porque a meta andou. Foi o que o usuário pediu na EZ: "me entrega até o mês que ela breakeva". Se o cliente entrou na V4 num mês específico, esse é o Mês 1 (`--inicio-contrato`), e os meses anteriores ficam como "antes da V4".
 
 **1.4.2 Legado: o que já foi feito.** Pergunte **se o cliente quer o histórico dentro da própria tabela de projeção** ou só a projeção daqui para frente. Com o legado dentro, a tabela vira o acompanhamento de verdade: os meses vividos entram pela coluna Realizado e os seguintes são projeção, numa linha só. Se sim, pergunte **de que mês o legado começa** (`--inicio-contrato`) — lembrando que a tabela tem 12 colunas, então legado longo come o horizonte da projeção, e vale dizer isso ao usuário antes de ele escolher.
 
@@ -98,7 +98,7 @@ não serve: `vendas × ticket` cobra o cliente uma vez e esquece que ele paga de
 `--recorrencia --churn <taxa ou plano> [--base-inicial N]`: as vendas do funil viram **assinaturas novas**, a base
 acumula (`base_t = base_(t-1) × (1 − churn_t) + novas_t`) e a receita do mês é **base × mensalidade**. Pergunte:
 - **a mensalidade e o plano** — qual plano as vendas reais fecharam, mensal ou anual. Não use o plano de cima como ticket
-  só porque ele existe: na RDO Pro a planilha do cliente usava R$ 350 e as duas vendas reais foram R$ 169.
+  só porque ele existe: na SaaS de diário de obra a planilha do cliente usava R$ 350 e as duas vendas reais foram R$ 169.
 - **o churn mensal**, e **de onde ele vem**. Quase nunca é medido. Sem medição, use a faixa do segmento por ACV
   (SMB abaixo de US$ 1k de ACV roda 6% a 10% ao mês) e escreva que é aproximação. Churn abaixo da faixa precisa de prova.
 - **a base já ativa** no Mês 1 (`--base-inicial`), contando só o que é atribuível à V4.
@@ -110,19 +110,19 @@ financeiro de caixa, o bloco **VALOR DE VIDA (LTV)**. O de caixa conta só o que
 e corta cada safra na borda do calendário — quem assina no último mês aparece com um mês de receita. O de LTV credita
 cada assinatura nova pelo que ela vale até cancelar. **Em assinatura, a de LTV é a que diz se vale a pena adquirir;
 a de caixa é a que diz quanto o contrato consome no caminho.** As duas podem discordar de sinal e as duas são verdade:
-na RDO Pro, com margem de 30%, o caixa de 12 meses deu −R$ 108,8 mil e o valor de vida +R$ 142,8 mil. Nunca entregue
+na SaaS de diário de obra, com margem de 30%, o caixa de 12 meses deu −R$ 108,8 mil e o valor de vida +R$ 142,8 mil. Nunca entregue
 só uma.
 
 **O payback sai nas duas réguas, e o subtítulo mostra as duas.** Não basta ter a linha de LTV na tabela: se as datas
 de payback lerem só caixa, a planilha dá a resposta certa num lugar e a errada no outro. As duas partem do mesmo
-déficit histórico e os meses já vividos entram pela MC e pelo custo realizados. Na RDO Pro deu onze meses de diferença.
+déficit histórico e os meses já vividos entram pela MC e pelo custo realizados. Na SaaS de diário de obra deu onze meses de diferença.
 
 **Leia a economia unitária, não só o payback de calendário.** O veredito ganha o bloco `recorrencia` com lifetime, LTV,
 CAC cheio e de mídia, LTV/CAC e payback de CAC. **Com LTV/CAC abaixo de 1, mais verba aumenta o prejuízo por cliente**,
 e a conversa é de preço, churn ou conversão — não de mídia. Acima de 1, a verba é o acelerador e aí os degraus valem.
 
 **PLG não é o funil linear.** Em produto self-serve o trial converte sozinho e a demonstração é exceção, não etapa
-obrigatória. Antes de mapear, olhe a **porta de entrada declarada** pelo lead: na RDO Pro, 37% pediam compra direta,
+obrigatória. Antes de mapear, olhe a **porta de entrada declarada** pelo lead: na SaaS de diário de obra, 37% pediam compra direta,
 sem trial e sem demo, estável nos três meses. Cobrar trial e demo de quem já queria comprar inventa etapa no caminho de
 quem estava com o cartão na mão. E **ativação é momento de produto** (primeiro uso de verdade), dentro do trial e antes
 de qualquer humano — não uma etapa depois da demo.

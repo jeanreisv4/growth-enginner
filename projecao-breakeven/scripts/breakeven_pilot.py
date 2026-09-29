@@ -905,7 +905,7 @@ def main():
         CRM = json.load(open(a.crm, encoding="utf-8"))
     if a.conexao_lead or a.conexao_mql:
         # A planilha padrao V4 so tem a linha "Conexoes", que entra ANTES do MQL. Em cliente cujo time atende
-        # DEPOIS da qualificacao (RDO Pro: o MQL sai do formulario, o time atende e so entao libera o trial),
+        # DEPOIS da qualificacao (SaaS de diário de obra: o MQL sai do formulario, o time atende e so entao libera o trial),
         # aquela linha colocaria a etapa no lugar errado -- e la os MQLs passam das conexoes, o que denuncia a ordem.
         # Aqui a conexao entra medida, por fora: nao muda o volume projetado, so decompoe MQL -> SQL em
         # MQL -> MQL conectado -> SQL, que e como o gerador ja rotula a etapa ("MQL CON. -> SQL").
