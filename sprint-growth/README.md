@@ -2,7 +2,7 @@
 
 ![Capa da sprint-growth: comandos sendo digitados e um funil do tráfego à receita em que os leads vazam na restrição](assets/capa.svg)
 
-![versão](https://img.shields.io/badge/versão-2.0.1-E50914) ![regressão](https://img.shields.io/badge/regressão-107%20casos-111111) ![agentes](https://img.shields.io/badge/agentes-8-111111)
+![versão](https://img.shields.io/badge/versão-2.0.2-E50914) ![regressão](https://img.shields.io/badge/regressão-107%20casos-111111) ![agentes](https://img.shields.io/badge/agentes-8-111111)
 
 Skill do Claude Code para a **sprint growth** de cliente de agência: audita a jornada inteira, do tráfego à venda,
 acha a restrição do sistema pela Teoria das Restrições e entrega um plano 5W1H priorizado por impacto em receita,

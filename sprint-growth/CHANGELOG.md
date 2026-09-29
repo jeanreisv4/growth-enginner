@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.2 (29/09/2026)
+
+- Desenhos do README com o logo da ferramenta de cada agente: Google Ads e Google Analytics desenhados com a
+  geometria e as cores oficiais, Meta, Tag Manager, Sheets e PageSpeed do Simple Icons (CC0) e Clarity do
+  repositório oficial da Microsoft (MIT). Origem e licença em `assets/logos/FONTES.md`.
+
 ## v2.0.1 (29/09/2026)
 
 - README com desenhos animados no estilo do claude-seo (SVG com animação nativa, roda no GitHub): capa com os

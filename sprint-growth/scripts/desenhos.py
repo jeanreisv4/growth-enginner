@@ -6,7 +6,7 @@
 Estética do claude-seo (fundo escuro, brilho, partícula que corre pelas linhas) com o vermelho da V4.
 Mudou frente, agente ou etapa? Edite as listas abaixo e rode de novo.
 """
-import math, os
+import base64, math, os, re
 
 AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONTE = "'JetBrains Mono','Cascadia Mono','Menlo','Consolas',monospace"
@@ -24,6 +24,32 @@ AGENTES = [  # (título, onda, itens, ferramenta) — em sentido horário a part
     ("MERCADO", "onda 2", ["concorrentes", "preço com unidade", "anúncios ativos"], "WebSearch · Ads Library"),
 ]
 FRENTES_ONDA2 = ["google-ads", "meta-ads", "medicao", "clarity", "jornada", "comercial", "mercado"]
+LOGOS = {  # frente → logos da ferramenta (assets/logos/FONTES.md tem a origem de cada um)
+    "FONTES": ["googlesheets"], "GOOGLE ADS": ["googleads"], "META ADS": ["meta"],
+    "MEDIÇÃO": ["googletagmanager", "googleanalytics"], "CLARITY": ["clarity"], "JORNADA": ["pagespeedinsights"],
+    "google-ads": ["googleads"], "meta-ads": ["meta"], "medicao": ["googletagmanager"], "clarity": ["clarity"],
+    "jornada": ["pagespeedinsights"],
+}
+COR_LOGO = {"googletagmanager": "#246FDB", "googlesheets": "#34A853", "pagespeedinsights": "#4285F4", "meta": "url(#metaGrad)"}
+
+
+def logo(nome, x, y, t):
+    """Logo da ferramenta num quadrado de t px com canto em (x, y)."""
+    g = f'<g transform="translate({x:.1f},{y:.1f}) scale({t / 24:.4f})">'
+    if nome == "googleads":  # geometria oficial do ícone: barra amarela, barra azul, círculo verde
+        return (g + '<line x1="12" y1="5" x2="4" y2="18.93" stroke="#FBBC04" stroke-width="8" stroke-linecap="round"/>'
+                '<line x1="12" y1="5" x2="20" y2="18.93" stroke="#4285F4" stroke-width="8" stroke-linecap="round"/>'
+                '<circle cx="4" cy="18.93" r="4" fill="#34A853"/></g>')
+    if nome == "googleanalytics":
+        return (g + '<rect x="16.6" y="1" width="6.4" height="22" rx="3.2" fill="#F9AB00"/>'
+                '<rect x="8.8" y="9" width="6.4" height="14" rx="3.2" fill="#E37400"/>'
+                '<circle cx="4.2" cy="19.8" r="3.2" fill="#E37400"/></g>')
+    arq = os.path.join(AQUI, "assets", "logos", nome)
+    if nome == "clarity":
+        b64 = base64.b64encode(open(arq + ".png", "rb").read()).decode()
+        return f'<image x="{x:.1f}" y="{y:.1f}" width="{t}" height="{t}" href="data:image/png;base64,{b64}"/>'
+    d = re.search(r' d="([^"]+)"', open(arq + ".svg", encoding="utf-8").read()).group(1)
+    return g + f'<path d="{d}" fill="{COR_LOGO[nome]}"/></g>'
 
 
 def defs(extra=""):
@@ -33,6 +59,7 @@ def defs(extra=""):
     <radialGradient id="auA" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="{VERM}" stop-opacity="0.34"/><stop offset="100%" stop-color="{VERM}" stop-opacity="0"/></radialGradient>
     <radialGradient id="auB" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#8E1016" stop-opacity="0.30"/><stop offset="100%" stop-color="#8E1016" stop-opacity="0"/></radialGradient>
     <radialGradient id="auC" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="{VERM2}" stop-opacity="0.16"/><stop offset="100%" stop-color="{VERM2}" stop-opacity="0"/></radialGradient>
+    <linearGradient id="metaGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0064E0"/><stop offset="100%" stop-color="#0082FB"/></linearGradient>
     {extra}
   </defs>'''
 
@@ -127,6 +154,7 @@ def fluxo():
         L.append(caixa(x, cy - 31, w, 62, t1, t2, t0, D, hi))
     for i, (y, nome) in enumerate(zip(ys, FRENTES_ONDA2)):
         L.append(caixa(ag_x, y - ag_h / 2, ag_w, ag_h, nome, "", .48 + i * .012, D, tam=14))
+        L += [logo(n, ag_x + 12, y - 8, 16) for n in LOGOS.get(nome, [])]
     L += [particula(c, a, b, D) for c, a, b in arestas]
     L.append(particula(laco, .86, .99, D, VERM2))
     return svg(W, H, "Fluxo da sprint-growth: o comando entra, a memória e a entrevista preparam o orquestrador, o agente de "
@@ -160,7 +188,8 @@ def agentes():
         L.append(f'<g><rect x="{bx:.0f}" y="{by:.0f}" width="{bw}" height="{bh}" rx="10" fill="{CAIXA_HI if hi else CAIXA}" '
                  f'stroke="{VERM if hi else "#6E4A48"}" stroke-width="{1.6 if hi else 1.1}"/>'
                  + acende(round(bx), round(by), bw, bh, t0 + passo * .8, D, 10)
-                 + texto(bx + 16, by + 26, tit, 14, VERM2, "700", "start", "1.2")
+                 + "".join(logo(n, bx + 16 + 26 * k, by + 12, 18) for k, n in enumerate(LOGOS.get(tit, [])))
+                 + texto(bx + 16 + 26 * len(LOGOS.get(tit, [])), by + 26, tit, 14, VERM2, "700", "start", "1.2")
                  + texto(bx + bw - 16, by + 26, onda, 11, APAGADO, ancora="end")
                  + "".join(texto(bx + 16, by + 50 + 20 * k, it, 13, TXT2, ancora="start") for k, it in enumerate(itens))
                  + texto(bx + 16, by + bh - 12, ferr, 11, APAGADO, ancora="start", esp="0.3") + "</g>")

@@ -5,7 +5,7 @@ description: Sprint growth de cliente da V4 — auditoria da jornada inteira, do
 
 # Sprint growth
 
-**Versão 2.0.1 (29/09/2026).** Histórico em `CHANGELOG.md`. Caminhos relativos à pasta da skill
+**Versão 2.0.2 (29/09/2026).** Histórico em `CHANGELOG.md`. Caminhos relativos à pasta da skill
 (`.claude/skills/sprint-growth/`). Clientes em `clientes/<cliente>/` (versionado no git local, fora da cópia
 pública). Configuração das MCPs em `~/.config/sprint-growth/config.json` (fora do repositório).
 
