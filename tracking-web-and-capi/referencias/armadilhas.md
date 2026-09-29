@@ -18,6 +18,8 @@ Os scripts citados como `sprint-growth/...` ficam na skill irmã, na mesma pasta
   20 caracteres.
 - **ID da conta e rótulo trocados.** O número da conta no campo do rótulo e vice-versa. `gerar_containers.py`
   bloqueia rótulo só com dígitos.
+- **Mesmo acionador como disparo e como exceção.** A exceção vence: a tag do Google Ads do pop-up nunca disparou,
+  enquanto Meta e GA4 contavam (distribuidora de peças automotivas). Detectar: `sprint-growth/scripts/gtm_auditoria.py` G5 e o teste de disparo.
 - **Mesmo rótulo em duas tags.** Duas ações contam a mesma conversão (G4). `gerar_containers.py` bloqueia.
 - **URL de exemplo no transporte do servidor.** `gtm.dominio.com.br` esquecido no template: nada chega ao sGTM
   (móveis planejados). `gerar_containers.py` bloqueia URL de exemplo ou sem https.

@@ -1,5 +1,16 @@
 # Changelog — tracking-web-and-capi
 
+## v1.1.3 — 2026-09-29
+
+- README com desenhos animados no estilo do claude-seo, em vermelho V4: capa (comandos digitados; o evento indo ao
+  Meta pelo navegador e pelo servidor com o mesmo event_id; a venda voltando do CRM), fluxo do sinal pelos três modos
+  até a venda voltar, e o contrato de eventos (de onde sai cada evento, destinos e valor proxy do Modelo A).
+- `scripts/desenhos.py` gera os três SVG de `assets/`; a regressão confere que batem com o gerador.
+
+## v1.1.2 — 2026-09-29
+
+- Armadilha e linha no troubleshoot: o mesmo acionador como disparo e como exceção da tag (G5 da auditoria de GTM).
+
 ## v1.1.1 — 2026-09-28
 
 - `README.md`: seção "Como funciona", uma linha por fase com o que entra, o que a skill faz, a ferramenta, o que

@@ -5,7 +5,7 @@ description: Planejar, auditar e diagnosticar tracking web e server-side para cl
 
 # Tracking Web And CAPI
 
-**Versão 1.1.1 (28/09/2026).** Histórico em `CHANGELOG.md`; desenho do fluxo em `README.md`. Caminhos relativos à
+**Versão 1.1.3 (29/09/2026).** Histórico em `CHANGELOG.md`; desenho do fluxo em `README.md`. Caminhos relativos à
 pasta da skill. Dados de cliente em `clientes/<cliente>/` (git local, fora da cópia pública).
 
 ## Fonte Principal

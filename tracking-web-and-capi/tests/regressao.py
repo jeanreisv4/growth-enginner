@@ -115,6 +115,13 @@ with tempfile.TemporaryDirectory() as d:
     confere("CLI gera os dois JSONs e o resumo", r.returncode == 0 and sorted(os.listdir(d)) ==
             ["b.json", "gtm-server-exemplo-pisos-premium.json", "gtm-web-exemplo-pisos-premium.json", "resumo.md"])
 
+# desenhos: os SVG de assets/ são os que o gerador produz hoje
+sys.path.insert(0, os.path.join(RAIZ, "scripts"))
+import desenhos
+for nome, fn in (("capa.svg", desenhos.capa), ("fluxo.svg", desenhos.fluxo), ("eventos.svg", desenhos.eventos)):
+    arq = os.path.join(RAIZ, "assets", nome)
+    confere(f"assets/{nome} bate com scripts/desenhos.py", os.path.exists(arq) and open(arq, encoding="utf-8").read() == fn())
+
 # README: todo script citado existe (nesta skill ou na irmã sprint-growth, quando ela está ao lado)
 readme = open(os.path.join(RAIZ, "README.md")).read()
 irma = os.path.join(RAIZ, "..", "sprint-growth")

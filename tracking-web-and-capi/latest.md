@@ -207,7 +207,8 @@ Solicite (quando aplicável):
 Os scripts ficam na skill irmã `sprint-growth` (mesma pasta do growth-enginner):
 
 - `sprint-growth/scripts/gtm_auditoria.py`: compara as tags do GTM com as conversões da conta (G1 rótulo que não
-  existe, G2 GA4 do servidor repassando evento do Meta, G3 tag pausada ou sem acionador, G4 rótulo repetido).
+  existe, G2 GA4 do servidor repassando evento do Meta, G3 tag pausada ou sem acionador, G4 rótulo repetido,
+  G5 o mesmo acionador como disparo e como exceção).
 - `sprint-growth/scripts/teste_disparo.py`: abre a página sem janela, bloqueia GA4/Meta/Stape, empurra os eventos
   no dataLayer e lista os hits do Google Ads com o rótulo de cada um.
 - `sprint-growth/scripts/teste_formulario.py`: mostra o que o formulário enviaria (campos ocultos, UTM, gclid) sem
@@ -281,6 +282,7 @@ Use os erros conhecidos abaixo. Se nenhum bater, faça investigação guiada.
 | Cliente reclama "nada chega no Meta" | Tag CAPI pausada / sem trigger / token vencido | Verificar paused, firingTriggerId, valor da variável Access Token |
 | Bad Gateway no SSGTM | Server stape não publicado ou em deploy | Aguardar deploy, ou publicar v1 manual |
 | Tag de conversão do Ads dispara e a conta não conta nada | Rótulo com um caractere a menos, ou ID e rótulo trocados | `gtm_auditoria.py` (G1) + `teste_disparo.py`; corrigir o rótulo copiando da conta |
+| Uma plataforma conta o evento e o Google Ads não, com a tag certa | O mesmo acionador está como disparo e como exceção da tag (G5) | Tirar a exceção; publicar; `teste_disparo.py` |
 | Lead contado duas vezes no Google Ads | Duas conversões principais na mesma categoria, ou duas tags com o mesmo rótulo (G4) | Uma principal por etapa do funil; as outras secundárias |
 | Nada chega ao GTM Server | URL de transporte de exemplo (`gtm.dominio.com.br`) ou sem https | Trocar pela URL do Stape ou do domínio próprio; publicar |
 | GA4 com eventos em dobro | GA4 do servidor disparando nos eventos do Meta (G2) | Acionador da tag GA4 do servidor só no cliente GA4 |

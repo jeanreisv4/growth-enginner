@@ -1,12 +1,19 @@
 # tracking-web-and-capi
 
-![versão](https://img.shields.io/badge/versão-1.1.1-E50914) ![regressão](https://img.shields.io/badge/regressão-37%20casos-111111)
+![Capa da tracking-web-and-capi: comandos sendo digitados e o evento saindo da página ao Meta pelo navegador e pelo servidor com o mesmo event_id, com a venda voltando do CRM](assets/capa.svg)
+
+![versão](https://img.shields.io/badge/versão-1.1.3-E50914) ![regressão](https://img.shields.io/badge/regressão-40%20casos-111111)
 
 Skill do Claude Code que planeja, audita e conserta o tracking do cliente: GTM Web e Server (Stape), Meta Pixel e
 CAPI deduplicados, Google Ads, GA4 e o caminho do lead até a planilha ou o CRM, com a venda voltando às plataformas.
 Tracking só está pronto quando a venda volta.
 
 ## Workflow
+
+![Fluxo da tracking-web-and-capi: armadilhas lidas antes, três modos (planejar, auditar, troubleshoot), go-live com ok explícito e a venda voltando às plataformas, com o erro novo virando armadilha e teste](assets/fluxo.svg)
+
+<details>
+<summary>Ver o desenho detalhado (fases, decisões e travas)</summary>
 
 ```mermaid
 flowchart TB
@@ -65,6 +72,14 @@ flowchart TB
 Legenda: cinza = informação · amarelo = decisão · azul = análise ou script · verde = entrega · vermelho = trava ·
 ↺ = onde o loop se fecha. Na seta entre as fases, a saída de cada uma.
 
+</details>
+
+## O contrato de eventos
+
+![O contrato de eventos: PageView, Contact, Lead e MQL saem do GTM web; SQL e Purchase voltam da planilha ou do CRM; todos passam pelo GTM server e chegam ao Meta, ao Google Ads e ao GA4, com o valor proxy crescendo até a venda](assets/eventos.svg)
+
+O detalhe está em [`canonico/padrao-tracking.md`](canonico/padrao-tracking.md).
+
 ## Como funciona
 
 Uma linha por fase do desenho. "Trava" é o que impede a fase seguinte; o detalhe completo está no
@@ -77,7 +92,7 @@ Uma linha por fase do desenho. "Trava" é o que impede a fase seguinte; o detalh
 | **1 · Planejar: plano** | Ticket, margem, taxas do funil por canal | Valor proxy de cada evento (Modelo A: lucro × taxas seguintes), diferente por canal | [`canonico/padrao-tracking.md`](canonico/padrao-tracking.md) | Plano: stack, eventos, valores, caminho Sheets ou CRM | Stack obrigatória incompleta |
 | **1 · Planejar: containers** | O brief | Preenche os marcadores dos templates; tira MQL e Clarity quando não se aplicam; valida | [`scripts/gerar_containers.py`](scripts/gerar_containers.py) | `gtm-web-<c>.json`, `gtm-server-<c>.json`, `resumo.md` | Qualquer BLOQUEANTE: rótulo trocado ou repetido, URL de exemplo, Test Event Code em produção, marcador sobrando |
 | **2 · Auditar: leitura** | Links dos containers e das contas | Lê GTM, Google Ads e GA4 direto pelas MCPs do n8n, sem pedir export | MCPs GTM, Google Ads, GA4 Admin | Containers e conversões da conta | Acesso negado |
-| **2 · Auditar: testes** | URL da página, rótulos da conta | Compara tags com a conta (G1–G4), prova o disparo sem criar lead, mostra o que o formulário envia | `sprint-growth/scripts/`: `gtm_auditoria.py`, `teste_disparo.py`, `teste_formulario.py` | Alertas com a tag e o número | — |
+| **2 · Auditar: testes** | URL da página, rótulos da conta | Compara tags com a conta (G1–G5), prova o disparo sem criar lead, mostra o que o formulário envia | `sprint-growth/scripts/`: `gtm_auditoria.py`, `teste_disparo.py`, `teste_formulario.py` | Alertas com a tag e o número | — |
 | **2 · Auditar: decisão** | Evidências + alertas | Marca cada item do checklist como ✅, ⚠️ ou ❌ | [`canonico/checklist-auditoria.md`](canonico/checklist-auditoria.md) (13 seções) | APROVADO ou BLOQUEADO com a correção de cada ❌ | Um ❌ bloqueia o go-live |
 | **3 · Troubleshoot** | Sintoma, onde aparece, desde quando, o que mudou | Procura na tabela de erros conhecidos; se não bater, investigação guiada | Tabela do [protocolo](latest.md) + armadilhas | Causa, correção em passos, como validar | Correção sem teste |
 | **4 · Go-live** | Containers aprovados | Publica só com ok explícito, versão com nome claro; lead de teste ponta a ponta | GTM (pela MCP, com ok) | Versão publicada e lead de teste conferido em Meta, GA4, Ads e planilha/CRM | Test Event Code ativo; token no lugar errado |
@@ -97,7 +112,8 @@ Uma linha por fase do desenho. "Trava" é o que impede a fase seguinte; o detalh
 - `referencias/armadilhas.md`: erros vistos em cliente (tags, página e consentimento, conta e GA4, volta da venda).
 - `canonico/`: padrão de tracking (contrato de dados) e checklist de auditoria.
 - `templates/gtm/` (containers com marcadores), `templates/brief_exemplo.json`, `templates/planilha/` (planilha de leads e Apps Script).
-- `scripts/gerar_containers.py` e `tests/regressao.py` (37 casos, sem rede).
+- `scripts/desenhos.py`: gera os desenhos animados de `assets/`.
+- `scripts/gerar_containers.py` e `tests/regressao.py` (40 casos, sem rede).
 - `implementacoes/` (Sheets, Kommo), `playbook/` (caso piloto), `aula/`.
 
 Os testes de disparo e de formulário são da skill [`sprint-growth`](../sprint-growth/). Parte do
