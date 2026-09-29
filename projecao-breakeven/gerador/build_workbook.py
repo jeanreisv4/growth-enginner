@@ -74,7 +74,7 @@ def _simplificar_is(cfg, p):
         cfg['meta'] = lambda ctx, m: meta_block(ctx, m, p['target'], 'gmv', 'ticket', 'vendas', 'custo_cons', 'cum_cons', None, comissao_key='comissao', acum0_key='acum0')
         cfg['premises'] = [(k, "Comissão sobre o GMV (margem da agência)", v, f) if k == 'comissao' else (k, lab, v, f) for k, lab, v, f in cfg['premises']]
     if float(p['prem'].get('comissao', 1)) >= 0.999 and not p.get('crm'):
-        # receita própria do cliente (Destra, RPS, multimídia automotiva): sem comissão nem GMV de agência; o faturamento (vendas × ticket) já é a receita
+        # receita própria do cliente (consultoria B2B, revestimentos, multimídia automotiva): sem comissão nem GMV de agência; o faturamento (vendas × ticket) já é a receita
         tira |= {'comissao', 'receita'}
         troca_['gmv'] = dict(label="[R$] FATURAMENTO (VENDAS × TICKET)")
         troca_['margem'] = dict(tot='div:mc/gmv')
@@ -716,10 +716,102 @@ def month_labels(det, hist, inicio_contrato=None, n=12):
     chaves = [f"{MESES[(i + k) % 12]}/{ano + (i + k) // 12}" for k in range(n)]
     return labels, chaves, origem
 
+# ---------------------------------------------------------------- perfil PLG (product-led growth)
+# O motor é o do inside sales; aqui só muda o que o cliente lê. Substituições em ordem (a mais específica primeiro),
+# sensíveis a maiúscula, e nunca em fórmula nem em chave de linha: as chaves são minúsculas ({mqls}, {vendas}).
+PLG_TROCAS = [
+    ("[%] CONVERSÃO DO FUNIL (LEAD → ASSINATURA)", "[%] CONVERSÃO DO FUNIL (CADASTRO → ASSINATURA)"),
+    ("[%] CONVERSÃO DO FUNIL (LEAD → VENDA)", "[%] CONVERSÃO DO FUNIL (CADASTRO → ASSINATURA)"),
+    ("[%] CONEXÃO — LEAD ATENDIDO", "[%] ATENDIMENTO — CADASTRO ATENDIDO"),
+    ("[QNTD] LEADS CONECTADOS", "[QNTD] CADASTROS ATENDIDOS"),
+    ("[R$] CUSTO POR LEAD CONECTADO", "[R$] CUSTO POR CADASTRO ATENDIDO"),
+    ("[%] CONEXÃO — MQL ATENDIDO", "[%] ATENDIMENTO — TRIAL ATENDIDO"),
+    ("[QNTD] MQLS CONECTADOS", "[QNTD] TRIALS ATENDIDOS"),
+    ("[R$] CUSTO POR MQL CONECTADO", "[R$] CUSTO POR TRIAL ATENDIDO"),
+    ("[%] MQL CON. → SQL", "[%] TRIAL ATENDIDO → ATIVAÇÃO"),
+    ("[%] MQL → SQL", "[%] TRIAL → ATIVAÇÃO"),
+    ("[%] LEAD → MQL", "[%] CADASTRO → TRIAL"),
+    ("[QNTD] MQLS", "[QNTD] TRIALS"),
+    ("[R$] CUSTO POR MQL", "[R$] CUSTO POR TRIAL"),
+    ("[QNTD] ASSINATURAS ORIGINADAS PELOS SQLS DO MÊS", "[QNTD] ASSINATURAS ORIGINADAS PELAS ATIVAÇÕES DO MÊS"),
+    ("[QNTD] SQLS", "[QNTD] ATIVAÇÕES (PQL)"),
+    ("[R$] CUSTO POR SQL", "[R$] CUSTO POR ATIVAÇÃO"),
+    ("[%] SQL → VENDA", "[%] ATIVAÇÃO → ASSINATURA"),
+    ("[R$] CPL (CUSTO POR LEAD)", "[R$] CUSTO POR CADASTRO"),
+    ("[%] CLIQUE → LEAD", "[%] CLIQUE → CADASTRO"),
+    ("[%] VISITA → LEAD", "[%] VISITA → CADASTRO"),
+    ("[%] CLIQUE → VENDA", "[%] CLIQUE → ASSINATURA"),
+    ("[QNTD] LEADS", "[QNTD] CADASTROS"),
+    ("MARKETING · DA VERBA AO MQL", "MARKETING · DA VERBA AO TRIAL"),
+    ("VENDAS · DA CONEXÃO À RECEITA", "PRODUTO · DO TRIAL À ASSINATURA"),
+    ("VENDAS · DO ATENDIMENTO À RECEITA", "PRODUTO · DO TRIAL À ASSINATURA"),
+    ("Leads → Conexões", "Cadastros → Atendidos"),
+    ("Leads → MQLs", "Cadastros → Trials"),
+    ("MQLs → SQLs", "Trials → Ativações"),
+    ("SQLs → Vendas", "Ativações → Assinaturas"),
+    ("Cliques → Leads", "Cliques → Cadastros"),
+    ("Visitas → Leads", "Visitas → Cadastros"),
+    ("Ticket médio", "Mensalidade"),
+    ("Conexão lead", "Atendimento do cadastro"), ("Conexão Lead", "Atendimento do cadastro"),
+    ("Conexão MQL", "Atendimento do trial"),
+    ("Vendas necessárias", "Assinaturas necessárias"),
+    ("Vendas projetadas", "Assinaturas novas projetadas"),
+    ("Gap de vendas", "Gap de assinaturas"),
+    ("vendas equivalentes", "assinaturas novas"),
+    ("Projeção Inside Sales", "Projeção PLG"),
+]
+PLG_NEUTRA = [   # ativação sem medição: a etapa passa o volume adiante e diz isso no rótulo
+    ("[%] TRIAL ATENDIDO → ATIVAÇÃO", "[%] TRIAL ATENDIDO → ATIVAÇÃO · NÃO MEDIDA"),
+    ("[%] TRIAL → ATIVAÇÃO", "[%] TRIAL → ATIVAÇÃO · NÃO MEDIDA"),
+    ("[QNTD] ATIVAÇÕES (PQL)", "[QNTD] ATIVAÇÕES · NÃO MEDIDA (= TRIALS)"),
+]
+PLG_FUNIL = {"Leads": "Cadastros", "Leads totais": "Cadastros totais", "MQLs": "Trials", "SQLs": "Ativações", "Vendas": "Assinaturas"}
+
+def perfil_plg(cfg, neutras):
+    trocas = PLG_TROCAS + (PLG_NEUTRA if "SQLs" in neutras else [])
+    def txt(x):
+        if not isinstance(x, str) or x.startswith('='):
+            return x
+        for a_, b_ in trocas:
+            x = x.replace(a_, b_)
+        if x.startswith("VENDAS · ") and "MESES" in x:   # cartão "VENDAS · N MESES"
+            x = "ASSINATURAS NOVAS · " + x[len("VENDAS · "):]
+        return x
+    def anda(o):
+        if isinstance(o, str): return txt(o)
+        if isinstance(o, tuple): return tuple(anda(v) for v in o)
+        if isinstance(o, list): return [anda(v) for v in o]
+        if isinstance(o, dict): return {k: anda(v) for k, v in o.items()}
+        return o   # números, sets de chaves, funções (tratadas abaixo)
+    kpis, meta = cfg.get('kpis'), cfg.get('meta')
+    out = {k: (v if callable(v) or isinstance(v, set) else anda(v)) for k, v in cfg.items()}
+    if callable(kpis): out['kpis'] = lambda ctx: [anda(x) for x in kpis(ctx)]
+    if callable(meta): out['meta'] = lambda ctx, m: [anda(x) for x in meta(ctx, m)]
+    out['funnel'] = [(PLG_FUNIL.get(r, r), k) for r, k in (cfg.get('funnel') or [])]
+    nota = ("MODELO PLG · COMO LER ESTA ABA", [
+        "Produto de assinatura self-serve (product-led growth). A cadeia é cadastro → trial → ativação → assinatura, e a "
+        "receita do mês é a BASE de assinantes × mensalidade, não as vendas do mês.",
+        "O motor de cálculo é o do inside sales: o cadastro faz o papel do lead, o trial o do MQL, a ativação o do SQL e a "
+        "assinatura o da venda. Onde algum texto técnico abaixo falar em lead, MQL, SQL ou venda, leia nesses termos.",
+        "Ativação é momento de produto — o primeiro uso de verdade, dentro do trial e antes de qualquer contato humano. "
+        + ("Esta fonte NÃO mede ativação, então a etapa ficou neutra (ativações = trials) e está marcada como não medida: "
+           "nenhuma taxa foi inventada." if "SQLs" in neutras else "Esta fonte mede ativação, e ela entra na cadeia."),
+        "Duas réguas de payback, as duas no subtítulo: CAIXA conta só o que entra dentro das colunas; LTV credita cada "
+        "assinatura pelo que ela vale até cancelar. A de LTV diz se vale a pena adquirir; a de caixa diz quanto o contrato "
+        "consome no caminho.",
+    ])
+    met = list(out.get('metodologia') or [])
+    out['metodologia'] = met[:1] + [nota] + met[1:]
+    return out
+
+
 def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contrato=None,
                           faturamento_total=None, base_nao_midia=None, margem_informativa=None, sem_etapa_venda=False, extra_met=None,
                           conexao_so_lead=False, legado_path=None):
     d = json.load(open(path, encoding='utf-8'))
+    # PLG usa o motor do inside sales; o perfil vem do premissas.json (fonte única), e --modelo plg também vale
+    perfil = 'plg' if (modelo == 'plg' or (d.get('premissas_confirmadas') or {}).get('perfil') == 'plg') else None
+    if modelo == 'plg': modelo = 'inside_sales'
     pc, det, v = d['premissas_confirmadas'], d['detectado'], d['veredito']
     tx = det['taxas_efetivas']; t = tx['taxas']
     if 'rampa' not in d or 'envelope' not in d:
@@ -946,7 +1038,7 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
                              f"a conexão informada é menor que a própria taxa MQL → SQL do funil. Confira o número medido.")
         monthly = dict(cpm=cpm_usado, ctr=col('ctr'), lead_mql=col('lead_mql'), sql_venda=sql_usado, ticket=col('ticket'),
                        conv_lp=col('clique_lead') if sem_lp else col('visita_lead'), mql_sql=mql_sql_)
-        title, rotulo = "Projeção Inside Sales", "Inside Sales"
+        title, rotulo = ("Projeção PLG", "PLG") if perfil == 'plg' else ("Projeção Inside Sales", "Inside Sales")
         propria = float(pc['comissao']) >= 0.999 and not pc.get('crm')
         formulas = ("Impressões = Mídia ÷ CPM × 1.000 · Cliques = Impressões × CTR · "
                     + ("Leads = Cliques × (Clique → Lead) · " if sem_lp else
@@ -1130,7 +1222,10 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
              footer=f"Projeção {rotulo} · {cliente} · agência", prem=prem, monthly=monthly, target=mes_alvo,
              metodologia=metodologia, historico=historico, pilot_ref=pilot_ref, base_ref=base_ref, n_months=n,
              real_prefill=prefill, month_labels=labels, envelope=envelope, metodologia_fim=[tuple(x) for x in xm.get('fim', [])], **extra)
-    return (inside_sales_config if modelo == 'inside_sales' else ecommerce_config)(p), d
+    cfg_ = (inside_sales_config if modelo == 'inside_sales' else ecommerce_config)(p)
+    if perfil == 'plg':
+        cfg_ = perfil_plg(cfg_, det.get('etapas_neutras') or [])
+    return cfg_, d
 
 def comparar_cenarios(wb, abas_info, n):
     """No gráfico "Resultado acumulado mês a mês" de cada aba de projeção entram as linhas das outras abas (plano base × cenários),
@@ -1175,7 +1270,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('saida', nargs='?', help="caminho do xlsx (modo demo)")
     ap.add_argument('--premissas', help="premissas.json gerado pelo modo projetar do piloto")
-    ap.add_argument('--modelo', choices=['inside_sales', 'ecommerce'])
+    ap.add_argument('--modelo', choices=['inside_sales', 'ecommerce', 'plg'])
     ap.add_argument('--out', help="caminho do xlsx gerado")
     ap.add_argument('--cliente', help="nome do cliente para título e rodapé")
     ap.add_argument('--cenario', default="Realista")
@@ -1196,7 +1291,7 @@ def main():
     a = ap.parse_args()
     wb = Workbook()
     if a.premissas:
-        if not a.modelo: sys.exit("--premissas exige --modelo inside_sales|ecommerce")
+        if not a.modelo: sys.exit("--premissas exige --modelo inside_sales|ecommerce|plg")
         cfg, d = config_from_premissas(a.premissas, a.modelo, a.cliente, a.cenario, a.obs, a.inicio_contrato,
                                       a.faturamento_total, a.base_nao_midia, a.margem_informativa, a.sem_etapa_venda, a.metodologia_extra,
                                       a.conexao_so_lead, a.legado)

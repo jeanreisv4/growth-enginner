@@ -96,6 +96,23 @@ CASOS = [
          extra_gerador=[], series={"[QNTD] BASE DE ASSINANTES (FIM DO MÊS)": "base_assinantes"},
          exige=["[%] CHURN MENSAL DA BASE", "[QNTD] BASE DE ASSINANTES (FIM DO MÊS)",
                 "[QNTD] ASSINATURAS NOVAS NO MÊS", "[QNTD] CANCELAMENTOS NO MÊS", "[R$] MRR (BASE × MENSALIDADE)"]),
+    # PLG (product-led growth): vocabulário de produto na fonte (Cadastros, Trials, Ativações, Assinaturas, MRR,
+    # Mensalidade), recorrência obrigatória e rótulos de produto na aba. Sem a linha de ativação a etapa fica neutra.
+    # ticket_esperado trava o erro da v7.9: com recorrência a mensalidade é a da linha, não MRR ÷ assinaturas novas.
+    dict(nome="plg", modelo="plg", csv="indicadores_plg.csv", aba="PLG", margem="0.7", fee="1500",
+         receita="[R$] MRR (BASE × MENSALIDADE)", ticket_esperado=199.0,
+         extra_piloto=["--churn", "0.06"], extra_gerador=[],
+         series={"[QNTD] BASE DE ASSINANTES (FIM DO MÊS)": "base_assinantes"},
+         exige=["[QNTD] CADASTROS", "[QNTD] TRIALS", "[%] CADASTRO → TRIAL", "[%] TRIAL → ATIVAÇÃO · NÃO MEDIDA",
+                "[QNTD] ATIVAÇÕES · NÃO MEDIDA (= TRIALS)", "[%] ATIVAÇÃO → ASSINATURA", "[QNTD] ASSINATURAS NOVAS NO MÊS",
+                "[R$] MRR (BASE × MENSALIDADE)", "[R$] RESULTADO POR LTV ACUMULADO"],
+         metodologia=["MODELO PLG"],
+         sem=["[QNTD] MQLS", "[QNTD] SQLS", "[QNTD] LEADS", "[%] LEAD → MQL", "[%] SQL → VENDA"]),
+    dict(nome="plg_ativacao", modelo="plg", csv="indicadores_plg_ativacao.csv", aba="PLG", margem="0.7", fee="1500",
+         receita="[R$] MRR (BASE × MENSALIDADE)", ticket_esperado=199.0,
+         extra_piloto=["--churn", "0.06"], extra_gerador=[],
+         exige=["[QNTD] ATIVAÇÕES (PQL)", "[%] TRIAL → ATIVAÇÃO", "[%] ATIVAÇÃO → ASSINATURA"],
+         sem=["[QNTD] ATIVAÇÕES · NÃO MEDIDA (= TRIALS)", "[QNTD] SQLS"]),
     dict(nome="inside_sales_legado", modelo="inside_sales", csv="indicadores_inside_sales.csv", aba="Inside Sales",
          receita="[R$] FATURAMENTO (VENDAS × TICKET)", extra_piloto=[],
          extra_gerador=["--legado", os.path.join(FIX, "legado_inside_sales.json")],
@@ -235,6 +252,10 @@ def main():
             d = json.load(open(prem, encoding="utf-8"))
             if d.get("teto_receita") is None:
                 raise RuntimeError("premissas.json sem teto_receita: a trava de sanidade não chegou ao gerador")
+            if caso.get("ticket_esperado") is not None:
+                t_ = d["detectado"]["taxas_efetivas"].get("ticket")
+                if t_ is None or abs(t_ - caso["ticket_esperado"]) > 0.01:
+                    raise RuntimeError(f"ticket da janela {t_} ≠ {caso['ticket_esperado']}: com recorrência a mensalidade vem da linha, não de receita ÷ vendas")
             falhas = conferir_planilha(xlsx, caso["aba"], caso["receita"], d["projecao"], caso.get("exige", ()), caso.get("metodologia", ()),
                                        caso.get("sem", ()), caso.get("series"), caso.get("valores"))
             if caso.get("abas"):   # cenário extra em outra aba do mesmo arquivo

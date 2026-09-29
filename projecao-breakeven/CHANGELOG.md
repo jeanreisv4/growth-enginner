@@ -2,6 +2,32 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v8.0 · 29/09/2026 · Terceiro modelo: PLG (product-led growth)
+
+Até aqui a skill tinha dois modelos, inside sales e e-commerce. A SaaS de diário de obra (SaaS de diário de obra, trial de 7 dias,
+assinatura) foi projetada como inside sales com `--recorrencia`, e funcionou — mas a aba falava em lead, MQL, SQL e
+venda para um produto que tem cadastro, trial, ativação e assinatura. O usuário: "a SaaS de diário de obra é PLG; só tínhamos inside sales e
+e-commerce".
+
+- **`--modelo plg`** no piloto e no gerador. O motor é o do inside sales (mesma cadeia depois do cadastro), então
+  conexão medida, LTV, caminho para o breakeven e validação valem igual — sem duplicar código testado.
+- **Vocabulário de produto na fonte**: Cadastros, Trials, Ativações/PQLs, Assinaturas, MRR, Mensalidade/ARPA (os
+  rótulos do inside sales continuam aceitos depois deles).
+- **Recorrência obrigatória**: sem `--churn` o piloto recusa e diz a faixa de benchmark a usar como aproximação.
+- **Ativação opcional e neutra**: sem a linha, ativações = trials e a aba escreve "NÃO MEDIDA" no rótulo. Nenhuma taxa
+  inventada, e a cadeia não muda.
+- **Aba em linguagem de produto**: "PLG" no nome, "DA VERBA AO TRIAL", "DO TRIAL À ASSINATURA", custo por cadastro,
+  por trial e por ativação, funil Cadastros → Trials → Ativações → Assinaturas, e uma seção "MODELO PLG · COMO LER
+  ESTA ABA" na aba Premissas.
+- **Defeito da v7.9 corrigido**: com recorrência, o ticket era receita ÷ vendas — mas a receita é o MRR da base inteira
+  e as vendas são só as assinaturas novas, então a "mensalidade" inflava conforme a base crescia (numa fonte de R$ 199,
+  agosto dava R$ 1.362). Agora a mensalidade vem da linha da fonte. Na SaaS de diário de obra o erro não apareceu porque o ticket
+  estava fixado à mão (`--fixar ticket=169`).
+- **`referencias/plg.md`**: vocabulário, perguntas que mudam o resultado, regras, benchmarks (trial, PQL, ativação,
+  churn por ACV, NRR, margem de software, landing page) e o caso SaaS de diário de obra.
+- Regressão: `plg` (sem ativação, etapa neutra) e `plg_ativacao` (com ativação), com trava de que a mensalidade da
+  janela é a da linha (R$ 199) e de que nenhum rótulo de inside sales sobra na aba.
+
 ## v7.9.5 · 29/09/2026 · Horizonte até 18 meses, quando a pergunta é "quando o caixa vira"
 
 O usuário, na SaaS de diário de obra: "faz a projeção até o caixa no azul". Com o fee pesado e receita recorrente, o mês só vira no M14
@@ -234,7 +260,7 @@ subestima assinatura por construção: ele cobra o cliente uma vez e esquece que
 ## v6.1 · 18/09/2026 · Conexão só de lead e receita própria (multimídia automotiva)
 
 - Gerador com `--conexao-so-lead`: quando a linha Conexões conta só leads conectados, a conexão lead vem da fonte e a de MQL fica em branco para preencher, sem taxa suposta. O funil segue MQL → SQL e o realizado de MQL conectado fica aberto.
-- Cliente com receita própria (comissão 1, sem CRM): saem as linhas de comissão e "receita da agência". A linha de faturamento vira "Faturamento (vendas × ticket)", o cartão de GMV sai e a meta pede faturamento, não GMV. Destra e RPS também mostravam "comissão 100%".
+- Cliente com receita própria (comissão 1, sem CRM): saem as linhas de comissão e "receita da agência". A linha de faturamento vira "Faturamento (vendas × ticket)", o cartão de GMV sai e a meta pede faturamento, não GMV. consultoria B2B e revestimentos também mostravam "comissão 100%".
 - Metodologia: as fórmulas do inside sales descrevem o funil real (leads = cliques × clique → lead) e o faturamento quando não há comissão; o cenário de referência cita o número real de meses.
 - Regressão com o caso de conexão só de lead, que também confere que as linhas de comissão não aparecem.
 
@@ -310,9 +336,9 @@ subestima assinatura por construção: ele cobra o cliente uma vez e esquece que
 - Ordem da aba: premissas, indicadores, meta, projeção e, por último, os gráficos.
 - Gráficos: receita da mídia com crescimento mês a mês, resultado acumulado, payback, participação da mídia e funil.
 
-## v3 · 17/09/2026 · Revisão do template (Destra, RPS, varejo de tecidos)
+## v3 · 17/09/2026 · Revisão do template (consultoria B2B, revestimentos, varejo de tecidos)
 
-- O alvo da rampa passa a ser a mediana do período comparável, nunca pior que o atual. O melhor mês inflava a Destra de R$ 322 mil para R$ 1,1 milhão.
+- O alvo da rampa passa a ser a mediana do período comparável, nunca pior que o atual. O melhor mês inflava a consultoria B2B de R$ 322 mil para R$ 1,1 milhão.
 - A verba de mídia cresce por percentual mensal com teto (`--crescimento-midia`, `--midia-teto`), o que faz o ROAS variar.
 - Resultado consolidado: realizado onde existe, projetado à frente. `--inicio-contrato` define o Mês 1.
 - Aba "Metodologia" com fonte, janela, alertas, premissas assumidas e cenário base. Nenhum bloco de instruções na aba do cliente.
@@ -333,7 +359,7 @@ subestima assinatura por construção: ele cobra o cliente uma vez e esquece que
 - Entrevista em ordem: fonte, modelo, fee e mídia confirmados, margem, mês-alvo.
 - Cada mês tem colunas Projetado e Realizado. Bloco histórico.
 - Janela das taxas: o último quarter fechado, ponderado por volume.
-- Primeiros clientes: RPS Revestimentos, Destra Consultoria e varejo de tecidos.
+- Primeiros clientes: revestimentos, consultoria B2B e varejo de tecidos.
 
 ## v0 · Piloto original
 

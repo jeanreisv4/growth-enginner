@@ -57,6 +57,28 @@ SINONIMOS = {
     "Sessões Orgânicas": ["Sessões Orgânicas", "Sessões Organicas", "Sessões - Orgânico"],
     "Sessões Gerais": ["Sessões Gerais", "Sessões Totais"],
 }
+# Perfis: modelos que usam o motor de outro, com o vocabulário da própria operação e regras próprias.
+# PLG (product-led growth, SaaS self-serve): cadastro → trial → ativação → assinatura, com receita RECORRENTE.
+# O motor é o de inside sales (mesma cadeia de 3 etapas depois do lead), então conexão medida, LTV, caminho e
+# validação valem igual; o que muda é o que a fonte chama de cada etapa, o que a planilha mostra e o que é obrigatório.
+PERFIS = {
+    "plg": {
+        "base": "inside_sales",
+        "sinonimos": {   # o primeiro que existir na aba é usado; os rótulos do inside sales continuam valendo depois
+            "Leads": ["Cadastros", "Signups", "Sign-ups", "Contas criadas"],
+            "MQLs": ["Trials", "Trial", "Trials iniciados", "Testes grátis", "Trial liberado", "Trials liberados"],
+            "SQLs": ["Ativações", "Ativação", "Contas ativadas", "PQLs", "PQL"],
+            "Vendas": ["Assinaturas", "Assinaturas novas", "Novas assinaturas", "Conversões pagas"],
+            "Faturamento V4": ["MRR", "MRR V4", "Receita recorrente", "Receita recorrente V4"],
+            "Ticket Médio": ["Mensalidade", "Mensalidade média", "ARPA"],
+        },
+        "exige_recorrencia": True,
+        # Ativação é momento de produto (primeiro uso de verdade), e quase ninguém mede. Sem a linha, a etapa fica
+        # NEUTRA (ativações = trials) e rotulada como não medida — a cadeia não muda e nenhuma taxa é inventada.
+        "neutras": {"SQLs": "MQLs"},
+    },
+}
+PERFIL = None   # perfil ativo nesta execução (--modelo plg)
 LINHAS_FIXAS = {"fee": "Fee V4", "midia_plano": "Plano de Mídia Mês", "margem": "Gross Margin"}
 EXTRAS = {  # lidas da fonte só para informação/premissa; não fazem parte da cadeia de conversão
     "inside_sales": [],
@@ -192,6 +214,10 @@ def ler_historico(df, modelo, ga4=None):
     for e in cfg.get("opcionais", []):
         if e in dados and not any((v or 0) > 0 for v in dados[e]):
             del dados[e]
+    cfg["etapas_neutras"] = []
+    for alvo, origem in (PERFIS[PERFIL].get("neutras", {}).items() if PERFIL else []):
+        if alvo not in dados and origem in dados:   # etapa não medida: passa o volume adiante, sem taxa inventada
+            dados[alvo] = list(dados[origem]); cfg["etapas_neutras"].append(alvo)
     faltando = [e for e in cfg["etapas"] if e not in dados]
     ausentes_ok = [e for e in faltando if e in cfg.get("opcionais", [])]
     faltando = [e for e in faltando if e not in ausentes_ok]
@@ -287,6 +313,13 @@ def janela_meses(meses, janela, incluir_corrente=False):
     return sel
 
 
+def _ticket_da_linha():
+    """Em assinatura a receita da fonte é o MRR da BASE inteira e as vendas são só as assinaturas NOVAS do mês,
+    então receita ÷ vendas não é a mensalidade — infla conforme a base cresce. Com recorrência (ou perfil PLG) o
+    ticket vem da própria linha de mensalidade da fonte ("Mensalidade" / "Ticket Médio")."""
+    return bool(RECORRENCIA) or PERFIL == "plg"
+
+
 def taxas_efetivas(meses, modelo, janela, incluir_corrente=False):
     """Taxas ponderadas por volume na janela (meses fechados; mês corrente só se pedido). Devolve taxas, CPM, ticket, alertas."""
     cfg = MODELOS[modelo]
@@ -318,9 +351,16 @@ def taxas_efetivas(meses, modelo, janela, incluir_corrente=False):
             alertas.append(f"Sessões Meta: {int(soma['Sessões Meta'])} na janela; custo por sessão frágil, tratar como hipótese.")
         alertas += (cfg.get("ga4") or {}).get("alertas", [])
     rec = sum((m.get(cfg["receita"]) or 0) for m in fechados)
-    ticket = rec / soma[et[-1]] if soma[et[-1]] else None
-    if ticket is None:
-        alertas.append("Sem vendas na janela: ticket médio precisa ser informado manualmente.")
+    if _ticket_da_linha():
+        ts = [m.get(cfg["ticket"]) for m in fechados if (m.get(cfg["ticket"]) or 0) > 0]
+        ticket = sum(ts) / len(ts) if ts else None
+        if ticket is None:
+            alertas.append("Assinatura sem a linha de mensalidade na janela: informe com --fixar ticket=VALOR "
+                           "(receita ÷ assinaturas novas não é a mensalidade, porque o MRR é da base inteira).")
+    else:
+        ticket = rec / soma[et[-1]] if soma[et[-1]] else None
+        if ticket is None:
+            alertas.append("Sem vendas na janela: ticket médio precisa ser informado manualmente.")
     return {"janela_meses": [f"{m['mes']}/{m['ano']}" + (" (parcial)" if m["status"] == "corrente" else "") for m in fechados], "cpm": cpm,
             "taxas": taxas, "ticket": ticket, "volumes_janela": soma, "alertas": alertas, **extras}
 
@@ -435,7 +475,11 @@ def _levers_do_mes(m, modelo):
         lv[key] = ((m.get(num_) or 0) / d) if d else None
     rec, vendas = MODELOS[modelo]["receita"], MODELOS[modelo]["etapas"][-1]
     v = m.get(vendas) or 0
-    lv["ticket"] = ((m.get(rec) or 0) / v) if v and (m.get(rec) or 0) > 0 else None
+    if _ticket_da_linha():
+        t_ = m.get(MODELOS[modelo]["ticket"]) or 0
+        lv["ticket"] = t_ if t_ > 0 else None
+    else:
+        lv["ticket"] = ((m.get(rec) or 0) / v) if v and (m.get(rec) or 0) > 0 else None
     return lv
 
 
@@ -485,7 +529,12 @@ def envelope(meses, modelo, janela, desde=None, incluir_corrente=False):
     rec = MODELOS[modelo]["receita"]
     serie = [(_levers_do_mes(m, modelo)["ticket"], _rot(m)) for m in periodo if _levers_do_mes(m, modelo)["ticket"]]
     best = max(serie, key=lambda x: x[0]) if serie else (None, None)
-    env["ticket"] = {"rotulo": "Ticket médio", "atual": agg(win, rec, vendas_key), "mediana": _mediana([v for v, _ in serie]),
+    if _ticket_da_linha():
+        tw = [_levers_do_mes(m, modelo)["ticket"] for m in win if _levers_do_mes(m, modelo)["ticket"]]
+        atual_t = sum(tw) / len(tw) if tw else None
+    else:
+        atual_t = agg(win, rec, vendas_key)
+    env["ticket"] = {"rotulo": "Ticket médio", "atual": atual_t, "mediana": _mediana([v for v, _ in serie]),
                      "melhor": best[0], "melhor_mes": best[1], "referencia": _mediana([v for v, _ in serie]), "sentido": "maior"}
     for k, e in env.items():  # taxas de etapa não passam de 100%
         if k in ("cpm", "ticket", "custo_sessao_meta") or k.startswith("_"): continue
@@ -848,7 +897,8 @@ def main():
     p.add_argument("modo", choices=["detectar", "projetar"])
     p.add_argument("--fonte", required=True, help="xlsx, csv ou URL do Google Sheets")
     p.add_argument("--aba", default="Indicadores")
-    p.add_argument("--modelo", choices=MODELOS.keys(), default="inside_sales")
+    p.add_argument("--modelo", choices=list(MODELOS.keys()) + list(PERFIS.keys()), default="inside_sales",
+                   help="inside_sales, ecommerce ou plg (SaaS self-serve com assinatura: cadastro → trial → ativação → assinatura)")
     p.add_argument("--janela", type=int, default=3, help="meses fechados usados nas taxas efetivas")
     p.add_argument("--fee", type=float)
     p.add_argument("--midia", type=float)
@@ -899,7 +949,17 @@ def main():
     p.add_argument("--out", default="premissas.json")
     a = p.parse_args()
 
-    global VERBA_PLANO, RAMPA_ATE, RAMPA_DESDE, ORGANICO, CRM, FEE_PLANO, SAZ, CPM_CRESC, RECORRENCIA, CONEXAO_MEDIDA
+    global VERBA_PLANO, RAMPA_ATE, RAMPA_DESDE, ORGANICO, CRM, FEE_PLANO, SAZ, CPM_CRESC, RECORRENCIA, CONEXAO_MEDIDA, PERFIL
+    if a.modelo in PERFIS:
+        PERFIL, pf = a.modelo, PERFIS[a.modelo]
+        for k, alts in pf["sinonimos"].items():
+            SINONIMOS[k] = alts + [x for x in SINONIMOS.get(k, [k]) if x not in alts]
+        a.modelo = pf["base"]
+        if a.modo == "projetar" and pf.get("exige_recorrencia"):
+            if not a.churn:
+                sys.exit("modelo plg é assinatura: informe --churn (churn mensal da base). Sem medição, use a faixa do "
+                         "segmento e diga que é aproximação — SaaS SMB abaixo de US$ 1k de ACV roda 6% a 10% ao mês.")
+            a.recorrencia = True
     if a.crm:
         if a.modelo != "inside_sales": sys.exit("--crm vale para inside sales")
         CRM = json.load(open(a.crm, encoding="utf-8"))
@@ -968,6 +1028,7 @@ def main():
         "taxas_efetivas": tx,
         "cadeia_usada": MODELOS[a.modelo]["etapas"],
         "etapas_ausentes_na_fonte": MODELOS[a.modelo].get("etapas_ausentes", []),
+        "perfil": PERFIL, "etapas_neutras": MODELOS[a.modelo].get("etapas_neutras", []),
         "etapas_estimadas_pelo_ga4": MODELOS[a.modelo].get("etapas_estimadas", []),
         "janela_inclui_mes_corrente": a.incluir_corrente,
         "ga4": MODELOS[a.modelo].get("ga4"),
@@ -1075,7 +1136,7 @@ def main():
         "premissas_confirmadas": {"fee": a.fee, "midia_mensal": a.midia, "margem": a.margem, "comissao": a.comissao,
                                   "ticket": ticket, "mes_alvo": a.mes_alvo, "horizonte": a.horizonte,
                                   "lag": a.lag, "acumulado_inicial": a.acumulado_inicial, "crescimento_midia": a.crescimento_midia, "midia_teto": a.midia_teto, "connect_rate": a.connect_rate,
-                                  "definicao_breakeven": a.definicao_breakeven, "fixadas": a.fixar, "alvos_mercado": a.alvo, "verba_plano": VERBA_PLANO, "sazonalidade": SAZ, "cpm_crescimento": list(CPM_CRESC) if CPM_CRESC else None, "rampa_ate": K_rampa(a.mes_alvo), "rampa_desde": RAMPA_DESDE, "inicio": a.inicio, "organico": ORGANICO, "fee_historico": a.fee_historico, "crm": CRM, "fee_plano": FEE_PLANO, "recorrencia": RECORRENCIA, "conexao_medida": CONEXAO_MEDIDA,
+                                  "definicao_breakeven": a.definicao_breakeven, "fixadas": a.fixar, "alvos_mercado": a.alvo, "verba_plano": VERBA_PLANO, "sazonalidade": SAZ, "cpm_crescimento": list(CPM_CRESC) if CPM_CRESC else None, "rampa_ate": K_rampa(a.mes_alvo), "rampa_desde": RAMPA_DESDE, "inicio": a.inicio, "organico": ORGANICO, "fee_historico": a.fee_historico, "crm": CRM, "fee_plano": FEE_PLANO, "recorrencia": RECORRENCIA, "conexao_medida": CONEXAO_MEDIDA, "perfil": PERFIL,
                                   "realizado_usado": {str(k): round(x, 2) for k, x in REALIZADO.items()},
                                   "regra_taxas": (f"janela de {a.janela} mês(es) fechado(s)" + (" + mês corrente parcial" if a.incluir_corrente else "") + ", ponderada por volume; rampa até a mediana do período comparável")},
         "detectado": detectado, "historico": meses, "historico_resultado": hist_result,

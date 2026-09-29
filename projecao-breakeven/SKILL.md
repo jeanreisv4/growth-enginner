@@ -1,15 +1,15 @@
 ---
 name: projecao-breakeven
-description: Projeção de breakeven de mídia paga a partir do histórico do cliente (planilha padrão V4, CRM, export de mídia e GA4). Use sempre que o usuário pedir projeção de breakeven, payback de mídia, "em que mês o projeto se paga", ou enviar a planilha de indicadores de um cliente querendo saber se a meta de breakeven é realista. Conduz a entrevista (fonte, modelo, fee, mídia, mês-alvo), calcula as taxas efetivas, dá o veredito de realismo e preenche o template (inside sales ou e-commerce) sozinha.
+description: Projeção de breakeven de mídia paga a partir do histórico do cliente (planilha padrão V4, CRM, export de mídia e GA4). Use sempre que o usuário pedir projeção de breakeven, payback de mídia, "em que mês o projeto se paga", ou enviar a planilha de indicadores de um cliente querendo saber se a meta de breakeven é realista. Conduz a entrevista (fonte, modelo, fee, mídia, mês-alvo), calcula as taxas efetivas, dá o veredito de realismo e preenche o template (inside sales, e-commerce ou PLG — SaaS de assinatura com trial) sozinha.
 ---
 
 # Projeção de breakeven
 
-**Versão 7.9.5 (29/09/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
+**Versão 8.0 (29/09/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
 
 A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não espera o usuário lembrar o que precisa informar. A segunda é a execução automática: com as premissas confirmadas, ela roda o piloto, dá o veredito e preenche o template, sem etapa manual.
 
-**Antes de começar, leia a referência do modelo:** `referencias/ecommerce.md` ou `referencias/inside_sales.md`. Elas trazem as armadilhas das planilhas reais e os casos que servem para calibrar se o resultado faz sentido.
+**Antes de começar, leia a referência do modelo:** `referencias/ecommerce.md`, `referencias/inside_sales.md` ou `referencias/plg.md`. Elas trazem as armadilhas das planilhas reais e os casos que servem para calibrar se o resultado faz sentido.
 
 ## 1. Entrevista (sempre nesta ordem, uma pergunta por vez)
 
@@ -29,7 +29,7 @@ A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não esp
 - Carrinho e checkout do pago passam a ser medidos, e as sessões não pagas vêm do GA4.
 - Pedidos e receita continuam da fonte, na atribuição das plataformas.
 
-**1.2 Modelo.** Pergunte qual template preencher: `inside_sales` (lead → conexão → MQL → SQL → venda) ou `ecommerce` (clique → sessão → carrinho → checkout → pedido). Se a fonte só tem as linhas de um dos dois, sugira esse e peça confirmação.
+**1.2 Modelo.** Pergunte qual template preencher: `inside_sales` (lead → conexão → MQL → SQL → venda), `ecommerce` (clique → sessão → carrinho → checkout → pedido) ou `plg` (cadastro → trial → ativação → assinatura, com receita recorrente). Se a fonte só tem as linhas de um dos três, sugira esse e peça confirmação. **Se a receita é assinatura (mensalidade, plano, trial), o modelo é `plg`**, mesmo que a planilha do cliente esteja montada como inside sales: ele exige `--churn`, lê a mensalidade da linha da fonte e mostra cadastro, trial, ativação e assinatura na aba. Ativação sem medição fica neutra e rotulada como não medida. Detalhes em `referencias/plg.md`.
 
 **1.3 Fee e mídia.** Rode `python3 scripts/breakeven_pilot.py detectar --fonte <arquivo ou URL> --aba Indicadores --modelo <modelo>` e apresente o que foi lido: meses fechados, mês corrente, fee, mídia planejada, mídia realizada média e margem.
 - **Peça confirmação explícita do fee e da verba mensal**, mesmo que tenham sido detectados. O usuário pode corrigir (renegociação de fee, plano de mídia novo). Nunca projete com valores não confirmados. Se o fee do contrato diverge da linha Fee V4 da fonte (EZ: R$ 6.901 no contrato, R$ 9.000 no Growth Pack), use `--fee-historico` para aplicar o fee certo também no déficit e no realizado, e avise que a fonte precisa ser corrigida.
