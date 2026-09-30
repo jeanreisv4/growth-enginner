@@ -131,9 +131,13 @@ confere("SKILL.md manda rodar o pré-voo e o briefing", "preflight.py" in _sk an
 confere("referencias/entrevista.md existe com perecíveis e formatos", all(x in open(os.path.join(AQUI, "..", "referencias", "entrevista.md")).read()
         for x in ("## O que expira", "## Formato dos exports", "90 dias")))
 
-# publicar: IDs dos config.json de clientes nunca vão para a cópia pública (nome anonimizado não basta)
-import publicar as _pub
-with tempfile.TemporaryDirectory() as d:
+# publicar: IDs dos config.json de clientes nunca vão para a cópia pública (nome anonimizado não basta).
+# publicar.py não vai para a cópia pública: lá o caso é pulado.
+_tem_pub = os.path.exists(os.path.join(AQUI, "..", "scripts", "publicar.py"))
+if _tem_pub:
+    import publicar as _pub
+with (tempfile.TemporaryDirectory() if _tem_pub else open(os.devnull)) as d:
+  if _tem_pub:
     os.makedirs(os.path.join(d, "clientes", "x"))
     json.dump({"_nota": "123456789", "ga4": {"fluxo": "G-ABCD1234EF"}, "meta": {"conjunto_de_dados": "999988887777666"}, "site": "https://x.com"},
               open(os.path.join(d, "clientes", "x", "config.json"), "w"))
