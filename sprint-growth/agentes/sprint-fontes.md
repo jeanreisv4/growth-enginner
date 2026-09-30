@@ -34,6 +34,13 @@ Rode todo comando assim: `cd "<PASTA_SKILL>" && python3 scripts/...`.
 `leads_total`, `leads_google`, `leads_meta` (pessoas únicas, sem teste — chaves comuns do contrato),
 `pessoas_sem_origem`, `testes_excluidos`, `leads_linhas` (unidade `pessoas` ou `linhas`), com a fonte.
 
+## Cobertura do catálogo (obrigatória)
+O que esta frente verifica está em `referencias/plataformas/`: `fontes.md` (e I11 de `crm_integracao.md`). Liste os seus itens com
+`python3 scripts/catalogo.py --frente fontes` e verifique **todos**. No JSON, `cobertura` traz o status de cada
+id (`ok`, `achado`, `nao_medido`, `nao_se_aplica`); cada achado leva `item` (o id) e `correcao_id` (a
+correção `CX-…` da tabela Correção que resolve). Item crítico ou alto sem status reprova a frente no
+consolidado. Achado fora do catálogo vai sem `item` e vira proposta de item novo.
+
 ## Saída
 `<SPRINT>/achados/fontes.json` (formato de `referencias/contrato_achados.md`, ids `FON-`) e `<SPRINT>/achados/fontes.md`.
 Somente leitura: nunca escreva em planilha, CRM ou n8n. Nenhum telefone ou e-mail real vai para os achados.

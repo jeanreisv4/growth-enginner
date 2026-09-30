@@ -18,6 +18,7 @@ Frentes: `fontes`, `google-ads`, `meta-ads`, `medicao`, `clarity`, `jornada`, `c
     {"nome": "Google Ads 1234567890 (API)", "periodo": "01/07–28/09", "ultimo_dia": "2026-09-28", "confiabilidade": "alta"}
   ],
   "nao_medido": ["conversões offline: upload bloqueado na conta"],
+  "cobertura": {"A1": "achado", "A2": "ok", "A15": "nao_medido", "A26": "nao_se_aplica"},
   "numeros": {
     "gasto_google": {"valor": 18230.5, "unidade": "R$", "fonte": "Google Ads API, 01/07–28/09"},
     "leads_google": {"valor": 212, "unidade": "leads", "fonte": "conversão 00.2 Lead (Ads)"}
@@ -35,7 +36,9 @@ Frentes: `fontes`, `google-ads`, `meta-ads`, `medicao`, `clarity`, `jornada`, `c
       "correcao": "Corrigir o rótulo da tag 01 - GAds - Lead no GTM web",
       "como_executar": "MCP GTM (rascunho, versão, ok do usuário, publicar)",
       "esforco": "15 min",
-      "verificacao": "teste_disparo.py mostra o hit com o rótulo certo; conversões > 0 em 48 h"
+      "verificacao": "teste_disparo.py mostra o hit com o rótulo certo; conversões > 0 em 48 h",
+      "item": "A1",
+      "correcao_id": "CX-G1"
     }
   ],
   "perguntas": ["Qual das duas contas de anúncios (sufixo 01 e 02) é da V4?"]
@@ -47,6 +50,9 @@ Frentes: `fontes`, `google-ads`, `meta-ads`, `medicao`, `clarity`, `jornada`, `c
 | Campo | Regra |
 | --- | --- |
 | `fontes[].confiabilidade` | `alta`, `media` ou `baixa`. Base parada no meio do período é `baixa` e o buraco vai em `nao_medido`. |
+| `cobertura` | Status de **cada** item do catálogo em que a frente é responsável (`python3 scripts/catalogo.py --frente <frente>`): `ok`, `achado`, `nao_medido` (o motivo vai em `nao_medido`) ou `nao_se_aplica`. Item sem status aparece no consolidado como **não verificado**. |
+| `achados[].item` | Id do item do catálogo que gerou o achado (`A1`, `M3`, `GA2`…). Opcional só para achado fora do catálogo, que vira proposta de item novo no fechamento da sprint. |
+| `achados[].correcao_id` | A correção do catálogo que resolve (`CX-G1`). É o que o modo correção executa (`referencias/modos.md`). |
 | `nao_medido` | Tudo que a frente não conseguiu medir, com o motivo. Nunca vira zero. |
 | `numeros` | Os números que outras frentes também medem (gasto, leads, pessoas, sessões, vendas). Chave em `snake_case`, sempre com unidade e fonte. O consolidador aponta **divergência** quando a mesma chave vem de duas frentes com mais de 10% de diferença. |
 | `achados[].id` | Prefixo da frente + número: `FON`, `ADS`, `META`, `MED`, `CLA`, `JOR`, `COM`, `MER`. |

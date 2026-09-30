@@ -30,8 +30,9 @@ Tempo real de execução: 5 min, 15 min, 1 h, 1–2 dias, "processo comercial".
 
 ## Tabela 5W1H (fim da aba Diagnóstico e plano)
 
-| O quê | Por quê | Quem | Onde | Quando | Como | Impacto | Confiança | Esforço | Status |
+| O quê | Por quê | Quem | Onde | Quando | Como | Correção | Impacto | Confiança | Esforço | Status |
 
-- **Por quê** traz o número do achado.
+- **Por quê** traz o número do achado (e o item do catálogo, ex.: A2).
+- **Correção** é o id `CX-…` da tabela Correção da plataforma: é o que o modo correção executa, com o risco dela.
 - **Quem** e **Quando** são sugestões para ajustar com o cliente; datas como chip.
 - **Status** = menu A fazer / Em andamento / Feito. "Feito" → a linha vai para a aba Executado.

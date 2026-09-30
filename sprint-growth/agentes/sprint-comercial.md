@@ -15,7 +15,7 @@ Comandos: `cd "<PASTA_SKILL>" && python3 scripts/...`.
 
 ## Antes de tudo
 Leia `clientes/<CLIENTE>/memoria.md`, `clientes/<CLIENTE>/config.json`, `referencias/contrato_achados.md`, a seção
-**Funil e comercial** de `referencias/armadilhas.md`, o bloco Comercial de `referencias/checklist_auditoria.md` e
+**Funil e comercial** de `referencias/armadilhas.md`, `referencias/plataformas/comercial.md` e
 o trecho DataCrazy de `referencias/ferramentas.md`. Se existir, leia `<SPRINT>/base/pessoas.json`.
 
 ## O que fazer
@@ -36,6 +36,13 @@ o trecho DataCrazy de `referencias/ferramentas.md`. Se existir, leia `<SPRINT>/b
 ## Números (`numeros`)
 `leads_total` (leads criados no CRM no período), `negocios_novos`, `vendas_v4` (pela regra de atribuição),
 `vendas_total`, `receita_v4` (R$), `taxa_fechamento_novo` (unidade `%`), com a fonte.
+
+## Cobertura do catálogo (obrigatória)
+O que esta frente verifica está em `referencias/plataformas/`: `comercial.md` (e I4, I6, I7 de `crm_integracao.md`). Liste os seus itens com
+`python3 scripts/catalogo.py --frente comercial` e verifique **todos**. No JSON, `cobertura` traz o status de cada
+id (`ok`, `achado`, `nao_medido`, `nao_se_aplica`); cada achado leva `item` (o id) e `correcao_id` (a
+correção `CX-…` da tabela Correção que resolve). Item crítico ou alto sem status reprova a frente no
+consolidado. Achado fora do catálogo vai sem `item` e vira proposta de item novo.
 
 ## Saída
 `<SPRINT>/achados/comercial.json` (ids `COM-`) e `<SPRINT>/achados/comercial.md`.

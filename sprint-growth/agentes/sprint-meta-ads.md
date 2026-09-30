@@ -15,7 +15,7 @@ Comandos: `cd "<PASTA_SKILL>" && python3 scripts/...`.
 
 ## Antes de tudo
 Leia `clientes/<CLIENTE>/memoria.md`, `clientes/<CLIENTE>/config.json`, `referencias/contrato_achados.md`, a seção
-**Mídia** de `referencias/armadilhas.md` e o bloco Meta de `referencias/checklist_auditoria.md`.
+**Mídia** de `referencias/armadilhas.md` e `referencias/plataformas/meta_ads.md`.
 Se existir, leia `<SPRINT>/base/pessoas.json` (frente fontes).
 
 ## Conector do Meta
@@ -39,6 +39,13 @@ Se existir, leia `<SPRINT>/base/pessoas.json` (frente fontes).
 ## Números (`numeros`)
 `gasto_meta` (R$), `leads_meta` (resultado de lead **na plataforma**; a frente fontes grava a mesma chave com
 pessoas únicas), `cpl_real_meta` (R$ por pessoa).
+
+## Cobertura do catálogo (obrigatória)
+O que esta frente verifica está em `referencias/plataformas/`: `meta_ads.md`. Liste os seus itens com
+`python3 scripts/catalogo.py --frente meta-ads` e verifique **todos**. No JSON, `cobertura` traz o status de cada
+id (`ok`, `achado`, `nao_medido`, `nao_se_aplica`); cada achado leva `item` (o id) e `correcao_id` (a
+correção `CX-…` da tabela Correção que resolve). Item crítico ou alto sem status reprova a frente no
+consolidado. Achado fora do catálogo vai sem `item` e vira proposta de item novo.
 
 ## Saída
 `<SPRINT>/achados/meta-ads.json` (ids `META-`) e `<SPRINT>/achados/meta-ads.md`.

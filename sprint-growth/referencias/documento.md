@@ -21,7 +21,7 @@ Público: time da V4 e o cliente. Português, frases curtas, número com unidade
 12. **Referência de mercado**.
 13. **Google Ads: o que falta decidir**.
 14. **Pendências** (dados a receber, perguntas, próximos passos).
-15. **Plano de ação 5W1H** com Status.
+15. **Plano de ação 5W1H** com Status e a coluna Correção (o id `CX-…` do catálogo, com o risco R1/R2/R3).
 16. **Fontes** (última linha).
 
 ### Seção obrigatória logo depois do resumo

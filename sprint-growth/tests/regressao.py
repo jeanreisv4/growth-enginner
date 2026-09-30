@@ -195,6 +195,42 @@ if os.path.basename(os.path.dirname(os.path.abspath(RAIZ))) == "skills":  # só 
     dif = instalar_agentes.diferencas(instalar_agentes.destino_padrao())
     confere("agentes instalados batem com a fonte" + (f" ({dif})" if dif else ""), not dif)
 
+# catálogo de auditoria e correção: cobertura de 100%, README e agentes coerentes
+import catalogo
+cat = catalogo.carregar()
+prob = catalogo.conferir(cat)
+confere("catálogo íntegro (todo item de auditoria tem correção)" + (f" ({prob[:3]})" if prob else ""), not prob)
+confere("catálogo cobre as 8 frentes", {a["Frente"] for a in cat["auditoria"].values()} == set(catalogo.FRENTES))
+confere("README traz a tabela de cobertura do catálogo", catalogo.resumo(cat) in open(os.path.join(RAIZ, "README.md")).read())
+for f in catalogo.FRENTES:
+    confere(f"agente sprint-{f} lista os itens pelo catálogo",
+            f"catalogo.py --frente {f}" in open(os.path.join(RAIZ, "agentes", f"sprint-{f}.md"), encoding="utf-8").read())
+with tempfile.TemporaryDirectory() as d:
+    open(os.path.join(d, "x.md"), "w").write(
+        "# X\n\n## Auditoria\n\n| " + " | ".join(catalogo.COLS_AUD) + " |\n|" + " --- |" * 6 + "\n"
+        "| X1 | a | fontes | b | c | alta |\n| X2 | a | fontes | b | c | baixa |\n\n## Correção\n\n| "
+        + " | ".join(catalogo.COLS_COR) + " |\n|" + " --- |" * 8 + "\n| CX-X1 | a | X1, X9 | b | c | R4 | d | e |\n")
+    p2 = catalogo.conferir(catalogo.carregar(d))
+    confere("catálogo reprova item sem correção", any("X2 sem nenhuma correção" in x for x in p2))
+    confere("catálogo reprova risco fora de R1–R3 e id inexistente",
+            any("risco 'R4'" in x for x in p2) and any("X9, que não existe" in x for x in p2))
+with tempfile.TemporaryDirectory() as d:
+    os.makedirs(os.path.join(d, "achados"))
+    itens = catalogo.por_frente(cat, "google-ads")
+    cob = {i: "ok" for i in itens if i != "A1"}
+    json.dump({"frente": "google-ads", "cobertura": cob, "achados": []}, open(os.path.join(d, "achados", "google-ads.json"), "w"))
+    json.dump({"frente": "clarity", "cobertura": {"C1": "ok", "A2": "ok", "C2": "talvez"},
+               "achados": [dict(base_ach, id="CLA-01", item="C9", correcao_id="CX-C99")]},
+              open(os.path.join(d, "achados", "clarity.json"), "w"))
+    res = consolidar.consolidar(d, ["google-ads", "clarity"])
+    c = res["cobertura"].get("google-ads", {})
+    confere("consolidado conta a cobertura da frente", c.get("itens") == len(itens) and c.get("nao_verificados") == ["A1"])
+    confere("consolidado destaca crítico sem status", c.get("criticos_sem_status") == ["A1"])
+    confere("consolidado recusa id de outra frente, status inválido, item e correção inexistentes",
+            any("A2 é da frente google-ads" in x for x in res["problemas"]) and any("'talvez'" in x for x in res["problemas"])
+            and any("item C9" in x for x in res["problemas"]) and any("CX-C99" in x for x in res["problemas"]))
+    confere("markdown do consolidado mostra a cobertura", "Cobertura do catálogo" in consolidar.markdown(res))
+
 # desenhos: os SVG de assets/ são os que o gerador produz hoje (ninguém edita à mão, nada fica velho)
 import desenhos
 for nome, fn in (("capa.svg", desenhos.capa), ("fluxo.svg", desenhos.fluxo), ("agentes.svg", desenhos.agentes)):

@@ -33,6 +33,13 @@ armadilhas de Clarity em `referencias/armadilhas.md` (seção **Medição**).
 ## Números (`numeros`)
 `sessoes_clarity` (sessões no período acumulado), `sessoes_robo_clarity`.
 
+## Cobertura do catálogo (obrigatória)
+O que esta frente verifica está em `referencias/plataformas/`: `clarity.md`. Liste os seus itens com
+`python3 scripts/catalogo.py --frente clarity` e verifique **todos**. No JSON, `cobertura` traz o status de cada
+id (`ok`, `achado`, `nao_medido`, `nao_se_aplica`); cada achado leva `item` (o id) e `correcao_id` (a
+correção `CX-…` da tabela Correção que resolve). Item crítico ou alto sem status reprova a frente no
+consolidado. Achado fora do catálogo vai sem `item` e vira proposta de item novo.
+
 ## Saída
 `<SPRINT>/achados/clarity.json` (ids `CLA-`) e `<SPRINT>/achados/clarity.md`.
 Termine com uma linha: dias acumulados, alertas e a página com mais fricção.

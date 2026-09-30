@@ -1,5 +1,26 @@
 # Changelog
 
+## v2.1 (30/09/2026)
+
+Dois modos com catálogo completo por plataforma, para a sprint cobrir 100% do que se verifica e do que se corrige.
+- **`referencias/plataformas/`**: fontes, Google Ads, Meta Ads, GA4, GTM web e servidor, Clarity, páginas, CRM e
+  integração, comercial e mercado. Cada arquivo tem a tabela **Auditoria** (id, verificação, frente, como verificar,
+  sinal de problema, gravidade) e a tabela **Correção** (id `CX-…`, o que corrige, como aplicar, validar antes, risco,
+  voltar atrás, verificar depois). 131 itens de auditoria, 108 correções; todo item tem correção.
+- **`referencias/modos.md`**: auditoria (somente leitura, cobertura item a item) e correção (preparar, validar, mostrar,
+  ok, aplicar, reler, registrar, monitorar), com risco R1/R2/R3. Substitui `execucao.md`; o catálogo substitui
+  `checklist_auditoria.md`.
+- `catalogo.py`: lê e confere o catálogo; `--frente` lista os itens de cada agente.
+- Contrato de achados: `cobertura` (status de cada item da frente), `item` e `correcao_id` em cada achado.
+- `consolidar.py`: cobertura por frente, itens não verificados e críticos ou altos sem status; recusa id de outra frente.
+- Agentes: cobertura do catálogo obrigatória. 5W1H ganha a coluna Correção.
+- Regressão: 124 casos (catálogo íntegro, item sem correção reprovado, README = catálogo, cobertura no consolidado).
+
+## v2.0.3 (29/09/2026)
+
+- Armadilhas: integração nativa da loja com a mesma conta do Google Ads (tags do GTM param de enviar) e container
+  copiado de outro cliente (constantes erradas e sobras).
+
 ## v2.0.2 (29/09/2026)
 
 - Desenhos do README com o logo da ferramenta de cada agente: Google Ads e Google Analytics desenhados com a

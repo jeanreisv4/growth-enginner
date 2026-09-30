@@ -5,7 +5,7 @@ description: Sprint growth de cliente da V4 — auditoria da jornada inteira, do
 
 # Sprint growth
 
-**Versão 2.0.2 (29/09/2026).** Histórico em `CHANGELOG.md`. Caminhos relativos à pasta da skill
+**Versão 2.1 (30/09/2026).** Histórico em `CHANGELOG.md`. Caminhos relativos à pasta da skill
 (`.claude/skills/sprint-growth/`). Clientes em `clientes/<cliente>/` (versionado no git local, fora da cópia
 pública). Configuração das MCPs em `~/.config/sprint-growth/config.json` (fora do repositório).
 
@@ -13,6 +13,18 @@ A sprint responde três perguntas, nesta ordem: **onde o cliente está** (medido
 etapa, do clique à venda) e **o que fazer primeiro** (em R$ de receita, com confiança e esforço). Ela valida a
 jornada inteira: tráfego, conversão, integração, jornada de compra, comercial e margem. O desenho do fluxo está
 no `README.md` (seção Workflow).
+
+## Modos: auditoria e correção
+
+A sprint tem dois modos, com o mesmo catálogo por plataforma em `referencias/plataformas/` (fontes, Google Ads, Meta
+Ads, GA4, GTM web e servidor, Clarity, páginas, CRM e integração, comercial, mercado). Cada arquivo lista **tudo o
+que se verifica** (ids `A1`, `M3`, `GA2`…) e **tudo o que se corrige** (ids `CX-…`, com risco, volta e verificação).
+`python3 scripts/catalogo.py` confere que todo item de auditoria tem correção.
+
+- **Auditoria** (etapas 0–4): somente leitura, pelos agentes; cada frente devolve o status de todos os seus itens.
+- **Correção** (etapa 5): executa um `CX-…` do plano ou de uma ordem direta ("corrige o A2 do cliente X"), no ciclo
+  de `referencias/modos.md`: preparar, validar antes, mostrar, ok explícito, aplicar, reler, registrar, monitorar.
+- Pedido de correção sem achado recente: audite a frente primeiro. Nunca corrigir sem o número.
 
 ## 0. Antes de tudo
 
@@ -100,7 +112,7 @@ funil** (estratificado) e **Leads por CNPJ**. Número corrigido na conversa é c
 
 ## 5. Execução
 
-`referencias/execucao.md`. Resumo: toda mudança é **validada antes** (validateOnly, draft do GTM) e só é aplicada
+`referencias/modos.md` (ciclo e risco R1/R2/R3) e a tabela Correção da plataforma. Resumo: toda mudança é **validada antes** (validateOnly, draft do GTM) e só é aplicada
 com ok explícito do usuário para aquela mudança; depois é **relida** pela API e registrada na aba Executado.
 Publicar GTM, criar fluxo no n8n e mexer em conta de cliente passam pelo modo automático do Claude Code: se ele
 negar, pare, explique e deixe a decisão com o usuário — nunca contorne.
@@ -110,7 +122,7 @@ negar, pare, explique e deixe a decisão com o usuário — nunca contorne.
 Ao fim de toda sprint (ou quando o usuário pedir):
 1. Atualize `clientes/<cliente>/memoria.md` (premissas, IDs, decisões, executado, pendências, link do documento).
 2. Leve cada armadilha nova para `referencias/armadilhas.md` e cada verificação nova para
-   `referencias/checklist_auditoria.md` (e para o script, se couber). Se a lição muda o roteiro de uma frente,
+   o catálogo em `referencias/plataformas/` (item de auditoria e a correção que o resolve; e para o script, se couber). Se a lição muda o roteiro de uma frente,
    edite `agentes/sprint-<frente>.md` e rode `python3 scripts/instalar_agentes.py`.
 3. Rode `python3 tests/regressao.py`; entrada no `CHANGELOG.md`; versão no topo deste arquivo; commit e tag.
 4. Publicação: `python3 scripts/publicar.py --destino <pasta>` e `--conferir <pasta>` antes do push.

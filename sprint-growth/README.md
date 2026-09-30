@@ -2,7 +2,7 @@
 
 ![Capa da sprint-growth: comandos sendo digitados e um funil do tráfego à receita em que os leads vazam na restrição](assets/capa.svg)
 
-![versão](https://img.shields.io/badge/versão-2.0.2-E50914) ![regressão](https://img.shields.io/badge/regressão-107%20casos-111111) ![agentes](https://img.shields.io/badge/agentes-8-111111)
+![versão](https://img.shields.io/badge/versão-2.1-E50914) ![regressão](https://img.shields.io/badge/regressão-124%20casos-111111) ![agentes](https://img.shields.io/badge/agentes-8-111111)
 
 Skill do Claude Code para a **sprint growth** de cliente de agência: audita a jornada inteira, do tráfego à venda,
 acha a restrição do sistema pela Teoria das Restrições e entrega um plano 5W1H priorizado por impacto em receita,
@@ -88,6 +88,35 @@ vermelho = trava ou prioridade · ↺ = onde o loop se fecha. Na seta entre as f
 
 </details>
 
+## Modos: auditoria e correção
+
+A sprint tem dois modos sobre o mesmo catálogo. Cada plataforma tem um arquivo com **tudo o que se verifica**
+(tabela Auditoria: o que olhar, qual agente, como, o sinal de problema e a gravidade) e **tudo o que se corrige**
+(tabela Correção: o que corrige, como aplicar, o que validar antes, o risco, como voltar atrás e como conferir
+depois). Todo item de auditoria tem pelo menos uma correção; [`catalogo.py`](scripts/catalogo.py) e a regressão
+conferem.
+
+- **Auditoria**: somente leitura, pelos agentes. Cada frente devolve o status de **cada** item seu (ok, achado, não
+  medido, não se aplica) e o consolidado mostra o que ficou sem verificar.
+- **Correção**: executa um `CX-…` do plano ou de uma ordem direta ("corrige o A2 do cliente X"). Ciclo em
+  [`modos.md`](referencias/modos.md): preparar, validar antes, mostrar, ok explícito, aplicar, reler, registrar,
+  monitorar. Risco **R1** (reversível na hora), **R2** (configuração com volta guardada) e **R3** (mexe no
+  aprendizado da plataforma: ok à parte).
+
+| Plataforma | Itens de auditoria | Correções | Críticos e altos |
+| --- | --- | --- | --- |
+| [`clarity.md`](referencias/plataformas/clarity.md) | 8 | 7 | 3 |
+| [`comercial.md`](referencias/plataformas/comercial.md) | 10 | 10 | 5 |
+| [`crm_integracao.md`](referencias/plataformas/crm_integracao.md) | 11 | 11 | 6 |
+| [`fontes.md`](referencias/plataformas/fontes.md) | 8 | 5 | 6 |
+| [`ga4.md`](referencias/plataformas/ga4.md) | 13 | 13 | 6 |
+| [`google_ads.md`](referencias/plataformas/google_ads.md) | 28 | 19 | 10 |
+| [`gtm.md`](referencias/plataformas/gtm.md) | 18 | 15 | 13 |
+| [`mercado.md`](referencias/plataformas/mercado.md) | 5 | 2 | 0 |
+| [`meta_ads.md`](referencias/plataformas/meta_ads.md) | 18 | 14 | 8 |
+| [`paginas.md`](referencias/plataformas/paginas.md) | 12 | 12 | 5 |
+| **Total** | **131** | **108** | **62** |
+
 ## Como funciona
 
 Uma linha por fase do desenho e uma por agente. "Trava" é o que impede a fase seguinte; o roteiro completo está
@@ -99,11 +128,11 @@ no [SKILL.md](SKILL.md), cada frente no seu arquivo em [agentes/](agentes/) e as
 | **0 · Memória** | `clientes/<c>/memoria.md`, se existir | Lê inteira antes de perguntar; senão copia o modelo de cliente | [`templates/cliente/`](templates/cliente/) | IDs, premissas, regra de atribuição, o que foi executado | — |
 | **1 · Entrevista** | Usuário, uma pergunta por vez | Modelo de negócio, fee, verba, margem pelo DRE, meta, realizado oficial, como a venda é contada, atribuição da V4 | — | Premissas na memória e o bloco de entrada dos agentes | Sem realizado oficial, nenhum gráfico |
 | **2 · Agentes** | Bloco de entrada | Onda 1 (fontes) e onda 2 (as frentes que se aplicam, em paralelo); cada agente grava `achados/<frente>.json` + `.md` | [`instalar_agentes.py`](scripts/instalar_agentes.py), [`contrato_achados.md`](referencias/contrato_achados.md) | Achados com número, fonte, confiança e correção proposta | Agente não fala com o usuário: o que falta vem em `perguntas` |
-| **2 · Consolidação** | `achados/*.json` | Confere o contrato, ordena (segurança e medição primeiro, depois R$), aponta a mesma métrica divergindo entre frentes | [`consolidar.py`](scripts/consolidar.py) | `consolidado.md` e `.json` | Arquivo recusado volta ao agente; divergência vira pergunta de qual fonte manda |
+| **2 · Consolidação** | `achados/*.json` | Confere o contrato, mostra a cobertura do catálogo por frente, ordena (segurança e medição primeiro, depois R$), aponta a mesma métrica divergindo entre frentes | [`consolidar.py`](scripts/consolidar.py) | `consolidado.md` e `.json` | Arquivo recusado volta ao agente; item crítico ou alto sem status; divergência vira pergunta de qual fonte manda |
 | **3 · Decisão** | Consolidado | Restrição pela TOC (do sistema ou da mídia); impacto em R$ × confiança × esforço; os 2 maiores achados conferidos à mão | [`priorizacao.md`](referencias/priorizacao.md) | Plano 5W1H com Status | — |
 | **4 · Documento** | Tudo acima | Claude Docs: Diagnóstico e plano, Dados do funil, Leads por CNPJ, Executado | [`documento.md`](referencias/documento.md) | Documento para o time e o cliente | Gráfico com título que não bate com o número |
-| **5 · Execução** | Plano aprovado | Valida antes (validateOnly, rascunho do GTM), aplica com ok, relê e registra | [`ads_escrita.py`](scripts/ads_escrita.py), MCPs | Linha na aba Executado | Sem ok explícito para aquela mudança, nada muda |
-| **↺ 6 · Fechamento** | O que a sprint ensinou | Memória, armadilhas, checklist, agentes, regressão, CHANGELOG, tag, cópia pública conferida | [`regressao.py`](tests/regressao.py) | Nova versão | Regressão falhando |
+| **5 · Correção** | Linha do plano com o `CX-…` | Prepara, valida antes (validateOnly, rascunho do GTM, backup do fluxo), mostra risco e volta, aplica com ok, relê e registra | [`modos.md`](referencias/modos.md), tabela Correção da plataforma, [`ads_escrita.py`](scripts/ads_escrita.py), MCPs | Linha na aba Executado, com o valor anterior | Sem ok explícito para aquela mudança, nada muda; R3 pede ok à parte |
+| **↺ 6 · Fechamento** | O que a sprint ensinou | Memória, armadilhas, catálogo (item e correção novos), agentes, regressão, CHANGELOG, tag, cópia pública conferida | [`regressao.py`](tests/regressao.py) | Nova versão | Regressão falhando |
 
 ![Os 8 agentes da sprint-growth em volta do orquestrador, todos somente leitura](assets/agentes.svg)
 
@@ -130,8 +159,9 @@ Abra uma conversa nova para o Claude Code carregar os agentes. Uma frente só: "
 
 - `SKILL.md`: o roteiro em 7 etapas (0 a 6) e a condução dos agentes.
 - `agentes/`: um agente por frente (fonte única; instalados por `scripts/instalar_agentes.py`).
-- `referencias/`: contrato de achados, armadilhas, checklist, priorização (TOC + impacto em R$), documento,
-  execução, ferramentas (MCPs, Clarity, BrasilAPI, DataCrazy) e negativas base.
+- `referencias/plataformas/`: o catálogo de auditoria e correção, um arquivo por plataforma.
+- `referencias/`: modos (auditoria e correção, risco), contrato de achados, armadilhas, priorização (TOC + impacto
+  em R$), documento, ferramentas (MCPs, Clarity, BrasilAPI, DataCrazy) e negativas base.
 - `scripts/`:
   - `mcp_http.py`, `ads_auditoria.py`, `termos_negativas.py`, `ads_escrita.py`: Google Ads;
   - `gtm_auditoria.py`, `teste_disparo.py`, `teste_formulario.py`: medição;
@@ -139,7 +169,8 @@ Abra uma conversa nova para o Claude Code carregar os agentes. Uma frente só: "
   - `leads.py`: pessoa única, teste e canal;
   - `datacrazy.py`: CRM (download, histórico, novo × antigo);
   - `cnpj.py`: qualificação B2B pela Receita;
-  - `consolidar.py`: junta os achados das frentes;
+  - `catalogo.py`: lê e confere o catálogo (cobertura de 100%);
+  - `consolidar.py`: junta os achados das frentes e mostra a cobertura;
   - `instalar_agentes.py`: instala e confere os agentes;
   - `desenhos.py`: gera os desenhos animados de `assets/`;
   - `publicar.py`: gera a cópia pública.

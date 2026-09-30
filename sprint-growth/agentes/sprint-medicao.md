@@ -17,7 +17,7 @@ Comandos: `cd "<PASTA_SKILL>" && python3 scripts/...` (os de navegador com `uvx 
 
 ## Antes de tudo
 Leia `clientes/<CLIENTE>/memoria.md`, `clientes/<CLIENTE>/config.json`, `referencias/contrato_achados.md`, a seção
-**Medição** de `referencias/armadilhas.md` e o bloco Medição de `referencias/checklist_auditoria.md`.
+**Medição** de `referencias/armadilhas.md`, `referencias/plataformas/gtm.md` e `referencias/plataformas/ga4.md`.
 
 ## O que fazer
 1. **GTM × Ads**: `python3 scripts/gtm_auditoria.py --conta-gtm <c> --web <id> [--server <id>] --ads <conta>
@@ -36,6 +36,13 @@ Leia `clientes/<CLIENTE>/memoria.md`, `clientes/<CLIENTE>/config.json`, `referen
 ## Números (`numeros`)
 Chaves comuns do contrato medidas **pelo GA4**: `leads_total` (evento de lead, todas as origens), `leads_google`
 (origem google / cpc), `leads_meta` (origem Meta paga), sempre com o nome do evento na fonte.
+
+## Cobertura do catálogo (obrigatória)
+O que esta frente verifica está em `referencias/plataformas/`: `gtm.md`, `ga4.md`, M13–M15 de `meta_ads.md` e os itens I da frente em `crm_integracao.md`. Liste os seus itens com
+`python3 scripts/catalogo.py --frente medicao` e verifique **todos**. No JSON, `cobertura` traz o status de cada
+id (`ok`, `achado`, `nao_medido`, `nao_se_aplica`); cada achado leva `item` (o id) e `correcao_id` (a
+correção `CX-…` da tabela Correção que resolve). Item crítico ou alto sem status reprova a frente no
+consolidado. Achado fora do catálogo vai sem `item` e vira proposta de item novo.
 
 ## Saída
 `<SPRINT>/achados/medicao.json` (ids `MED-`) e `<SPRINT>/achados/medicao.md` (tabela: ponto · situação · efeito).

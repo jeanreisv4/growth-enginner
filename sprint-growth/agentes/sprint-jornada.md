@@ -13,8 +13,8 @@ vai em `perguntas`.
 Comandos: `cd "<PASTA_SKILL>" && python3 scripts/...`.
 
 ## Antes de tudo
-Leia `clientes/<CLIENTE>/memoria.md`, `clientes/<CLIENTE>/config.json`, `referencias/contrato_achados.md` e o
-bloco Página e SEO de `referencias/checklist_auditoria.md`. Se existir, leia `<SPRINT>/base/pessoas.json`.
+Leia `clientes/<CLIENTE>/memoria.md`, `clientes/<CLIENTE>/config.json`, `referencias/contrato_achados.md` e
+`referencias/plataformas/paginas.md`. Se existir, leia `<SPRINT>/base/pessoas.json`.
 
 ## O que fazer
 1. **Destinos**: URL final de cada anúncio (Google: `landing_page_view` via `ads_search`; Meta: criativos) com gasto
@@ -34,6 +34,13 @@ bloco Página e SEO de `referencias/checklist_auditoria.md`. Se existir, leia `<
 
 ## Números (`numeros`)
 `sessoes_lp` (GA4, página principal de mídia), `gasto_por_destino` não entra (é tabela, fica no `.md`).
+
+## Cobertura do catálogo (obrigatória)
+O que esta frente verifica está em `referencias/plataformas/`: `paginas.md`. Liste os seus itens com
+`python3 scripts/catalogo.py --frente jornada` e verifique **todos**. No JSON, `cobertura` traz o status de cada
+id (`ok`, `achado`, `nao_medido`, `nao_se_aplica`); cada achado leva `item` (o id) e `correcao_id` (a
+correção `CX-…` da tabela Correção que resolve). Item crítico ou alto sem status reprova a frente no
+consolidado. Achado fora do catálogo vai sem `item` e vira proposta de item novo.
 
 ## Saída
 `<SPRINT>/achados/jornada.json` (ids `JOR-`) e `<SPRINT>/achados/jornada.md`.

@@ -15,7 +15,7 @@ conversa com o usuário; o que só ele responde vai em `perguntas`.
 
 ## Antes de tudo
 Leia `clientes/<CLIENTE>/memoria.md`, `clientes/<CLIENTE>/config.json`, `referencias/contrato_achados.md`, a seção
-**Mídia** de `referencias/armadilhas.md` e o bloco Google Ads de `referencias/checklist_auditoria.md`.
+**Mídia** de `referencias/armadilhas.md` e `referencias/plataformas/google_ads.md`.
 Se existir, leia `<SPRINT>/base/pessoas.json` (gravado pela frente fontes).
 
 ## O que fazer
@@ -34,6 +34,13 @@ Se existir, leia `<SPRINT>/base/pessoas.json` (gravado pela frente fontes).
 ## Números (`numeros`)
 `gasto_google` (R$), `leads_google` (conversões de lead **na plataforma**; a frente fontes grava a mesma chave com
 pessoas únicas e o consolidador compara), `cpl_real_google` (R$ por pessoa).
+
+## Cobertura do catálogo (obrigatória)
+O que esta frente verifica está em `referencias/plataformas/`: `google_ads.md`. Liste os seus itens com
+`python3 scripts/catalogo.py --frente google-ads` e verifique **todos**. No JSON, `cobertura` traz o status de cada
+id (`ok`, `achado`, `nao_medido`, `nao_se_aplica`); cada achado leva `item` (o id) e `correcao_id` (a
+correção `CX-…` da tabela Correção que resolve). Item crítico ou alto sem status reprova a frente no
+consolidado. Achado fora do catálogo vai sem `item` e vira proposta de item novo.
 
 ## Saída
 `<SPRINT>/achados/google-ads.json` (ids `ADS-`) e `<SPRINT>/achados/google-ads.md` (tabelas: gasto por campanha e

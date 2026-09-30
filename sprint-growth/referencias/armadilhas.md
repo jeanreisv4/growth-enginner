@@ -64,6 +64,11 @@ Formato: o que aconteceu · como detectar · o que fazer. Cliente entre parênte
 - **Mesmo acionador como disparo e como exceção.** A tag do Google Ads do pop-up de WhatsApp tinha o evento do
   pop-up nos dois campos: a exceção vence e a conversão nunca saiu, enquanto Meta e GA4 contavam (distribuidora de peças automotivas).
   `gtm_auditoria.py` G5 + `teste_disparo.py` depois de publicar.
+- **Plataforma de loja carregando a mesma conta do Google Ads.** A integração nativa da Nuvemshop inicia AW-… numa fila
+  própria (`dataLayerTN`) e as tags do Google Ads do GTM param de enviar, até o remarketing de PageView (distribuidora de peças automotivas). Detectar:
+  depurar os hits (o parâmetro `gtm=` mostra de onde saem). Fazer: escolher um caminho (nativo ou GTM) e pausar o outro.
+- **Container copiado de outro cliente.** Variáveis de outra empresa (nome, domínio, Pixel, UA), ID de conta "111" e
+  transporte "editar" (distribuidora de peças automotivas, template da outro cliente). Conferir o valor de cada variável constante, não só o nome.
 - **Duas conversões principais na mesma categoria.** Lead e MQL principais = cada MQL conta 2 (SaaS de diário de obra). A2.
 - **Categoria sem lance.** "Enviar formulário" não era biddable na meta da conta; as campanhas só contavam ligação
   (indústria de plásticos). Conferir `campaign_conversion_goal`.
