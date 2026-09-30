@@ -82,6 +82,17 @@ Os scripts citados como `sprint-growth/...` ficam na skill irmã, na mesma pasta
   15/06/2026 a Google Ads API (`UploadClickConversions`) não aceita quem não importava offline no semestre anterior:
   `CUSTOMER_NOT_ALLOWLISTED_FOR_THIS_FEATURE`. Fazer: Data Manager API (`events:ingest`, escopo
   `auth/datamanager`), já no `scripts/devolucao.py`; CSV agendado só como plano B.
+- **Conta sob gerente na Data Manager.** Só `operatingAccount` numa conta que a credencial acessa pela MCC devolve
+  403 "The caller does not have permission" em `destinations[0]` — parece falta de acesso, mas é o `loginAccount`
+  (fabricante de acessórios para cortina, 30/09/2026). Fazer: `loginAccount` = MCC (`login_customer_id` no brief,
+  `--mcc` no `devolucao_planilha.py`).
+- **Ação de conversão recém-criada.** Logo depois de criar a importação, a Data Manager responde 400
+  `destination_references NOT_FOUND` de 10 a 35 min (12 e 35 nos dois casos reais). Não é erro de id: validar de 5
+  em 5 min e só enviar quando o `validateOnly` der 200.
+- **Sem CRM, a qualificação está na planilha.** Quando o MQL é uma resposta do formulário (ex.: linha = alto padrão)
+  e o comercial não atualiza status, o sinal de qualidade que dá para devolver é essa resposta, desde que a LP grave
+  gclid/gbraid/wbraid na planilha. Fazer: `scripts/devolucao_planilha.py` numa importação secundária; sem hora na
+  planilha, 23:59 do dia do lead (nunca antes do clique; lead de hoje espera amanhã).
 - **Back-pass que nunca foi ligado.** Tracking "pronto" só com Lead: as plataformas otimizam para volume, não para
   venda (cliente piloto (carpetes B2B), pendente). O checklist bloqueia quando a venda já acontece.
 - **IP do n8n chegando ao Meta como IP do lead.** O Data Client da Stape preenche `ip_override` e `user_agent` com

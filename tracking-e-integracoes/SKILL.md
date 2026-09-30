@@ -31,6 +31,8 @@ Ferramentas:
 - `scripts/n8n_meta_leads.py`: leads dos formulários pela credencial de Lead Ads no n8n (sem nome/telefone completo).
 - `scripts/retroativos.py`: etapas de antes da devolução que ainda cabem na janela (Meta 7 dias, Google 90/63), enviadas
   pela devolução no ar com a hora real da etapa (só com ok).
+- `scripts/devolucao_planilha.py`: MQL (ou outra resposta) direto da planilha de leads ao Google Ads pela Data Manager,
+  sem CRM: filtro por coluna, janela de 90/63 dias, `transactionId` estável, `--mcc` para conta sob gerente.
 - `scripts/instalar_agentes.py`: instala os agentes `integracao-*` em `.claude/agents/` (fonte: `agentes/`).
 - Da skill irmã `sprint-growth`: `gtm_auditoria.py`, `teste_disparo.py`, `teste_formulario.py`, `datacrazy.py` e as MCPs
   do n8n (GTM, Google Ads, GA4 Admin).

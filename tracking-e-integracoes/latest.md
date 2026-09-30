@@ -1,6 +1,6 @@
-# Skill: tracking-e-integracoes — v2.1.0 (antes tracking-web-and-capi)
+# Skill: tracking-e-integracoes — v2.2.0 (antes tracking-web-and-capi)
 
-> owner: growth-engineer | status: active | published: 2026-05-17 | atualizada: 2026-09-30 (v2.1.0)
+> owner: growth-engineer | status: active | published: 2026-05-17 | atualizada: 2026-09-30 (v2.2.0)
 
 ---
 
@@ -385,6 +385,9 @@ sai só quando o usuário desligar; então ligar a gravação na planilha pelo n
 cabem na janela (Meta 7 dias, Google 90 com clique / 63 sem) e quanto falta para cada uma vencer; com ok, `--enviar
 --webhook-url <devolução>` manda pela devolução no ar, mais velho primeiro, com a hora real da etapa. Reenviar é
 seguro (o `event_id` não repete). Se o modo automático negar, o usuário roda o comando.
+
+**Sem CRM (lead só na planilha)**: `python3 scripts/devolucao_planilha.py` com o filtro do MQL manda a importação
+secundária ao Google pela Data Manager (conta sob MCC: `--mcc`); validar antes, enviar com ok, rodar de novo a cada MQL.
 
 ### Fase 6 — Revisão das automações
 

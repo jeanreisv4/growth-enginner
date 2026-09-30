@@ -334,6 +334,43 @@ if os.path.isdir(inst):
     r = subprocess.run([sys.executable, os.path.join(RAIZ, "scripts", "instalar_agentes.py"), "--conferir"], capture_output=True, text=True)
     confere("agentes instalados em .claude/agents batem com a fonte", r.returncode == 0)
 
+# devolução a partir da planilha (sem CRM): filtro, janela, 23:59, lead de hoje, id estável, diagnóstico dos erros
+import devolucao_planilha as dp
+_agora = dp.quando("30/09/2026", "16:00", -3).timestamp()
+_linhas = [
+    {"Data": "29/09/2026", "fonte": "google", "linha": "A", "gclid": "Gx1", "tel": "(11) 90000-0001", "mail": "a.b@gmail.com"},
+    {"Data": "09/09/2026", "fonte": "google", "linha": "A", "gbraid": "Bx2", "wbraid": "Wx2", "tel": "11900000002"},
+    {"Data": "30/09/2026", "fonte": "google", "linha": "A", "gclid": "Gx3"},                       # hoje: espera
+    {"Data": "01/05/2026", "fonte": "google", "linha": "A", "gclid": "Gx4"},                       # fora dos 90 dias
+    {"Data": "28/09/2026", "fonte": "google", "linha": "A"},                                        # sem clique
+    {"Data": "28/09/2026", "fonte": "google", "linha": "B", "gclid": "Gx5"},                       # não é MQL
+    {"Data": "28/09/2026", "fonte": "ig", "linha": "A", "gclid": "Gx6"},                           # outra origem
+    {"Data": "2026-09-27 10:15:00", "fonte": "google", "linha": "A", "wbraid": "Wx7"},              # ISO com hora
+]
+_evs, _n = dp.eventos(_linhas, [("fonte", "google"), ("linha", "A")], "Data", tel_col="tel", email_col="mail",
+                      prefixo="cli-mql", agora=_agora)
+confere("planilha: só as linhas do filtro com clique na janela", len(_evs) == 3 and _n == {"sem_clique": 1, "fora_janela": 1, "hoje": 1, "sem_data": 0})
+confere("planilha: sem hora vira 23:59 do dia; com hora usa a hora", _evs[0]["eventTimestamp"] == "2026-09-29T23:59:00-03:00"
+        and _evs[2]["eventTimestamp"] == "2026-09-27T10:15:00-03:00")
+confere("planilha: gclid > gbraid > wbraid, um só identificador de clique",
+        [list(e["adIdentifiers"]) for e in _evs] == [["gclid"], ["gbraid"], ["wbraid"]])
+_ids = json.dumps(_evs)
+confere("planilha: sem telefone/e-mail em claro e e-mail do gmail sem ponto antes do hash",
+        "90000" not in _ids and "gmail" not in _ids and dp.sha("ab@gmail.com") in _ids and dp.sha("+5511900000001") in _ids)
+_de_novo, _ = dp.eventos(_linhas, [("fonte", "google"), ("linha", "A")], "Data", tel_col="tel", email_col="mail",
+                         prefixo="cli-mql", agora=_agora + 3600)
+confere("planilha: transactionId estável (reenviar não duplica)",
+        [e["transactionId"] for e in _evs] == [e["transactionId"] for e in _de_novo] and _evs[0]["transactionId"].startswith("cli-mql-20260929-"))
+confere("planilha: dados do usuário só até 63 dias", all("userData" in e for e in _evs[:2])
+        and "userData" not in dp.eventos([dict(_linhas[0], Data="10/07/2026")], [], "Data", tel_col="tel", agora=_agora)[0][0])
+_c = dp.corpo(_evs, "123-456-7890", "99", True, mcc="111-222-3333")
+confere("planilha: --mcc vira loginAccount e validateOnly respeitado",
+        _c["destinations"][0]["loginAccount"]["accountId"] == "1112223333" and _c["validateOnly"] is True
+        and "loginAccount" not in dp.corpo(_evs, "1", "2", False)["destinations"][0])
+confere("planilha: diagnóstico do 403 da MCC e do NOT_FOUND da propagação",
+        "mcc" in dp.diagnostico(403, {"error": {"details": [{"metadata": {"field_path": "destinations[0]"}}]}})
+        and "propag" in dp.diagnostico(400, {"fieldViolations": [{"field": "events[0].destination_references", "reason": "NOT_FOUND"}]}))
+
 # publicação: cliente novo anonimizado (só no git local; o publicar.py não vai para a cópia pública)
 pub = os.path.join(RAIZ, "scripts", "publicar.py")
 if os.path.exists(pub):

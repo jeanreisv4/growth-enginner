@@ -1,5 +1,19 @@
 # Changelog — tracking-e-integracoes (antes tracking-web-and-capi)
 
+## v2.2.0 — 2026-09-30
+
+Devolução de MQL a um fabricante de acessórios para cortina que não tem CRM: o lead só existe na planilha de backup da
+LP, o MQL é uma resposta do formulário (linha = alto padrão) e a conta de anúncios fica sob uma MCC.
+
+- **`scripts/devolucao_planilha.py`**: linhas da planilha que batem com o filtro → importação de cliques pela Data
+  Manager API, por workflow temporário no n8n (token não sai do n8n). gclid > gbraid > wbraid, telefone e e-mail com
+  hash até 63 dias, 23:59 do dia quando a planilha não tem hora, lead de hoje espera amanhã, `transactionId` estável,
+  `--mcc` vira `loginAccount`, diagnóstico dos erros vistos. No caso real: 3 MQLs enviados (HTTP 200).
+- **Erros da Data Manager** no guia `implementacoes/google-ads-offline.md`: 403 em `destinations[0]` = falta
+  `loginAccount`; 400 `destination_references NOT_FOUND` = propagação da ação nova (12 e 35 min nos casos reais).
+- Armadilhas novas: conta sob gerente, ação recém-criada, qualificação que só existe na planilha.
+  Regressão: 105 → 113 casos.
+
 ## v2.1.0 — 2026-09-30
 
 Fechamento da integração de uma distribuidora de automatizadores (distribuidora de automatizadores): o que faltava depois de a devolução ligar.

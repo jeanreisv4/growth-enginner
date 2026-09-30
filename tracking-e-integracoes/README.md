@@ -146,7 +146,7 @@ Uma linha por fase do desenho. "Trava" é o que impede a fase seguinte; o detalh
 - `templates/gtm/` (containers com marcadores e o Data Client), `templates/devolucao/nucleo.js` (evento de CRM), `templates/brief_exemplo.json`, `templates/planilha/` (planilha de leads e Apps Script).
 - `scripts/desenhos.py`: gera os desenhos animados de `assets/`.
 - `scripts/gerar_containers.py`, `scripts/devolucao.py` (CRM → n8n → Meta e Google), `scripts/auditar_entrada.py`,
-  `scripts/n8n_meta_leads.py`, `scripts/retroativos.py` (etapas antigas que ainda cabem na janela), `scripts/instalar_agentes.py`
+  `scripts/n8n_meta_leads.py`, `scripts/retroativos.py` (etapas antigas que ainda cabem na janela), `scripts/devolucao_planilha.py` (MQL da planilha ao Google, sem CRM), `scripts/instalar_agentes.py`
   e `tests/regressao.py` (105 casos, sem rede).
 - `implementacoes/` (Sheets, Kommo/devolução, Lead Ads do Meta, Google Ads offline, conversacional, conectores de CRM), `playbook/` (caso piloto), `aula/`.
 

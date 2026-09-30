@@ -35,6 +35,22 @@ destino = conta (`operatingAccount`) + `productDestinationId` = id da conversion
 7. **Brief** `devolucao.google`: `customer_id`, `acoes` {SQL, Purchase}, `fuso`, `sem_clique` (padrão false: só lead
    com clique), `validar_apenas` (false em produção).
 
+## Fonte = planilha (sem CRM)
+
+Quando o lead só existe na planilha (backup da LP) e o MQL é uma resposta do formulário, a devolução sai da
+planilha: `scripts/devolucao_planilha.py --csv <export CSV> --filtro "utm_source=google" --filtro "<coluna>=<valor>"
+--data-col ... --tel-col ... --email-col ... --customer ... --acao ... [--mcc ...] --credencial ... --n8n ... --n8n-key ...`.
+Sem flag só lista; `--validar` manda com `validateOnly`; `--enviar` grava. `transactionId` estável (prefixo + data +
+hash do telefone): reenviar a planilha inteira não duplica, então dá para rodar de novo sempre que entrar MQL.
+
+## Erros da Data Manager (uso real)
+
+| Resposta | Causa | Fazer |
+|---|---|---|
+| 403 `PERMISSION_DENIED`, `field_path: destinations[0]` | conta acessada pela MCC sem `loginAccount` | `login_customer_id` / `--mcc` |
+| 400 `destination_references` `NOT_FOUND` | ação criada há pouco (propagação de 10 a 35 min) | validar de 5 em 5 min |
+| 403 sem `destinations` | credencial sem acesso ou API desligada no projeto | Connect com a conta certa; ativar a API |
+
 ## De onde vem o gclid
 
 - **LP**: o formulário manda a URL da página (com a query); o n8n lê `gclid`, `gbraid`, `wbraid`, `fbclid` e grava
