@@ -3,7 +3,7 @@
 **Leitura:** MCP `gtm` (contas, containers, workspaces, tags, acionadores, variáveis, versões) e
 `scripts/gtm_auditoria.py` (G1–G5); testes `scripts/teste_disparo.py` e `scripts/teste_formulario.py`.
 **Escrita:** MCP `gtm` no workspace → versão com nome claro → ok → publicar. Container do zero ou refeito: skill
-`tracking-web-and-capi` (templates com marcadores e `gerar_containers.py`), nunca cópia de outro cliente.
+`tracking-e-integracoes` (templates com marcadores e `gerar_containers.py`), nunca cópia de outro cliente.
 
 ## Auditoria
 
@@ -36,7 +36,7 @@
 | CX-G2 | Tirar o GA4 do servidor dos eventos do Meta | G2, GA4 | MCP `gtm` (acionador ou pausa da tag no servidor) | lista de eventos afetados | R2 | versão anterior | contagem única no GA4 em 48 h |
 | CX-G3 | Ligar acionador ou reativar tag | G3, G16 | MCP `gtm` | tag e acionador mostrados | R1 | pausar de novo | `teste_disparo.py` |
 | CX-G4 | Tirar o acionador da exceção | G5 | MCP `gtm` (`blockingTriggerId`) | exceção que fica e a que sai | R2 | versão anterior | `teste_disparo.py` depois de publicar |
-| CX-G5 | Limpar o container herdado ou refazer pelo template | G6, G14 | MCP `gtm` (variáveis certas) ou skill `tracking-web-and-capi` | lista de valores trocados; brief completo | R3 | versão anterior | todas as conversões com `teste_disparo.py` |
+| CX-G5 | Limpar o container herdado ou refazer pelo template | G6, G14 | MCP `gtm` (variáveis certas) ou skill `tracking-e-integracoes` | lista de valores trocados; brief completo | R3 | versão anterior | todas as conversões com `teste_disparo.py` |
 | CX-G6 | Um caminho só: integração nativa ou GTM; pausar o outro | G7 | configuração da loja ou MCP `gtm` | hits antes (de onde sai cada um) | R2 | religar o que foi pausado | hits saindo só de um caminho |
 | CX-G7 | Conversion Linker em todas as páginas | G8 | MCP `gtm` | tag e acionador All Pages | R1 | pausar | cookie `_gcl_aw` gravado com gclid de teste |
 | CX-G8 | Consent Mode v2 e GTM fora da categoria de marketing do banner | G9, GA5 | MCP `gtm` (consentimento) + construtor (`paginas.md` CX-P9) | `teste_formulario.py` antes | R2 | configuração anterior | GTM carrega sem aceite; sinais de consentimento chegando |

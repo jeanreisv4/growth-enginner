@@ -5,7 +5,7 @@ description: Sprint growth de cliente da V4 — auditoria da jornada inteira, do
 
 # Sprint growth
 
-**Versão 2.2 (30/09/2026).** Histórico em `CHANGELOG.md`. Caminhos relativos à pasta da skill
+**Versão 2.2.1 (30/09/2026).** Histórico em `CHANGELOG.md`. Caminhos relativos à pasta da skill
 (`.claude/skills/sprint-growth/`). Clientes em `clientes/<cliente>/` (versionado no git local, fora da cópia
 pública). Configuração das MCPs em `~/.config/sprint-growth/config.json` (fora do repositório).
 
@@ -102,7 +102,9 @@ aqui, na conversa principal.
 "sprint ads <cliente>", "audita só o GTM do cliente X", "roda o Clarity do cliente Y": leia a memória (etapa 0), rode só o agente
 da frente (com `sprint-fontes` antes quando a frente cruza pessoas: google-ads, meta-ads, comercial) e
 `consolidar.py --frentes <frente>`. Entregue o `.md` da frente e as correções propostas; documento só se pedirem.
-Para tracking do zero ou go-live, a skill é `tracking-web-and-capi`; para SEO completo, `/seo audit`.
+Para tracking do zero ou go-live, a skill é `tracking-e-integracoes`; para integrar (lead no CRM, Lead Ads direto no
+n8n, devolução do CRM ao Meta e ao Google, revisão de automações), o modo `integrar` dela e os agentes
+`integracao-*`; para SEO completo, `/seo audit`.
 
 ## 3. Priorização e plano
 

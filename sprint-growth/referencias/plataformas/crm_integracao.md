@@ -3,7 +3,7 @@
 **Leitura:** API do CRM (`scripts/datacrazy.py` para DataCrazy; Kommo, RD CRM, NectarCRM e GoHighLevel pela API de
 cada um), planilha de backup, execuções do n8n (API do n8n) e o backup de leads. **Escrita:** n8n (backup do fluxo
 antes, modo automático pode negar), automações do CRM e Apps Script, com ok. A volta da venda para as plataformas é
-implantada pela skill `tracking-web-and-capi`.
+implantada pela skill `tracking-e-integracoes`.
 
 ## Auditoria
 
@@ -19,7 +19,7 @@ implantada pela skill `tracking-web-and-capi`.
 | I8 | SQL e venda voltam para Meta (CAPI) e Google (offline) | medicao | eventos Purchase/SQL no conjunto de dados; conversões offline | plataformas otimizando só por lead | alta |
 | I9 | Rastreio do clique para WhatsApp ligado no CRM | medicao | conversas com `sourceReferral`/ctwaId | conversa de anúncio sem origem | média |
 | I10 | Credenciais fora de planilha, fluxo e arquivo | medicao | nós do n8n, abas da planilha, exports | token do WhatsApp ou do CRM em texto aberto | alta |
-| I11 | Backup de leads com os campos padrão | fontes | colunas da planilha × padrão da skill `tracking-web-and-capi` | sem data, origem ou status | baixa |
+| I11 | Backup de leads com os campos padrão | fontes | colunas da planilha × padrão da skill `tracking-e-integracoes` | sem data, origem ou status | baixa |
 | I12 | Credencial do CRM no fluxo responde (teste direto, não o status da execução) | medicao | GET simples com a credencial; execuções com 0 itens depois do filtro | execução "success" sem chegar ao CRM; 401 | crítica |
 | I13 | Coluna de controle do fluxo aceita só o marcador do próprio fluxo | medicao | valores da coluna de controle na planilha × formato gravado pelo fluxo | ID de outra ferramenta na coluna; linhas novas puladas | alta |
 | I14 | Destino da LP existe desde o primeiro dia de mídia | medicao | dias com gasto × dias com linha na aba da LP; data de criação do fluxo | aba sem linha por semanas com cliques pagos | alta |
@@ -35,10 +35,10 @@ implantada pela skill `tracking-web-and-capi`.
 | CX-I5 | Alerta de erro no fluxo e renovação do token | I5 | n8n (Error Trigger → e-mail ou WhatsApp) | destino do alerta | R1 | desativar o alerta | erro de teste gera alerta |
 | CX-I6 | Etiqueta de origem automática na criação do lead | I6 | automação do CRM ou n8n | regra de origem escrita | R2 | desligar a automação | atraso da etiqueta = 0 |
 | CX-I7 | Filtrar os pipelines de venda e padronizar status | I7 | configuração do CRM + regra na memória | lista de pipelines e o que conta | R2 | — | venda do mês bate com o comercial |
-| CX-I8 | Volta da venda: Apps Script ou webhook do CRM → servidor (Purchase, SQL) e upload offline | I8, A22 | skill `tracking-web-and-capi` + `google_ads.md` CX-A15 | gclid/fbclid gravados no lead | R2 | desativar o envio | Purchase e conversão offline chegando com valor |
+| CX-I8 | Volta da venda: Apps Script ou webhook do CRM → servidor (Purchase, SQL) e upload offline | I8, A22 | skill `tracking-e-integracoes` (modo `integrar`, `devolucao.py`, Data Manager) + `google_ads.md` CX-A15 | gclid/fbclid gravados no lead | R2 | desativar o envio | Purchase e conversão offline chegando com valor |
 | CX-I9 | Ligar a automação de rastreio do WhatsApp no CRM | I9, M17 | interface do CRM | instância do WhatsApp oficial | R1 | desligar | conversa nova com `sourceReferral` |
 | CX-I10 | Tirar a credencial do lugar aberto e trocar | I10 | credenciais do n8n; revogar e gerar token novo | onde a credencial aparece | R2 | — | nenhuma credencial em texto aberto |
-| CX-I11 | Backup de leads no padrão | I11 | planilha modelo da skill `tracking-web-and-capi` | colunas que faltam | R1 | planilha anterior | próximo lead com todos os campos |
+| CX-I11 | Backup de leads no padrão | I11 | planilha modelo da skill `tracking-e-integracoes` | colunas que faltam | R1 | planilha anterior | próximo lead com todos os campos |
 | CX-I12 | Credencial nova restrita ao domínio do CRM e troca nos nós | I12 | API do n8n: `POST /credentials` (`allowedHttpRequestDomains: domains`) + PUT do workflow; backup antes | GET direto com o token novo = 200 | R2 | credencial antiga mantida; restaurar o workflow | execução seguinte cria ou anota no CRM |
 | CX-I13 | Marcador validado por regex e exceções decididas pelo usuário | I13 | nó de filtro do n8n (`MARCADOR_VALIDO`, lista de exceção comentada); backup antes | simulação na planilha inteira: só as linhas certas passam | R2 | restaurar o workflow | linhas marcadas pelo fluxo; nenhuma antiga reenviada |
 | CX-I14 | Ligar a LP ao destino e recuperar o período sem destino | I14 | webhook da LP → n8n → planilha e CRM; export do construtor para o período | lead de teste interceptado; lista recuperada mostrada | R2 | desligar o webhook | contagem LP × destino igual por 3 dias |

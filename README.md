@@ -33,7 +33,7 @@ flowchart TB
     subgraph L["Loop do cliente · uma volta por mês"]
         direction LR
         P["<b>projecao-breakeven</b><br/>diz em que mês<br/>o projeto se paga"]:::skill
-        T["<b>tracking-web-and-capi</b><br/>mede cada etapa,<br/>do clique à venda"]:::skill
+        T["<b>tracking-e-integracoes</b><br/>mede e integra cada<br/>etapa, do clique à venda"]:::skill
         S["<b>sprint-growth</b><br/>acha a restrição<br/>e corrige"]:::skill
         C["<b>checkin-ropre</b><br/>reporta realizado<br/>× projetado"]:::skill
         P -->|"meta mês a mês<br/>e CAC permitido"| T
@@ -52,7 +52,7 @@ flowchart TB
 | Passo | Missão que alimenta | Ação | Saída | Como se mede |
 |---|---|---|---|---|
 | [`projecao-breakeven`](projecao-breakeven/) | Estratégia de tráfego alinhada ao go-to-market | Lê o histórico, faz a entrevista das premissas e dá o veredito | Planilha com meta mês a mês (inside sales, e-commerce ou PLG), CAC permitido e o caminho quando não fecha | Mês de breakeven; projetado de leads, MQL e vendas — ou de cadastros, trials e assinaturas, com LTV, no PLG |
-| [`tracking-web-and-capi`](tracking-web-and-capi/) | Atribuição da jornada nas plataformas | Planeja, gera os containers GTM web e servidor pelo template (com validação), audita e conserta Pixel/CAPI, Google Ads, GA4 e CRM | Cada lead e venda chega à plataforma e ao CRM com a origem | Eventos que disparam; conversões com rótulo certo; leads com origem ÷ leads; venda de volta às plataformas |
+| [`tracking-e-integracoes`](tracking-e-integracoes/) | Atribuição e integração da jornada, do clique à venda | Planeja e gera os containers GTM web e servidor pelo template (com validação), audita e conserta Pixel/CAPI, Google Ads e GA4, e integra: lead no CRM (Lead Ads direto no n8n pelo app do cliente, LP, WhatsApp), devolução das etapas do CRM ao Meta (CAPI) e ao Google Ads (Data Manager) e revisão das automações, com 4 agentes (CRM, Meta, Google Ads, conversacional) | Cada lead e venda chega à plataforma e ao CRM com a origem | Eventos que disparam; conversões com rótulo certo; leads com origem ÷ leads; venda de volta às plataformas |
 | [`sprint-growth`](sprint-growth/) | Auditoria recorrente · Execução de mídia paga | Audita a jornada inteira com 8 agentes especialistas em paralelo (mídia, medição, Clarity, jornada, comercial, mercado), acha a restrição (TOC) e executa pelas MCPs | Plano 5W1H priorizado em R$ e aba Executado | Impacto em R$/mês de cada ação; CPL real por pessoa única |
 | [`claude-seo`](claude-seo/) (complemento) | Auditoria recorrente | SEO completo de terceiros (MIT, AgriciDaniel): auditoria de site com agentes em paralelo, schema, GEO, local, backlinks | Relatório com nota de saúde e plano priorizado | Nota de saúde SEO; itens críticos resolvidos |
 | [`checkin-ropre`](checkin-ropre/) | Operação direta em grandes clientes | Monta o check-in (Resultados, Objetivos, Premissas e riscos, Entregas, Próximos passos) | Deck e documento com a regra de atribuição declarada | Realizado × projetado; o que não foi medido escrito como tal |

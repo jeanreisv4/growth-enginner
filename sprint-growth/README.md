@@ -2,7 +2,7 @@
 
 ![Capa da sprint-growth: comandos sendo digitados e um funil do tráfego à receita em que os leads vazam na restrição](assets/capa.svg)
 
-![versão](https://img.shields.io/badge/versão-2.1-E50914) ![regressão](https://img.shields.io/badge/regressão-124%20casos-111111) ![agentes](https://img.shields.io/badge/agentes-8-111111)
+![versão](https://img.shields.io/badge/versão-2.2.1-E50914) ![regressão](https://img.shields.io/badge/regressão-124%20casos-111111) ![agentes](https://img.shields.io/badge/agentes-8-111111)
 
 Skill do Claude Code para a **sprint growth** de cliente de agência: audita a jornada inteira, do tráfego à venda,
 acha a restrição do sistema pela Teoria das Restrições e entrega um plano 5W1H priorizado por impacto em receita,
@@ -141,7 +141,7 @@ no [SKILL.md](SKILL.md), cada frente no seu arquivo em [agentes/](agentes/) e as
 | [`sprint-fontes`](agentes/sprint-fontes.md) (1) | Backup de leads, planilhas, realizado oficial | Período e confiabilidade de cada base; pessoa única sem teste; canal; CNPJ | [`leads.py`](scripts/leads.py), [`cnpj.py`](scripts/cnpj.py) | `base/pessoas.json`, `leads_*` por pessoa |
 | [`sprint-google-ads`](agentes/sprint-google-ads.md) (2) | Conta e MCC | Alertas A1–A10, termos e negativas, anúncio × página, CPL real | [`ads_auditoria.py`](scripts/ads_auditoria.py), [`termos_negativas.py`](scripts/termos_negativas.py), MCP Google Ads | Achados `ADS-`, negativas propostas |
 | [`sprint-meta-ads`](agentes/sprint-meta-ads.md) (2) | Conta ou export | Criativo × qualidade do lead, segunda conta, anomalias, CPL real | Conector Meta Ads (leitura) | Achados `META-` |
-| [`sprint-medicao`](agentes/sprint-medicao.md) (2) | GTM, GA4, Ads, conjunto de dados, LPs | G1–G5, disparo real, formulário interceptado, GA4, Pixel/CAPI, lead até o CRM | [`gtm_auditoria.py`](scripts/gtm_auditoria.py), [`teste_disparo.py`](scripts/teste_disparo.py), [`teste_formulario.py`](scripts/teste_formulario.py), skill `tracking-web-and-capi` | Achados `MED-` |
+| [`sprint-medicao`](agentes/sprint-medicao.md) (2) | GTM, GA4, Ads, conjunto de dados, LPs | G1–G5, disparo real, formulário interceptado, GA4, Pixel/CAPI, lead até o CRM | [`gtm_auditoria.py`](scripts/gtm_auditoria.py), [`teste_disparo.py`](scripts/teste_disparo.py), [`teste_formulario.py`](scripts/teste_formulario.py), skill `tracking-e-integracoes` | Achados `MED-` |
 | [`sprint-clarity`](agentes/sprint-clarity.md) (2) | Token do projeto | Coleta diária econômica; alertas C1–C6 nas páginas de mídia | [`clarity.py`](scripts/clarity.py) | Achados `CLA-` |
 | [`sprint-jornada`](agentes/sprint-jornada.md) (2) | Site, LPs, destinos | Custo por destino, oferta × página, on-page, SEO técnico básico, velocidade | render do claude-seo, GA4 | Achados `JOR-`, caminhos do lead |
 | [`sprint-comercial`](agentes/sprint-comercial.md) (2) | CRM ou export | Novo × antigo, funil por etapa, perdas, tempos, follow-up, receita (piso) | [`datacrazy.py`](scripts/datacrazy.py) | Achados `COM-`, dados do funil |

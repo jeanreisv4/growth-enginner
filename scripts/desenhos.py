@@ -17,7 +17,7 @@ CINZA, AMBAR, VERDE, AZUL = "#A08F8D", "#F2A33A", "#3CB371", "#5B8DEF"
 
 SKILLS = [  # letra, pasta, o que faz, saída na seta para a próxima
     ("P", "projecao-breakeven", "em que mês o projeto se paga", "meta mês a mês|e CAC permitido"),
-    ("T", "tracking-web-and-capi", "mede do clique à venda", "lead e venda|com origem"),
+    ("T", "tracking-e-integracoes", "mede e integra até a venda", "lead e venda|com origem"),
     ("S", "sprint-growth", "acha a restrição e corrige", "plano em R$|e Executado"),
     ("C", "checkin-ropre", "realizado × projetado", ""),
 ]
@@ -178,7 +178,7 @@ def capa():
          f'<text x="110" y="222" font-family="{FONTE}" font-size="70" font-weight="700" fill="url(#titulo)">engineer</text>',
          texto(114, 262, "do clique à venda · 4 skills · 1 loop por mês", 17, APAGADO, ancora="start", esp="0.6"),
          f'<rect x="110" y="{330 - 36}" width="640" height="56" rx="12" fill="#1C1616" stroke="#3A2A2A"/>']
-    L += digitacao(["/projecao-breakeven <cliente>", "/tracking-web-and-capi planejar", "/sprint-growth <cliente>",
+    L += digitacao(["/projecao-breakeven <cliente>", "/tracking-e-integracoes integrar", "/sprint-growth <cliente>",
                     "/checkin-ropre <cliente>", "/seo audit <site>"], 140, 330)
     cx, cy, r = 1150, 230, 170
     circ = f"M{cx},{cy - r} A{r},{r} 0 1,1 {cx - .01},{cy - r}"
@@ -248,7 +248,7 @@ def loop():
              f'stroke-dasharray="5 4"/>' + texto(sx, sy - 3, "claude-seo · complemento", 14, AMBAR, "600")
              + texto(sx, sy + 15, "SEO completo (MIT, AgriciDaniel)", 11, APAGADO) + "</g>")
     return svg(W, H, "O loop do growth engineer: as 5 missões do cargo alimentam o loop do cliente, em que a projeção dá a "
-               "meta, o tracking mede do clique à venda, a sprint acha a restrição e corrige, o check-in reporta realizado "
+               "meta, o tracking mede e integra do clique à venda, a sprint acha a restrição e corrige, o check-in reporta realizado "
                "contra projetado e o desvio volta para a projeção; o claude-seo complementa a sprint.",
                "Loop do growth engineer", "  " + "\n  ".join(L))
 
@@ -260,7 +260,7 @@ def disciplinas():
     cw, ch, passo, x0 = 182, 70, 194, 250
     ys = [190 + 104 * i for i in range(len(DOMINIOS))]
     L = [texto(40, 44, "GROWTH ENGINEER · AS 21 DISCIPLINAS DO PDI", 13, "#8A6F6D", ancora="start", esp="1.6")]
-    nomes = {"P": "projecao-breakeven", "T": "tracking-web-and-capi", "S": "sprint-growth", "C": "checkin-ropre"}
+    nomes = {"P": "projecao-breakeven", "T": "tracking-e-integracoes", "S": "sprint-growth", "C": "checkin-ropre"}
     for k, letra in enumerate("PTSC"):
         x = 40 + k * 260
         t0, t1 = k / 4, (k + 1) / 4

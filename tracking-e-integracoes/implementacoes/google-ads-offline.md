@@ -1,0 +1,45 @@
+# Implementação: conversões offline no Google Ads (Data Manager API)
+
+> Etapa do CRM (SQL, venda) → Google Ads, com gclid/gbraid/wbraid e e-mail/telefone com hash.
+
+**Status:** ✅ Em uso (v2.0.0) · **Relacionados:** `crm-kommo.md` (bloco `google` do `devolucao`), agente `integracao-google-ads`
+
+---
+
+## Por que Data Manager e não a Google Ads API
+
+Desde 15/06/2026 o `UploadClickConversions` da Google Ads API não aceita quem não importava offline no semestre
+anterior: devolve `CUSTOMER_NOT_ALLOWLISTED_FOR_THIS_FEATURE`. O caminho é a **Data Manager API**:
+`POST https://datamanager.googleapis.com/v1/events:ingest`, escopo `https://www.googleapis.com/auth/datamanager`,
+destino = conta (`operatingAccount`) + `productDestinationId` = id da conversion action, `encoding: HEX`,
+`validateOnly` para testar sem gravar.
+
+## Passo a passo
+
+1. **Conta**: `SELECT customer.conversion_tracking_setting.* FROM customer` — termos de dados do cliente aceitos?
+   Campanhas rodando (`metrics.cost_micros` por mês)? Sem campanha, não há clique novo com gclid: montar é ok, mas
+   dizer ao usuário que nada vai sair até as campanhas voltarem.
+2. **Conversões de importação** (`UPLOAD_CLICKS`), uma por etapa, criadas **secundárias** (`primaryForGoal: false`)
+   para não mexer no lance: SQL (categoria `QUALIFIED_LEAD`, valor proxy) e venda (`CONVERTED_LEAD`, ticket).
+   `googleAds:mutate` pelo webhook de escrita com `validateOnly` antes. Virar principal é decisão do usuário, e quando
+   virar, a conversão de formulário que dobra a contagem (Lead e MQL principais juntas) vira secundária.
+3. **Conversões otimizadas para leads**: só pela interface (Metas → Conversões → Configurações). O campo
+   `enhanced_conversions_for_leads_enabled` é só leitura na API. Necessário para mandar e-mail/telefone sem clique.
+4. **Projeto do Google Cloud**: ativar a Data Manager API no projeto do cliente OAuth usado pelo n8n.
+5. **Credencial n8n** `oAuth2Api` (pela API: `serverUrl: ""`, `grantType: authorizationCode`,
+   `authUrl https://accounts.google.com/o/oauth2/v2/auth`, `accessTokenUrl https://oauth2.googleapis.com/token`,
+   `authQueryParameters: access_type=offline&prompt=consent`, domínio permitido `datamanager.googleapis.com`).
+   Connect pela interface, com a conta Google que acessa a conta de anúncios.
+6. **Testar**: `validateOnly: true` numa chamada direta (HTTP 200 com `requestId` "v-…") e dentro do workflow da
+   devolução (código de teste do Meta + `validar_apenas` + `sem_clique` por alguns segundos, depois volta).
+7. **Brief** `devolucao.google`: `customer_id`, `acoes` {SQL, Purchase}, `fuso`, `sem_clique` (padrão false: só lead
+   com clique), `validar_apenas` (false em produção).
+
+## De onde vem o gclid
+
+- **LP**: o formulário manda a URL da página (com a query); o n8n lê `gclid`, `gbraid`, `wbraid`, `fbclid` e grava
+  nos campos de rastreio do CRM (Kommo tem `gclid`/`fbclid` nativos, tipo `tracking_data`). **Só o gclid vai no campo
+  gclid**: gbraid/wbraid no campo gclid seriam recusados como gclid.
+- **Formulário do Meta**: não tem gclid. O Google só recebe esses leads com `sem_clique: true` (hash do e-mail e do
+  telefone), e só casa se a pessoa também clicou num anúncio do Google.
+- Janela: gclid vale 90 dias; conversão só com dados do usuário, 63 dias.

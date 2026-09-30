@@ -1,5 +1,11 @@
 # Changelog
 
+
+## v2.2.1 — 2026-09-30
+
+- A skill irmã virou `tracking-e-integracoes` (antes `tracking-web-and-capi`): referências trocadas (SKILL, README,
+  agente `sprint-medicao`, catálogos de GTM e CRM); integração e devolução apontam para o modo `integrar` dela, os
+  agentes `integracao-*` e o `auditar_entrada.py` (formulário × CRM por semana).
 ## v2.2 (30/09/2026)
 
 Entrevista no começo, uma vez, para a sprint rodar automatizada e sem retrabalho.
