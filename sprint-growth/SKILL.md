@@ -5,7 +5,7 @@ description: Sprint growth de cliente da V4 — auditoria da jornada inteira, do
 
 # Sprint growth
 
-**Versão 2.1.1 (30/09/2026).** Histórico em `CHANGELOG.md`. Caminhos relativos à pasta da skill
+**Versão 2.2 (30/09/2026).** Histórico em `CHANGELOG.md`. Caminhos relativos à pasta da skill
 (`.claude/skills/sprint-growth/`). Clientes em `clientes/<cliente>/` (versionado no git local, fora da cópia
 pública). Configuração das MCPs em `~/.config/sprint-growth/config.json` (fora do repositório).
 
@@ -30,21 +30,32 @@ que se verifica** (ids `A1`, `M3`, `GA2`…) e **tudo o que se corrige** (ids `C
 
 1. Se `clientes/<cliente>/memoria.md` existe, **leia inteira** antes de perguntar qualquer coisa. Ela tem IDs,
    premissas, regra de atribuição e o que já foi executado. Não pergunte o que ela já responde.
-2. Se não existe, copie `templates/cliente/` para `clientes/<cliente>/` e preencha conforme a entrevista.
+2. Se não existe, copie `templates/cliente/` (memória, config e briefing) para `clientes/<cliente>/`.
 3. Leia `referencias/armadilhas.md` inteiro. Cada item ali já custou um diagnóstico errado.
 
-## 1. Entrevista (uma pergunta por vez; pare quando a memória do cliente já responde)
+## 1. Entrevista, briefing e pré-voo (tudo no começo; roteiro em `referencias/entrevista.md`)
 
-1. **Cliente e modelo**: segmento; inside sales (lead → venda), e-commerce ou SaaS com trial; o que o contrato
-   cobre (mídia, SEO, CRM, comercial).
-2. **Premissas de dinheiro**: fee, verba por canal, margem de contribuição (peça o DRE; a margem "de cabeça" já
-   errou por 6 p.p.), ticket e planos, meta do cliente, projeção vigente (link).
-3. **Fontes**: backup de leads, CRM ou painel (API/export), Growth Pack, contas de mídia, GA4, GTM, LP e site.
-   **Qual fonte manda** quando duas dão números diferentes. **O que NÃO é fonte** (abas paradas).
-4. **Como a venda é contada**: data de criação ou de fechamento; com ou sem recompra; lançamento manual ou CRM.
-5. **Regra de atribuição V4**: o que conta como lead e venda da V4. Feche por escrito e grave na memória.
-6. **Tempo de casa (LT)**: "LT" pode ser tempo de casa do cliente ou vida do assinante — pergunte. Na SaaS de diário de obra era
-   tempo de casa; interpretar como churn mudaria todo o breakeven.
+Informação que chega no meio da sprint vira retrabalho. Peça tudo de uma vez, teste os acessos antes dos agentes e
+pegue primeiro o que expira.
+
+1. **Briefing**: copie `templates/cliente/briefing.md` para `clientes/<cliente>/` e mande ao usuário (ou pergunte os
+   blocos em lotes de até 4 perguntas, com a opção recomendada). Cinco blocos: **dinheiro** (fee, verba por canal,
+   margem pelo DRE, ticket por serviço, meta, projeção vigente), **operação e oferta** (o que vende e o que não vende,
+   modalidades de atendimento e logística, regiões atendidas e evitadas, provas), **regras de contagem** (realizado
+   oficial e o que não é fonte, como a venda é contada, atribuição V4, critério de MQL, siglas como "LT"),
+   **comercial** (quem atende, canais, login do CRM, cadência, venda fora do CRM) e **acessos e donos**. Em branco =
+   pendente: não trava a sprint, vira "não medido" e pendência com dono.
+2. **Config**: IDs e caminhos de chave em `clientes/<cliente>/config.json` (modelo em `templates/cliente/`).
+3. **Pré-voo**: `python3 scripts/preflight.py --cliente <c> --sprint <SPRINT>` testa Google Ads (conta, veiculação,
+   gasto), GTM, GA4 da LP e do site, CRM (GET com o token), n8n (API e fluxos), planilhas, páginas (GTM e GA4 no HTML),
+   Clarity (só a chave) e exports do Meta, e grava `<SPRINT>/preflight.md`. Mostre ao usuário **uma lista única** do
+   que falta, com como resolver.
+4. **Perecíveis hoje**: leads do formulário nativo do Meta (90 dias), Clarity (24–72 h), histórico do Google Ads
+   (30 dias). Exports pedidos no formato de `referencias/entrevista.md`, para não chegarem em partes.
+5. **Lacunas que mudam a análise** (modalidade e logística, o que não vende, ticket e margem, atribuição, MQL): pergunte
+   antes dos agentes. O resto segue como pendência.
+
+Grave as respostas na memória e no briefing: a próxima sprint do mesmo cliente não pergunta de novo.
 
 ## 2. Auditoria pelas frentes (agentes especialistas)
 

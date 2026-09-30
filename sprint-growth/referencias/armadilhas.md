@@ -161,3 +161,5 @@ Formato: o que aconteceu · como detectar · o que fazer. Cliente entre parênte
   mascara segredos antes de gravar. Arquivo bruto de cliente nunca vai para o documento nem para o GitHub.
 - **Token do GA4 renovado e MCP ainda com o antigo.** Depois do `gcloud auth application-default login`, o
   `analytics-mcp` já aberto na conversa segue com `invalid_grant`: use um processo novo (`ga4_resumo.py`) ou conversa nova.
+- **ID real em teste ou exemplo.** Um teste da regressão levou o ID real de um Pixel e de um GA4 para o GitHub; o
+  mapa de nomes não pega ID. `publicar.py --conferir` agora cruza a cópia com todos os IDs dos `config.json` de clientes.

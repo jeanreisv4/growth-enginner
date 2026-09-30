@@ -1,5 +1,22 @@
 # Changelog
 
+## v2.2 (30/09/2026)
+
+Entrevista no começo, uma vez, para a sprint rodar automatizada e sem retrabalho.
+- **Briefing** (`templates/cliente/briefing.md`): formulário único por cliente em cinco blocos (dinheiro, operação e
+  oferta, regras de contagem, comercial, acessos e donos), com "onde achar se não souber". Em branco = pendente.
+- **Pré-voo** (`scripts/preflight.py`): antes dos agentes, testa Google Ads (conta, veiculação suspensa, gasto de 30
+  dias), GTM, GA4 da LP e do site (token vencido, sem permissão), CRM (GET direto com o token; Kommo e DataCrazy), n8n
+  (API e fluxos do cliente), planilhas públicas, páginas (GTM e GA4 no HTML, GA4 de outra conta) e Clarity (só a
+  chave), e grava `preflight.md` com ok · falta · atenção · manual e como resolver. Somente leitura.
+- **`referencias/entrevista.md`**: ordem (memória → briefing → config → pré-voo → perecíveis → lacunas), o que expira
+  (leads do Meta em 90 dias, Clarity em 72 h, histórico do Google Ads em 30 dias) e o formato de cada export.
+- SKILL.md: seção 1 reescrita; `templates/cliente/config.json` com propriedade do GA4 do site, ID interno do container,
+  fluxos do n8n, planilha de backup, LPs e site institucional.
+- `publicar.py --conferir` recusa a cópia pública com qualquer ID dos `config.json` de clientes (conta, container,
+  propriedade, Pixel, planilha): testes da v2.1.1 levavam o ID real de um Pixel e de um GA4; trocados por fictícios.
+- Regressão: +13 casos do pré-voo, da entrevista e do publicador.
+
 ## v2.1.1 (30/09/2026)
 
 Aprendizados da sprint de uma empresa de revestimento industrial (Meta + Google, Kommo, n8n, Make, GreatPages).

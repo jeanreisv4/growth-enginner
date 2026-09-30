@@ -1,11 +1,52 @@
 {
-  "_nota": "Configuração do cliente para os scripts. Fica no git local; clientes/ não vai para o GitHub.",
-  "google_ads": {"conta": "", "mcp": "googleads_diretas", "campanhas_ativas": []},
-  "gtm": {"conta": "", "web": "", "server": ""},
-  "ga4": {"propriedade": ""},
-  "meta": {"conta": "", "conjunto_de_dados": ""},
-  "clarity": {"projeto": "", "chave_arquivo": "~/.config/sprint-growth/<cliente>_clarity.key"},
-  "crm": {"tipo": "", "chave_arquivo": "", "pipelines": []},
+  "_nota": "Configuração do cliente para os scripts. Fica no git local; clientes/ não vai para o GitHub. O preflight.py testa tudo o que estiver preenchido aqui.",
+  "google_ads": {
+    "conta": "",
+    "mcp": "googleads_diretas",
+    "campanhas_ativas": [],
+    "outras_contas": []
+  },
+  "gtm": {
+    "conta": "",
+    "web": "",
+    "web_container": "",
+    "server": "",
+    "server_container": ""
+  },
+  "ga4": {
+    "propriedade": "",
+    "fluxo": "",
+    "propriedade_site": "",
+    "fluxo_site": ""
+  },
+  "meta": {
+    "conta": "",
+    "conjunto_de_dados": "",
+    "fonte": "conector ou export"
+  },
+  "clarity": {
+    "projeto": "",
+    "chave_arquivo": "~/.config/sprint-growth/<cliente>_clarity.key"
+  },
+  "crm": {
+    "tipo": "",
+    "base": "",
+    "chave_arquivo": "~/.config/sprint-growth/<cliente>_<crm>.key",
+    "pipelines": []
+  },
+  "n8n": {
+    "workflows": []
+  },
+  "backup": {
+    "planilha": "",
+    "abas": {}
+  },
   "site": "",
-  "testes": {"telefones": [], "nomes": [], "emails": []}
+  "lps": [],
+  "site_institucional": "",
+  "testes": {
+    "telefones": [],
+    "nomes": [],
+    "emails": []
+  }
 }

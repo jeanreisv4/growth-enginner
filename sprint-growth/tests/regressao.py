@@ -98,13 +98,47 @@ with tempfile.TemporaryDirectory() as d:
 # gtm_auditoria: o dump bruto nunca guarda segredo (token da CAPI, parâmetro accessToken)
 from gtm_auditoria import mascarar
 _m = mascarar({"server": {"variables": [{"name": "00 - Token CAPI", "parameter": [{"key": "value", "value": "EAAB" + "x" * 40}]},
-                                         {"name": "00 - Pixel Id", "parameter": [{"key": "value", "value": "1501359098160546"}]}],
+                                         {"name": "00 - Pixel Id", "parameter": [{"key": "value", "value": "111122223333444"}]}],
                           "tags": [{"name": "CAPI Lead", "parameter": [{"key": "accessToken", "value": "segredo"}, {"key": "pixelId", "value": "{{00 - Pixel Id}}"}]}]}})
 confere("gtm_auditoria mascara variável com nome de token", _m["server"]["variables"][0]["parameter"][0]["value"] == "***")
 confere("gtm_auditoria mascara parâmetro accessToken", _m["server"]["tags"][0]["parameter"][0]["value"] == "***")
-confere("gtm_auditoria mantém ID do Pixel e referências", _m["server"]["variables"][1]["parameter"][0]["value"] == "1501359098160546"
+confere("gtm_auditoria mantém ID do Pixel e referências", _m["server"]["variables"][1]["parameter"][0]["value"] == "111122223333444"
         and _m["server"]["tags"][0]["parameter"][1]["value"] == "{{00 - Pixel Id}}")
 confere("gtm_auditoria mascara token do Meta em qualquer campo", mascarar({"x": "EAAB" + "y" * 40}) == {"x": "***"})
+
+# preflight: lógica do pré-voo, sem rede
+import preflight as _pf
+_b = _pf.briefing_pendentes("## 1. Dinheiro\n\n| Pergunta | Resposta | Onde |\n| --- | --- | --- |\n| Fee | R$ 4 mil | |\n| Margem | | DRE |\n")
+confere("preflight conta respondidas e em branco no briefing", _b == {"1. Dinheiro": (1, 2)})
+_modelo = _pf.briefing_pendentes(open(os.path.join(AQUI, "..", "templates", "cliente", "briefing.md")).read())
+confere("modelo de briefing tem os 5 blocos, todos em branco", len(_modelo) == 5 and all(v[0] == 0 and v[1] > 0 for v in _modelo.values()))
+confere("preflight: campanhas suspensas viram atenção",
+        _pf.status_ads("1", {"descriptiveName": "X"}, [("c", "ENABLED", "SUSPENDED")], 0)["status"] == "atencao")
+confere("preflight: conta não encontrada vira falta", _pf.status_ads("1", None, [], 0)["status"] == "falta")
+confere("preflight: conta veiculando com gasto é ok",
+        _pf.status_ads("1", {"descriptiveName": "X"}, [("c", "ENABLED", "SERVING")], 150.0)["status"] == "ok")
+confere("preflight: LP sem GTM nem GA4 no HTML vira atenção (banner de cookies)",
+        _pf.status_pagina("LP", "u", 200, "<html>greatpages</html>")["status"] == "atencao")
+confere("preflight: GA4 de outra conta no site vira atenção",
+        _pf.status_pagina("site", "u", 200, "gtag('config','G-SITE0000XX') GTM-ABC1234", ["G-LPLP0000YY"], False)["status"] == "atencao")
+confere("preflight: página com GTM e GA4 conhecido é ok",
+        _pf.status_pagina("LP", "u", 200, "GTM-ABC1234 G-LPLP0000YY", ["G-LPLP0000YY"])["status"] == "ok")
+confere("preflight: 401 do CRM vira falta", _pf.status_http("CRM", "Kommo", 401)["status"] == "falta")
+_md = _pf.render("cli", [_pf.r("CRM", "k", "ok", "200"), _pf.r("GA4", "site", "atencao", "sem propriedade")], _b)
+confere("preflight: relatório lista o que expira e o briefing", "Pedir hoje (expira)" in _md and "1. Dinheiro" in _md and "1 ok" in _md)
+_sk = open(os.path.join(AQUI, "..", "SKILL.md")).read()
+confere("SKILL.md manda rodar o pré-voo e o briefing", "preflight.py" in _sk and "briefing.md" in _sk and "entrevista.md" in _sk)
+confere("referencias/entrevista.md existe com perecíveis e formatos", all(x in open(os.path.join(AQUI, "..", "referencias", "entrevista.md")).read()
+        for x in ("## O que expira", "## Formato dos exports", "90 dias")))
+
+# publicar: IDs dos config.json de clientes nunca vão para a cópia pública (nome anonimizado não basta)
+import publicar as _pub
+with tempfile.TemporaryDirectory() as d:
+    os.makedirs(os.path.join(d, "clientes", "x"))
+    json.dump({"_nota": "123456789", "ga4": {"fluxo": "G-ABCD1234EF"}, "meta": {"conjunto_de_dados": "999988887777666"}, "site": "https://x.com"},
+              open(os.path.join(d, "clientes", "x", "config.json"), "w"))
+    _ids = _pub.ids_de_clientes(d)
+    confere("publicar coleta IDs dos configs de clientes (e ignora _nota e URLs)", _ids == ["999988887777666", "G-ABCD1234EF"])
 
 # cnpj: validação e classificação (sem rede)
 import cnpj
