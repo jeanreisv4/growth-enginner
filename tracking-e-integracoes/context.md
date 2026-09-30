@@ -119,6 +119,7 @@ Markdown estruturado:
 | Versão | Data | Status | Resumo |
 |--------|------|--------|--------|
 | v1.2.0 | 2026-09-30 | tag git | Devolução do CRM (Kommo → n8n → sGTM/Meta e Data Manager/Google) |
-| v2.0.0 | 2026-09-30 | latest | Renomeada; modo integrar, 4 agentes, Lead Ads direto, Data Manager, conversacional, auditoria de entrada |
+| v2.1.0 | 2026-09-30 | latest | Retroativos, colunas Funil CRM, principal única pelo histórico, conexões que vencem |
+| v2.0.0 | 2026-09-30 | — | Renomeada; modo integrar, 4 agentes, Lead Ads direto, Data Manager, conversacional, auditoria de entrada |
 | v1.1.0 | 2026-09-28 | tag git | Templates com marcadores, gerador com validações, armadilhas das sprints, testes e desenho |
 | v1.0.0 | 2026-05-17 | tag git `v1.0.0` | Versão inicial, baseada no caso piloto |

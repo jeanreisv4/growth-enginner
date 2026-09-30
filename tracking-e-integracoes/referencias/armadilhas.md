@@ -51,6 +51,16 @@ Os scripts citados como `sprint-growth/...` ficam na skill irmã, na mesma pasta
 
 - **Duas conversões principais na mesma categoria.** Lead e MQL principais: cada MQL conta 2 e o lance otimiza
   para o número inflado (SaaS de diário de obra, móveis planejados). Fazer: uma principal por etapa do funil; as outras secundárias.
+  Qual fica principal: a que tem histórico (`metrics.all_conversions` por ação e mês, 12 meses), não a "melhor" no
+  papel. Na distribuidora de automatizadores a MQL nunca tinha registrado conversão (Lead: 61 de mar a jun); virar a MQL principal deixaria o lance
+  sem dado. A que nunca disparou é sinal de tag quebrada: conferir antes de otimizar por ela.
+- **Conversão secundária some da coluna "Conversões".** As importações do CRM nascem secundárias e só aparecem em
+  "Todas as conv." (distribuidora de automatizadores). Fazer: coluna personalizada = "Todas as conv." filtrada pela ação (e "Valor de todas as
+  conv." para a venda), salva num conjunto "Funil CRM". Coluna personalizada é só leitura na API: o usuário cria.
+- **Purchase da loja misturado com a venda do CRM.** O Pixel já recebe Purchase da integração da loja (Tray na distribuidora de automatizadores):
+  a coluna "Compras" soma as duas. Fazer: conversão personalizada "CRM | Venda" = Purchase com o parâmetro
+  `event_source` contendo `crm` (a devolução manda), e "CRM | SQL" = evento SQL (evento personalizado não vira coluna
+  sem ela). A predefinição de colunas do Gerenciador de Anúncios é da interface, não da API: o usuário salva.
 - **Categoria sem lance na meta da conta.** "Enviar formulário" fora das metas usadas pelas campanhas: a campanha
   só contava ligação (indústria de plásticos). Conferir `campaign_conversion_goal`.
 - **Conversão inteligente de ligação ou WhatsApp inflando.** Ações automáticas do Google contando clique no
@@ -134,4 +144,16 @@ Os scripts citados como `sprint-growth/...` ficam na skill irmã, na mesma pasta
   todos → rajada de eventos do Chatwoot → 20 escritas perdidas por cota do Google Sheets, mesmo com 5 tentativas de 5 s
   (distribuidora de automatizadores, 30/09/2026). Fazer: gravação com saída de erro → espera sorteada (20–80 s, depois 2–4 min) → nova tentativa;
   e recuperar em lotes espaçados quando houver automação reagindo aos leads criados.
+- **Devolução ligada sem os retroativos.** Ela só manda as mudanças de etapa novas; o que aconteceu antes fica fora, e
+  a janela fecha rápido: Meta 7 dias, Google 90 com gclid e 63 só com dados do usuário (distribuidora de automatizadores, 30/09/2026: das 59
+  entradas em SQL e 37 vendas em 90 dias, 1 + 1 ainda cabiam no Meta, uma a 1 h de vencer; nenhuma com gclid).
+  Fazer: `scripts/retroativos.py` no dia em que a devolução liga, mais velho primeiro, com a hora real da etapa
+  (`last_modified` no webhook) — mandar com a hora do envio seria atribuir a venda ao anúncio errado.
+- **Script de teste imprimindo o evento montado.** O resultado do nó "Montar eventos" tem nome e telefone em texto;
+  mostrar a saída do n8n inteira expõe o lead no terminal (distribuidora de automatizadores). Fazer: resumir (evento, hora, tem `lead_id`, valor,
+  o que faltou), nunca o `user_data`.
+- **Conexão que vence depois da entrega.** O fluxo não quebra, a credencial sim: token de usuário do OAuth do Meta
+  (em geral ~60 dias, conferir no Depurador de token), app do Google Cloud "Em teste" (o refresh token vence em 7
+  dias: publicar o app), token do CRM com validade escolhida na criação, e troca de token que passou pelo chat feita
+  só no CRM/Meta e não no n8n. Fazer: na entrega, tabela com cada conexão e a data; fluxo de erro do n8n avisando.
 

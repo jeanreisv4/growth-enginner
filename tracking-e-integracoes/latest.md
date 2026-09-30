@@ -1,6 +1,6 @@
-# Skill: tracking-e-integracoes — v2.0.0 (antes tracking-web-and-capi)
+# Skill: tracking-e-integracoes — v2.1.0 (antes tracking-web-and-capi)
 
-> owner: growth-engineer | status: active | published: 2026-05-17 | atualizada: 2026-09-30 (v2.0.0)
+> owner: growth-engineer | status: active | published: 2026-05-17 | atualizada: 2026-09-30 (v2.1.0)
 
 ---
 
@@ -381,6 +381,11 @@ Ligar o fluxo, conferir inscrição (`/{página}/subscribed_apps` com `leadgen`)
 fora em lotes de 20 com etiqueta própria, espaçando se houver IA/régua reagindo; cruzar de novo. A automação antiga
 sai só quando o usuário desligar; então ligar a gravação na planilha pelo n8n.
 
+**Retroativos no mesmo dia**: `python3 scripts/retroativos.py --brief ... --kommo-token ...` lista as etapas que ainda
+cabem na janela (Meta 7 dias, Google 90 com clique / 63 sem) e quanto falta para cada uma vencer; com ok, `--enviar
+--webhook-url <devolução>` manda pela devolução no ar, mais velho primeiro, com a hora real da etapa. Reenviar é
+seguro (o `event_id` não repete). Se o modo automático negar, o usuário roda o comando.
+
 ### Fase 6 — Revisão das automações
 
 Listar todo workflow que toca o cliente (nome **ou** conteúdo: planilha, CRM, página, Pixel, conta), com ativo,
@@ -391,6 +396,17 @@ Execução com erro recente em workflow "saudável" = olhar antes de encerrar.
 
 Tabela do que está no ar e testado × o que espera acontecer (primeiro lead real, primeira etapa real), pendências do
 usuário (desligar automação antiga, Connect, tokens a trocar) e achados de qualidade do CRM para o time comercial.
+
+Mais três coisas antes de dar como concluído:
+
+1. **Conexões que vencem**: cada credencial com a data (OAuth do Meta, app do Google "Em teste" = 7 dias, token do
+   CRM) e o combinado para a troca de token — trocar no CRM/Meta sem trocar no n8n para a automação. Oferecer o fluxo
+   de erro do n8n avisando por e-mail.
+2. **Colunas**: o usuário cria na interface (nenhuma API salva coluna). Meta: conversões personalizadas "CRM | SQL" e
+   "CRM | Venda" (Purchase com `event_source` = crm, se a loja também manda Purchase) e predefinição "Funil CRM".
+   Google: colunas personalizadas "Todas as conv." por ação de importação (são secundárias).
+3. **Principal única** no Google: se duas conversões de formulário estão principais, fica a que tem histórico
+   (validar, aplicar com ok, conferir, script de desfazer).
 
 ---
 

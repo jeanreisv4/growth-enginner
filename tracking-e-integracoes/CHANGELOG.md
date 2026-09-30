@@ -1,5 +1,25 @@
 # Changelog — tracking-e-integracoes (antes tracking-web-and-capi)
 
+## v2.1.0 — 2026-09-30
+
+Fechamento da integração de uma distribuidora de automatizadores (distribuidora de automatizadores): o que faltava depois de a devolução ligar.
+
+- **`scripts/retroativos.py`**: etapas de SQL e venda de antes da devolução que ainda cabem na janela de cada
+  plataforma (Meta 7 dias; Google 90 com gclid/gbraid/wbraid, 63 só com dados do usuário), com quanto falta para cada
+  uma vencer. Com `--enviar`, manda pela devolução no ar no formato do webhook do Kommo com `last_modified` = hora real
+  da etapa (o núcleo já usava como `event_time`), mais velho primeiro. No caso real: 59 SQL e 37 vendas em 90 dias, só
+  1 + 1 ainda no prazo do Meta (uma a 1 h de vencer), nenhuma com gclid.
+- **Colunas**: nenhuma API salva coluna (Meta: predefinição da interface; Google: coluna personalizada só leitura).
+  Guia de "Funil CRM" nos dois; no Meta, conversão personalizada "CRM | Venda" = Purchase com `event_source` = crm,
+  porque a loja também manda Purchase ao Pixel.
+- **Principal única no Google pelo histórico**: Lead e MQL principais → fica a que tem conversões em 12 meses (a MQL
+  nunca tinha disparado: tag a conferir). Validar, aplicar com ok, conferir, script de desfazer.
+- **Entrega**: tabela de conexões que vencem (OAuth do Meta, app do Google "Em teste" = 7 dias, token do CRM, troca
+  de token só de um lado) e aviso de erro do n8n.
+- Armadilhas novas (retroativos, secundária fora de "Conversões", Purchase da loja misturado, script de teste
+  imprimindo dado pessoal, conexão que vence depois da entrega); checklist §14 com 4 itens; agentes Meta e Google Ads
+  cobrem colunas, principal pelo histórico e retroativos. Regressão: 100 → 105 casos.
+
 ## v2.0.0 — 2026-09-30
 
 **Renomeada para `tracking-e-integracoes`** (era `tracking-web-and-capi`): a skill passou a cobrir o lead entrando no

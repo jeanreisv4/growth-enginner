@@ -1,11 +1,11 @@
 ---
 name: tracking-e-integracoes
-description: Tracking e integrações de growth do cliente, da página à venda de volta nas plataformas — GTM web e server (Stape), Meta Pixel/CAPI, Google Ads, GA4, Lead Ads do Meta direto no n8n (app próprio), formulário/LP → CRM (Kommo, RD Station CRM, HubSpot, Pipedrive, DataCrazy, NectarCRM, GoHighLevel), eventos de WhatsApp/Chatwoot, e a devolução das etapas do CRM (SQL, venda) ao Meta pela CAPI e ao Google Ads pela Data Manager API. Use para implementar tracking do zero, auditar antes do go-live, diagnosticar evento/conversão/deduplicação/EMQ, integrar formulário ou Lead Ads ao CRM, devolver dados do CRM para Meta e Google, descobrir leads que não entraram no CRM, ou revisar as automações do n8n de um cliente. Tem agentes por frente (CRM, Meta, Google Ads, conversacional).
+description: Tracking e integrações de growth do cliente, da página à venda de volta nas plataformas — GTM web e server (Stape), Meta Pixel/CAPI, Google Ads, GA4, Lead Ads do Meta direto no n8n (app próprio), formulário/LP → CRM (Kommo, RD Station CRM, HubSpot, Pipedrive, DataCrazy, NectarCRM, GoHighLevel), eventos de WhatsApp/Chatwoot, e a devolução das etapas do CRM (SQL, venda) ao Meta pela CAPI e ao Google Ads pela Data Manager API. Use para implementar tracking do zero, auditar antes do go-live, diagnosticar evento/conversão/deduplicação/EMQ, integrar formulário ou Lead Ads ao CRM, devolver dados do CRM para Meta e Google (inclusive os retroativos que ainda cabem na janela), montar as colunas de SQL e venda, descobrir leads que não entraram no CRM, ou revisar as automações do n8n de um cliente. Tem agentes por frente (CRM, Meta, Google Ads, conversacional).
 ---
 
 # Tracking e Integrações
 
-**Versão 2.0.0 (30/09/2026).** Antes `tracking-web-and-capi`. Histórico em `CHANGELOG.md`; desenho do fluxo em
+**Versão 2.1.0 (30/09/2026).** Antes `tracking-web-and-capi`. Histórico em `CHANGELOG.md`; desenho do fluxo em
 `README.md`. Caminhos relativos à pasta da skill. Dados de cliente em `clientes/<cliente>/` (git local, fora da
 cópia pública).
 
@@ -29,6 +29,8 @@ Ferramentas:
   pelo sGTM, Google pela Data Manager, id do lead do formulário buscado no Meta pelo telefone), do bloco `devolucao` do brief.
 - `scripts/auditar_entrada.py`: formulário × CRM semana a semana e por origem (acha a semana em que a integração quebrou).
 - `scripts/n8n_meta_leads.py`: leads dos formulários pela credencial de Lead Ads no n8n (sem nome/telefone completo).
+- `scripts/retroativos.py`: etapas de antes da devolução que ainda cabem na janela (Meta 7 dias, Google 90/63), enviadas
+  pela devolução no ar com a hora real da etapa (só com ok).
 - `scripts/instalar_agentes.py`: instala os agentes `integracao-*` em `.claude/agents/` (fonte: `agentes/`).
 - Da skill irmã `sprint-growth`: `gtm_auditoria.py`, `teste_disparo.py`, `teste_formulario.py`, `datacrazy.py` e as MCPs
   do n8n (GTM, Google Ads, GA4 Admin).

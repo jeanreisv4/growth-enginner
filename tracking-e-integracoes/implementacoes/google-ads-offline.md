@@ -42,4 +42,15 @@ destino = conta (`operatingAccount`) + `productDestinationId` = id da conversion
   gclid**: gbraid/wbraid no campo gclid seriam recusados como gclid.
 - **Formulário do Meta**: não tem gclid. O Google só recebe esses leads com `sem_clique: true` (hash do e-mail e do
   telefone), e só casa se a pessoa também clicou num anúncio do Google.
-- Janela: gclid vale 90 dias; conversão só com dados do usuário, 63 dias.
+- Janela: gclid vale 90 dias; conversão só com dados do usuário, 63 dias. Retroativos: `scripts/retroativos.py`.
+
+## Colunas e conversão principal
+
+- Importação secundária não entra em "Conversões": coluna personalizada "Todas as conv." filtrada pela ação (e "Valor
+  de todas as conv." para a venda), num conjunto de colunas "Funil CRM". A API só lê coluna personalizada.
+- Duas conversões de formulário principais (Lead e MQL) = contagem em dobro. Antes de escolher, `all_conversions` por
+  ação e mês em 12 meses: fica principal a que tem histórico. `conversionActionOperation.update` com
+  `updateMask: primaryForGoal`, `validateOnly` antes, conferir depois e deixar o script de desfazer.
+- Venda do CRM principal só quando houver volume com clique (gclid na LP) e as campanhas estiverem rodando.
+- Credencial OAuth do n8n: se o app do Google Cloud está "Em teste", o refresh token vence em 7 dias e a devolução
+  para. Publicar o app (Google Auth Platform → Público) antes de entregar.

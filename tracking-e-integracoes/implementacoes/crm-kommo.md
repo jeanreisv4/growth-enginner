@@ -159,6 +159,22 @@ etapa mapeada.
 5. Tirar o Test Event Code, publicar o sGTM com nome claro, ativar o workflow, ligar o webhook.
 6. D+2: diagnóstico do dataset no Meta e status da ação de importação no Google.
 
+### 8. Retroativos (no dia em que liga)
+
+`python3 scripts/retroativos.py --brief <brief> --kommo-token <arquivo>` lê `/events` (`lead_status_changed` com
+`value_after` por funil e etapa do brief), marca quem tem gclid/gbraid/wbraid e lista o que ainda cabe: Meta até 7
+dias, Google até 90 com clique ou 63 com `sem_clique`. Com `--enviar --webhook-url`, cada item vai ao webhook da
+devolução no formato do próprio Kommo, com `leads[status][0][last_modified]` = hora da etapa (o núcleo usa como
+`event_time`). Mais velho primeiro; 3 s entre envios; nota no lead como qualquer envio; `event_id` repetido não sai
+de novo. Só com ok do usuário.
+
+### 9. Colunas no Gerenciador de Anúncios
+
+Nenhuma API salva a predefinição de colunas: o usuário faz. Gerenciador de Eventos → Conversões personalizadas:
+"CRM | SQL" (evento SQL; evento personalizado não vira coluna sem ela) e "CRM | Venda" (Purchase com o parâmetro
+`event_source` contendo `crm`, porque a loja/e-commerce também manda Purchase ao mesmo Pixel). Depois Colunas →
+Personalizar → resultados, custo e valor das duas → salvar como "Funil CRM".
+
 ## Diferenças vs Implementação A (Sheets)
 
 | | A (Sheets) | B (Kommo) |

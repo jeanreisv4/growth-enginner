@@ -296,6 +296,30 @@ kc = [{"id": 9, "custom_fields_values": [{"field_code": "PHONE", "values": [{"va
 confere("entrada: adaptador do Kommo monta telefones e leads do contato",
         ae.crm_do_kommo(kl, kc) == [{"telefones": ["+5511988887777"], "leads": [{"criado_em": 1788264000, "origem": "A"}]}])
 
+# retroativos: janela de cada plataforma e o webhook com a hora real da etapa
+import retroativos as rt
+AG = 1790000000
+confere("retroativos: 6 dias vai ao Meta; 8 dias com gclid só ao Google; 8 dias sem clique a nenhum",
+        rt.plataformas(AG - 6 * 86400, AG, False, False) == ["meta"]
+        and rt.plataformas(AG - 8 * 86400, AG, True, False) == ["google"]
+        and rt.plataformas(AG - 8 * 86400, AG, False, False) == [])
+confere("retroativos: sem clique só até 63 dias; com clique até 90; margem antes de vencer o Meta",
+        rt.plataformas(AG - 60 * 86400, AG, False, True) == ["google"]
+        and rt.plataformas(AG - 70 * 86400, AG, False, True) == []
+        and rt.plataformas(AG - 89 * 86400, AG, True, False) == ["google"]
+        and rt.plataformas(AG - 7 * 86400 + 60, AG, False, False) == [])
+cw = dict(__import__("urllib.parse").parse.parse_qsl(rt.corpo_webhook(123, 142, 9, AG - 3600).decode()))
+confere("retroativos: webhook no formato do Kommo com last_modified = hora da etapa",
+        cw == {"leads[status][0][id]": "123", "leads[status][0][status_id]": "142", "leads[status][0][pipeline_id]": "9",
+               "leads[status][0][old_status_id]": "0", "leads[status][0][last_modified]": str(AG - 3600)})
+if shutil.which("osascript"):
+    confere("retroativos: o núcleo lê o last_modified como a hora do evento (não a do envio)",
+            js("lerWebhookKommo(" + json.dumps(cw) + ")")[0]["quando"] == AG - 3600)
+confere("retroativos: clique conta só com gclid/gbraid/wbraid preenchido",
+        rt.tem_clique({"custom_fields_values": [{"field_id": 7, "values": [{"value": "Cj0abc"}]}]}, {"gclid": 7})
+        and not rt.tem_clique({"custom_fields_values": [{"field_id": 7, "values": [{"value": " "}]}]}, {"gclid": 7})
+        and not rt.tem_clique({"custom_fields_values": [{"field_id": 8, "values": [{"value": "x"}]}]}, {"gclid": 7, "fbclid": 8}))
+
 # agentes de integração: fonte coerente e instalados iguais (quando a skill está dentro de um projeto)
 ag = sorted(glob_mod.glob(os.path.join(RAIZ, "agentes", "integracao-*.md")))
 confere("agentes: 4 frentes (crm, meta, google-ads, conversacional)",

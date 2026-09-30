@@ -28,7 +28,10 @@ Leia `referencias/contrato_integracao.md`, `implementacoes/meta-lead-ads.md`, `i
 4. **App próprio** (se houver): publicado, inscrito em `leadgen` na página (`/{página}/subscribed_apps`), credencial
    conectada (workflow temporário lendo o token da página), um webhook por app.
 5. **Devolução**: eventos SQL/Purchase no dataset com `action_source` system_generated; `lead_id` quando o lead veio
-   do formulário; sem `client_ip_address` do servidor; `event_time` da etapa; valor.
+   do formulário; sem `client_ip_address` do servidor; `event_time` da etapa; valor. Purchase de servidor vindo
+   também da loja (integração do e-commerce) = a coluna "Compras" mistura as duas: propor conversão personalizada
+   "CRM | Venda" (Purchase com `event_source` = crm) e "CRM | SQL" (`ads_get_customconversions` mostra as que existem).
+   Etapas antigas que ainda cabem nos 7 dias: `scripts/retroativos.py` (só listar).
 6. **Tokens**: CAPI e chave do app que passaram por chat ou print → correção "gerar novo e trocar".
 
 ## Números (`numeros`)

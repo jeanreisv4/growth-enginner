@@ -148,6 +148,10 @@ de outro caminho (cópia do container de outro cliente) ou se a validação do g
 - [ ] Google: conversões UPLOAD_CLICKS (secundárias até decisão), conversões otimizadas para leads, gclid no CRM
 - [ ] Conversacional: índice em cache (zero leitura por evento), append com nova tentativa espaçada, erros na semana
 - [ ] Automações do cliente revisadas: backup, só as em uso ativas, nenhuma obsoleta com segredo no código
+- [ ] Retroativos enviados no dia em que a devolução ligou (`retroativos.py`), com a hora real da etapa
+- [ ] Uma conversão principal por etapa no Google (a que tem histórico); colunas "Funil CRM" no Meta e no Google
+- [ ] Venda do CRM separada da venda da loja no Meta (conversão personalizada com `event_source` = crm)
+- [ ] Conexões com data de vencimento anotadas (OAuth do Meta, app do Google publicado, token do CRM) e aviso de erro
 
 ---
 
