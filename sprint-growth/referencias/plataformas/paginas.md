@@ -21,6 +21,7 @@ de edição, aplica com ok e registra. Auditoria de SEO completa: `/seo audit <s
 | P10 | Botão de WhatsApp: número certo, mensagem com a origem, abre no celular | jornada | render + clique no teste | número antigo; mensagem sem identificar a campanha | média |
 | P11 | Provas e confiança: depoimentos, clientes, preço ou faixa clara | jornada | render | página sem prova nem preço quando o concorrente mostra | baixa |
 | P12 | Quem edita a página e com que acesso | jornada | entrevista + memória | ninguém sabe quem mexe no construtor | baixa |
+| P13 | Site institucional medido antes de virar destino de mídia | jornada | GTM e GA4 no HTML; acesso da V4 ao GA4 do site | GA4 de outra conta; sem GTM; WhatsApp do site sem medição | média |
 
 ## Correção
 
@@ -38,3 +39,4 @@ de edição, aplica com ok e registra. Auditoria de SEO completa: `/seo audit <s
 | CX-P10 | Botão de WhatsApp com número certo e mensagem que identifica a origem | P10 | editor da página + `gtm.md` CX-G15 | link testado no celular | R1 | link anterior | conversa chega com a mensagem de origem |
 | CX-P11 | Provas e preço na página | P11, MK2, MK4 | pedido ao cliente e ao editor | conteúdo aprovado | R2 | versão anterior | conversão da LP |
 | CX-P12 | Registrar dono e acesso de edição de cada página | P12 | memória do cliente | — | R1 | — | memória atualizada |
+| CX-P13 | GTM no site, acesso ao GA4 e teste site × LP antes de mover verba | P13 | GTM no site + pedido de acesso + campanha dividida por 30 dias | custo por conversa de cada destino | R2 | voltar à LP | custo por conversa e por orçamento por destino |

@@ -36,6 +36,15 @@ Formato: o que aconteceu · como detectar · o que fazer. Cliente entre parênte
 - **Receita sem fonte completa.** Painel sem status de pago e lista de assinantes vista pela metade (SaaS de diário de obra).
   Fazer: reportar piso ("pelo menos 2") e o limite, nunca extrapolar.
 
+- **Leads da plataforma × pessoas únicas.** 137 leads do Meta contra 110 pessoas únicas pareciam "15 perdidos";
+  pelas linhas do backup, junho e julho estavam completos (reenvios) e a perda real eram ~9 leads de agosto, com a aba
+  vazia de 22 a 31/08 e o Meta gastando todo dia (empresa de revestimento industrial). Fazer: plataforma × LINHAS do backup por dia; dia com
+  gasto e sem linha = perda. Recuperar só pelo export da Central de Leads (90 dias).
+- **Ticket circular na projeção.** Ticket de R$ 72.581 era exatamente custo ÷ margem (R$ 7.258 ÷ 10%), com ticket
+  histórico R$ 0: a projeção fechava o breakeven com 1 venda por construção e marcava "breakeven em jul/26" sem venda
+  (empresa de revestimento industrial). Detectar: ticket × (fee + mídia) ÷ margem; projeção feita com 1 mês. Fazer: ticket do CRM (média e
+  mediana) e refazer pela skill `projecao-breakeven`.
+
 ## Mídia
 
 - **Conta invadida.** 26 campanhas criadas em 43 minutos com 3.150 palavras de cassino e páginas de golpe
@@ -56,6 +65,16 @@ Formato: o que aconteceu · como detectar · o que fazer. Cliente entre parênte
   de descartar (SaaS de diário de obra).
 - **Métrica quebrada × dado quebrado.** Se só as métricas com um certo denominador variam 10x, o denominador é
   suspeito (projeção, cliente de climatização).
+
+- **Resíduo da invasão na conta nova.** A conta criada depois da invasão herdou um telefone da Holanda ativo no nível
+  da conta e ficou com as campanhas suspensas; o GTM seguia mandando conversões e remarketing para a conta invadida
+  (empresa de revestimento industrial). Detectar: `customer_asset` CALL com país ≠ BR; conversion ID das tags × conta que está no ar. Fazer:
+  desvincular o ativo (fica na biblioteca, dá para voltar) e apontar o GTM para a conta nova.
+- **Verba concentrada no pior anúncio.** O CBO pôs 100% de agosto num anúncio de R$ 48/lead com o de R$ 19 inativo;
+  CPL 29 → 120 em quatro meses, com CPM subindo junto com a verba (empresa de revestimento industrial). Comparar custo por lead por anúncio no
+  mesmo conjunto e mês antes de culpar público.
+- **Conjunto "de região" que não entrega a região.** Conjunto "Interesse Indústria Sudeste" com 56% dos leads de fora
+  pelo DDD (empresa de revestimento industrial). Detectar: DDD dos leads por conjunto. Fazer: conferir a localização e perguntar a UF.
 
 ## Medição
 
@@ -86,6 +105,18 @@ Formato: o que aconteceu · como detectar · o que fazer. Cliente entre parênte
 - **Campo do Clarity com nome não documentado.** A documentação só mostra os campos de Traffic; os de fricção são
   lidos pelo padrão do nome. Se o resumo listar campo não reconhecido, ajuste `clarity.linhas()` antes de concluir.
 
+- **Filtro que esconde credencial morta.** O fluxo do n8n rodava a cada 10 min com "success", mas o filtro devolvia 0
+  itens e nunca chamava o CRM; a credencial do Kommo dava 401 havia dias (empresa de revestimento industrial). Execução com sucesso não prova
+  integração: testar a credencial com um GET direto.
+- **Ferramenta de terceiros muda o layout da planilha.** O Make passou a gravar o ID do lead do Meta na coluna de
+  controle "Enviado ao Kommo" e o n8n tratou a linha como enviada (empresa de revestimento industrial). Coluna de controle aceita só o
+  marcador no formato do próprio fluxo (regex), nunca "preenchida = enviada".
+- **LP sem destino por semanas.** A aba da LP não teve nenhuma linha de 22/06 a 20/08 com o Google gastando: o fluxo
+  foi criado depois do início da mídia e os leads ficaram só no construtor (empresa de revestimento industrial). Cruzar dias com gasto × dias
+  com linha; recuperar pelo export do construtor.
+- **Site institucional com GA4 de outra conta.** O site tinha GA4 próprio fora do acesso da V4 e nenhum GTM, e o
+  WhatsApp dele era o mesmo que fechava as vendas "sem origem" (empresa de revestimento industrial). Pedir acesso e medir antes de mandar mídia.
+
 ## Funil e comercial
 
 - **Canal que gera lead e não alimenta a etapa seguinte.** 57 de 59 leads do formulário nativo do Meta nunca
@@ -95,6 +126,20 @@ Formato: o que aconteceu · como detectar · o que fazer. Cliente entre parênte
 - **Capacidade comercial é a restrição.** Correlação leads × vendas negativa; mais verba não vira venda
   (indústria de plásticos). Testar lead × capacidade antes de pedir verba.
 - **IA de primeiro atendimento sem segundo toque.** 77 negócios parados em "Ativado IA" (indústria de plásticos).
+
+- **Busca por nome no CRM falha em card de WhatsApp.** No Kommo, o contato do WhatsApp tem outro nome: por nome
+  deu 3 leads "fora do CRM", pelo telefone era 1 (empresa de revestimento industrial). Casar sempre por DDD + 8 dígitos.
+- **Caixa de entrada fora da API padrão.** No Kommo, a etapa "Leads de entrada" não vem no `/leads` padrão (filtrar
+  por etapa); havia 111 conversas nunca triadas, 44 com o cliente falando por último (empresa de revestimento industrial).
+- **Data de criação retroativa e perda em lote.** Cards criados por automação com hora fixa (13:17) e 92 perdidos no
+  mesmo minuto: "Sem resposta" e tempo até o primeiro contato não medem nada nesses cards (empresa de revestimento industrial).
+- **Formulário sem nenhum toque no CRM.** 130 de 151 leads de formulário da V4 sem mensagem, nota ou tarefa, 0 venda,
+  enquanto o WhatsApp respondido fechava 8,6% (empresa de revestimento industrial). A restrição era contato, não mídia.
+- **Régua de MQL que aprova quase todos.** O formulário perguntava 3 dos 6 critérios e a régua reescalava para 100:
+  81% viravam MQL (empresa de revestimento industrial). Taxa de MQL acima de 60% = régua sem poder de corte; perguntar o que falta.
+- **Negócio com logística.** Serviço em campo (equipe vai ao cliente) × galpão (peça viaja com frete de ida e volta
+  pago pelo cliente): lead de fora da região só serve em campo e com porte grande (empresa de revestimento industrial: 54 de 74 leads de
+  fora eram peça de galpão). Qualificar por região × modalidade, não só por região.
 
 ## Execução
 
@@ -111,3 +156,8 @@ Formato: o que aconteceu · como detectar · o que fazer. Cliente entre parênte
   campanha (`campaign_conversion_goal.biddable = false` por categoria), que a API aceita (distribuidora de peças automotivas).
 - **Workspace do GTM usado** depois de criar versão: pegar o workspace novo antes de editar.
 - **n8n corta resposta grande** (IncompleteRead) ou devolve 502: `mcp_http.py` tenta de novo; reduza a consulta.
+- **Credencial nova no n8n pela API** exige `allowedHttpRequestDomains` (use `domains` + o domínio do CRM).
+- **Arquivo bruto com segredo.** O dump do GTM gravava o token da API de Conversões em texto; `gtm_auditoria.py` agora
+  mascara segredos antes de gravar. Arquivo bruto de cliente nunca vai para o documento nem para o GitHub.
+- **Token do GA4 renovado e MCP ainda com o antigo.** Depois do `gcloud auth application-default login`, o
+  `analytics-mcp` já aberto na conversa segue com `invalid_grant`: use um processo novo (`ga4_resumo.py`) ou conversa nova.

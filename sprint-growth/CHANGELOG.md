@@ -1,5 +1,26 @@
 # Changelog
 
+## v2.1.1 (30/09/2026)
+
+Aprendizados da sprint de uma empresa de revestimento industrial (Meta + Google, Kommo, n8n, Make, GreatPages).
+- **Catálogo +11 itens e +11 correções** (142 e 119): plataforma × linhas do backup por dia (F9) e premissas da
+  projeção com base medida (F10); credencial do CRM testada direto (I12), coluna de controle só com o marcador do
+  próprio fluxo (I13) e destino da LP desde o primeiro dia de mídia (I14); caixa de entrada triada (V11), régua de MQL
+  que separa (V12) e qualificação por região × modalidade em negócio com logística (V13); resíduo de invasão nos
+  ativos da conta nova (A29); conjunto de região que não entrega a região (M19); site institucional medido antes de
+  virar destino (P13).
+- **Armadilhas novas**: leads da plataforma × pessoas únicas, ticket circular, resíduo de invasão, verba no pior
+  anúncio, filtro que esconde credencial morta, Make mudando o layout, LP sem destino, GA4 do site de outra conta,
+  Kommo (busca por nome, caixa de entrada fora do `/leads`, data retroativa e perda em lote), formulário sem toque no
+  CRM, régua de MQL reescalada e negócio com logística; na execução, credencial do n8n com domínios, arquivo bruto com
+  segredo e token do GA4 renovado.
+- **Agentes**: comercial lê o Kommo (etapa de entrada por filtro, casar por telefone, régua de MQL); fontes cruza
+  plataforma × linhas por dia e as premissas da projeção; medição olha credencial, coluna de controle, destino da LP e
+  site; Google Ads procura resíduo de invasão e mede a demanda disponível.
+- `gtm_auditoria.py` mascara segredos (token da API de Conversões, chaves, senhas) antes de gravar `gtm_raw.json`.
+- `termos_negativas.py` ignora chaves de comentário (`_nota`) no arquivo de negativas do cliente.
+- `publicar.py`: nome do cliente novo no mapa de anonimização.
+
 ## v2.1 (30/09/2026)
 
 Dois modos com catálogo completo por plataforma, para a sprint cobrir 100% do que se verifica e do que se corrige.

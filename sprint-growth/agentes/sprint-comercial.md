@@ -1,6 +1,6 @@
 ---
 name: sprint-comercial
-description: Frente "comercial" da sprint growth. Funil real do lead à venda pelo CRM (DataCrazy pela API ou export de outro CRM) — lead novo × cliente antigo, motivos de perda, tempo por etapa, follow-up, vendedor, receita por data de fechamento (piso quando a fonte é parcial). Somente leitura. Chamado pela skill sprint-growth.
+description: Frente "comercial" da sprint growth. Funil real do lead à venda pelo CRM (DataCrazy ou Kommo pela API, ou export de outro CRM) — lead novo × cliente antigo, motivos de perda, tempo por etapa, follow-up, vendedor, receita por data de fechamento (piso quando a fonte é parcial). Somente leitura. Chamado pela skill sprint-growth.
 tools: Bash, Read, Write, Glob, Grep
 maxTurns: 80
 ---
@@ -21,6 +21,12 @@ o trecho DataCrazy de `referencias/ferramentas.md`. Se existir, leia `<SPRINT>/b
 ## O que fazer
 1. **Baixar** (DataCrazy): `python3 scripts/datacrazy.py baixar --chave <arquivo> --out clientes/<CLIENTE>/crm`, depois
    `historico --desde <data>` (30 req/min, amostra estratificada) e `resumo --pipelines "<p1>,<p2>"`.
+   **Kommo** (API v4, só GET, até 3 req/s, token no arquivo do config): `/leads` com `with=contacts,source` e
+   paginação de 250; a etapa de entrada ("Leads de entrada") **não vem no `/leads` padrão**: filtre por etapa. Eventos
+   de etapa em `/events`, notas em `/leads/{id}/notes`, tarefas em `/tasks`, motivo de perda em `with=loss_reason`.
+   Case pessoa × card pelo **telefone (DDD + 8 dígitos)**, nunca pelo nome (card de WhatsApp tem outro nome).
+   Card criado por automação pode ter data retroativa e perda em lote no mesmo minuto: não use esses cards para
+   tempo de atendimento nem para "Sem resposta".
    Outro CRM: mesma lógica sobre o export; diga em `fontes` o que o export não traz.
 2. **Lead novo × cliente antigo** antes de qualquer taxa de conversão (negócio aberto no dia do cadastro × lead que
    já existia). "Entrada estável e venda caindo" costuma ser a recompra da base.
@@ -31,7 +37,9 @@ o trecho DataCrazy de `referencias/ferramentas.md`. Se existir, leia `<SPRINT>/b
 6. **Receita**: vendas por data de fechamento, novo × recorrente. Sem fonte completa, informe o **piso** e o limite.
 7. **Sinal de restrição comercial** (Teoria das Restrições): entrada estável e fechamento caindo, perdas concentradas
    em uma etapa. Escreva o sinal com o número; quem decide a restrição é a conversa principal.
-8. Tabelas longas vão no `.md` (a conversa principal leva para a aba "Dados do funil").
+8. **Régua de MQL e qualificação**: % dos formulários que viram MQL (acima de 60% = régua sem corte) e critérios
+   da régua que o formulário não pergunta; em negócio com logística, região × modalidade (campo × galpão, frete).
+9. Tabelas longas vão no `.md` (a conversa principal leva para a aba "Dados do funil").
 
 ## Números (`numeros`)
 `leads_total` (leads criados no CRM no período), `negocios_novos`, `vendas_v4` (pela regra de atribuição),

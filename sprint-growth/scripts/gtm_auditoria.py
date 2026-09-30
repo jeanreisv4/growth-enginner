@@ -16,6 +16,24 @@ preso no banner de cookies — use scripts/teste_formulario.py na página.
 """
 import argparse, json, os, re, sys
 
+SEGREDO_CHAVE = re.compile(r"token|secret|senha|password|api_?key|access_?key|credential", re.I)
+SEGREDO_VALOR = re.compile(r"^EAA[A-Za-z0-9]{30,}$")  # token de acesso do Meta (API de Conversões)
+
+
+def mascarar(o, segredo=False):
+    """Copia o dump do GTM trocando segredos por "***": parâmetro com nome de segredo, variável com nome de segredo
+    (constante "Token CAPI") e qualquer valor com formato de token do Meta. O arquivo bruto nunca guarda credencial."""
+    if isinstance(o, list):
+        return [mascarar(x, segredo) for x in o]
+    if isinstance(o, dict):
+        nome = str(o.get("name", "")) + " " + str(o.get("key", ""))
+        seg = segredo or bool(SEGREDO_CHAVE.search(nome))
+        return {k: ("***" if k == "value" and seg and isinstance(v, str) and v else mascarar(v, seg if k in ("parameter", "list", "map") else False))
+                for k, v in o.items()}
+    if isinstance(o, str) and SEGREDO_VALOR.match(o):
+        return "***"
+    return o
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mcp_http import MCP
 
@@ -111,7 +129,7 @@ def main():
                     dica = f" Parecido com {parecido[0]} ({validos[parecido[0]]})." if parecido else ""
                     al.append(("G1", f"\"{t['name']}\" envia o rótulo {rot}, que não existe na conta {a.ads}.{dica}"))
     os.makedirs(a.out, exist_ok=True)
-    json.dump(raw, open(os.path.join(a.out, "gtm_raw.json"), "w"), ensure_ascii=False, indent=1)
+    json.dump(mascarar(raw), open(os.path.join(a.out, "gtm_raw.json"), "w"), ensure_ascii=False, indent=1)  # sem segredo
     md = ["# Auditoria GTM", "", "## Alertas", ""] + ([f"- **{c}** {t}" for c, t in al] or ["- Nenhum alerta."])
     for papel, d in raw.items():
         md += ["", f"## Tags ({papel}, workspace {d['workspace']})", ""]

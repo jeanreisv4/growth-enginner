@@ -85,6 +85,27 @@ with tempfile.TemporaryDirectory() as d:
     confere("negativa sem conversão é aceita", [n["texto"] for n in res["negativas"]] == ["login"])
     confere("negativa que pega termo convertido é recusada", [n["texto"] for n in res["recusadas"]] == ["gratuito"])
 
+# termos_negativas: "_nota" no arquivo do cliente é comentário, não grupo (quebrava com TypeError)
+with tempfile.TemporaryDirectory() as d:
+    json.dump({"termos": [{"searchTermView": {"searchTerm": "curso de pintura"}, "metrics": {"costMicros": "10000000", "clicks": "3", "conversions": 0}}]},
+              open(os.path.join(d, "raw.json"), "w"))
+    json.dump({"emprego": ["curso"]}, open(os.path.join(d, "neg.json"), "w"))
+    json.dump({"_nota": "negativas do cliente", "fora": ["eletrostatica"]}, open(os.path.join(d, "extra.json"), "w"))
+    r = subprocess.run([sys.executable, os.path.join(AQUI, "..", "scripts", "termos_negativas.py"), "--raw", os.path.join(d, "raw.json"),
+                        "--negativas", os.path.join(d, "neg.json"), "--extra", os.path.join(d, "extra.json"), "--out", d], capture_output=True)
+    confere("termos_negativas ignora \"_nota\" no --extra", r.returncode == 0 and os.path.exists(os.path.join(d, "negativas.json")))
+
+# gtm_auditoria: o dump bruto nunca guarda segredo (token da CAPI, parâmetro accessToken)
+from gtm_auditoria import mascarar
+_m = mascarar({"server": {"variables": [{"name": "00 - Token CAPI", "parameter": [{"key": "value", "value": "EAAB" + "x" * 40}]},
+                                         {"name": "00 - Pixel Id", "parameter": [{"key": "value", "value": "1501359098160546"}]}],
+                          "tags": [{"name": "CAPI Lead", "parameter": [{"key": "accessToken", "value": "segredo"}, {"key": "pixelId", "value": "{{00 - Pixel Id}}"}]}]}})
+confere("gtm_auditoria mascara variável com nome de token", _m["server"]["variables"][0]["parameter"][0]["value"] == "***")
+confere("gtm_auditoria mascara parâmetro accessToken", _m["server"]["tags"][0]["parameter"][0]["value"] == "***")
+confere("gtm_auditoria mantém ID do Pixel e referências", _m["server"]["variables"][1]["parameter"][0]["value"] == "1501359098160546"
+        and _m["server"]["tags"][0]["parameter"][1]["value"] == "{{00 - Pixel Id}}")
+confere("gtm_auditoria mascara token do Meta em qualquer campo", mascarar({"x": "EAAB" + "y" * 40}) == {"x": "***"})
+
 # cnpj: validação e classificação (sem rede)
 import cnpj
 confere("CNPJ válido passa no dígito", cnpj.valida("11.222.333/0001-81"))

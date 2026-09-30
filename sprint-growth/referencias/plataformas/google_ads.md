@@ -36,6 +36,7 @@
 | A26 | Performance Max e Demand Gen: grupos, sinais, marca, expansão de URL | google-ads | GAQL `asset_group`, `campaign` | PMax comprando a própria marca; URL expandida para página errada | média |
 | A27 | Leilão: concorrentes e sobreposição | google-ads | interface (Informações do leilão) | concorrente novo tomando parcela | baixa |
 | A28 | Listas de público e exclusão de clientes | google-ads | GAQL `user_list` | remarketing sem lista ou cliente recebendo anúncio | baixa |
+| A29 | Ativos da conta sem resíduo de invasão (telefone, sitelinks, conversões de outro país ou empresa) | google-ads | GAQL `customer_asset` e `campaign_asset` (CALL com `country_code`), `conversion_action` | telefone de outro país no nível da conta; conversão criada por invasor | crítica |
 
 ## Correção
 
@@ -60,6 +61,7 @@
 | CX-A17 | Desligar a aplicação automática de recomendações | A25 | interface | lista do que está ligado | R1 | religar | `change_event` sem mudança do Google |
 | CX-A18 | PMax: excluir a marca, ajustar sinais, controlar expansão de URL | A26 | interface e API onde houver | termos de marca na PMax | R2 | valores anteriores | gasto de marca na PMax = 0 |
 | CX-A19 | Públicos: excluir clientes, criar listas de remarketing | A28 | `ads_escrita.py` (`user_list`, exclusão) | tamanho das listas | R2 | remover a exclusão | alcance e custo do remarketing |
+| CX-A20 | Desvincular o ativo estranho e incluir o telefone real | A29 | `ads_escrita.py` (`customerAssetOperation.remove`; o ativo fica na biblioteca) | validateOnly | R2 | vincular o ativo de novo | GAQL: vínculo REMOVED |
 
 ## Não dá pela API (vai pela interface)
 

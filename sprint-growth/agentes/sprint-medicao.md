@@ -33,6 +33,14 @@ Leia `clientes/<CLIENTE>/memoria.md`, `clientes/<CLIENTE>/config.json`, `referen
 6. **Lead até o destino**: o lead chega à planilha/n8n/CRM? com origem? vira a etapa seguinte? Etiqueta de origem
    no CRM: quem coloca e com que atraso. Clique para WhatsApp: a origem do anúncio chega?
 
+## Também verificar (aprendido na sprint de 29/09/2026)
+- **Credencial do CRM no n8n**: execução "success" com 0 itens depois do filtro não prova integração. Veja quantos
+  itens chegaram aos nós do CRM nas últimas execuções; se nenhum, peça em `perguntas` um teste direto da credencial.
+- **Coluna de controle** ("Enviado ao CRM"): valores em formato diferente do que o fluxo grava (ID de outra ferramenta)
+  fazem o fluxo pular linhas.
+- **Destino da LP** desde o primeiro dia de mídia: dias com gasto e sem linha na aba da LP.
+- **Site institucional**: GTM e GA4 no HTML e se a V4 tem acesso ao GA4 dele.
+
 ## Números (`numeros`)
 Chaves comuns do contrato medidas **pelo GA4**: `leads_total` (evento de lead, todas as origens), `leads_google`
 (origem google / cpc), `leads_meta` (origem Meta paga), sempre com o nome do evento na fonte.

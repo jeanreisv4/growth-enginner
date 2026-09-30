@@ -27,6 +27,7 @@ ou exports CSV. **Escrita:** o mesmo conector (`ads_update_entity`, `ads_activat
 | M16 | Acessos ao Business Manager, parceiros e 2 etapas | meta-ads | interface do Business Manager | pessoa ou parceiro desconhecido com acesso total | alta |
 | M17 | Clique para WhatsApp: a origem do anúncio chega ao CRM | meta-ads | conversas no CRM (`sourceReferral`/ctwaId) | conversa de anúncio sem origem no CRM | média |
 | M18 | Referência de custo do setor e do leilão | meta-ads | `ads_insights_industry_benchmark`, `ads_insights_auction_ranking_benchmarks` | CPM ou CPL muito acima do setor | baixa |
+| M19 | Conjunto de região entrega a região | meta-ads | DDD ou UF dos leads por conjunto × localização configurada | conjunto "Sudeste" com mais de 30% de fora | média |
 
 ## Correção
 
@@ -46,6 +47,7 @@ ou exports CSV. **Escrita:** o mesmo conector (`ads_update_entity`, `ads_activat
 | CX-M12 | Evento e conversão personalizada certos | M15 | conector `ads_pixel_event_create/update` | regra de URL testada | R2 | evento anterior | evento aparecendo no conjunto de dados |
 | CX-M13 | Acessos: remover desconhecidos, exigir 2 etapas | M16 | interface do Business Manager | lista de acessos | R2 | re-adicionar | lista final conferida |
 | CX-M14 | Segunda conta: pedir acesso ou tirar do realizado V4 | M4 | pedido ao cliente; regra de atribuição na memória | IDs das campanhas de fora | R1 | — | realizado sem a outra conta |
+| CX-M15 | Localização do conjunto conferida e UF perguntada no formulário | M19 | conector (localização do conjunto) + CX-M8 | localização antes e depois | R2 | localização anterior | DDD dos leads do conjunto em 7 dias |
 
 EMQ e deduplicação (M13, M14) se corrigem no servidor e no navegador: `gtm.md` (CX-G11, CX-G12). A origem do
 clique para WhatsApp (M17) se corrige no CRM: `crm_integracao.md` (CX-I9).

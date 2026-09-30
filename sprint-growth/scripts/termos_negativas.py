@@ -41,6 +41,8 @@ def main():
     neg = json.load(open(a.negativas))
     if a.extra:
         for g, lst in json.load(open(a.extra)).items():
+            if g.startswith("_") or not isinstance(lst, list):  # "_nota" e afins são comentário, não grupo
+                continue
             neg.setdefault(g, [])
             neg[g] += [t for t in lst if t not in neg[g]]
     neg = {g: [t for t in lst if not t.startswith("_")] for g, lst in neg.items() if not g.startswith("_")}

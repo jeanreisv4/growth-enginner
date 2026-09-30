@@ -30,6 +30,12 @@ Rode todo comando assim: `cd "<PASTA_SKILL>" && python3 scripts/...`.
    houver, data do primeiro contato e a classe do CNPJ. É o que as frentes de mídia e comercial cruzam.
 6. **Projetado × realizado**: só do realizado oficial; a outra planilha entra apenas com o projetado.
 
+## Também verificar (aprendido na sprint de 29/09/2026)
+- **Plataforma × linhas do backup por dia**, não × pessoas únicas: dia com gasto e sem linha é perda de lead; mês com
+  mais linhas que a plataforma é reenvio. Liste os dias sem linha.
+- **Premissas da projeção vigente**, se o usuário passar a planilha: ticket igual a (fee + mídia) ÷ margem é circular;
+  taxa tirada de 1 mês não é histórico.
+
 ## Números para o consolidador (`numeros`)
 `leads_total`, `leads_google`, `leads_meta` (pessoas únicas, sem teste — chaves comuns do contrato),
 `pessoas_sem_origem`, `testes_excluidos`, `leads_linhas` (unidade `pessoas` ou `linhas`), com a fonte.

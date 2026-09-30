@@ -106,16 +106,16 @@ conferem.
 | Plataforma | Itens de auditoria | Correções | Críticos e altos |
 | --- | --- | --- | --- |
 | [`clarity.md`](referencias/plataformas/clarity.md) | 8 | 7 | 3 |
-| [`comercial.md`](referencias/plataformas/comercial.md) | 10 | 10 | 5 |
-| [`crm_integracao.md`](referencias/plataformas/crm_integracao.md) | 11 | 11 | 6 |
-| [`fontes.md`](referencias/plataformas/fontes.md) | 8 | 5 | 6 |
+| [`comercial.md`](referencias/plataformas/comercial.md) | 13 | 13 | 7 |
+| [`crm_integracao.md`](referencias/plataformas/crm_integracao.md) | 14 | 14 | 9 |
+| [`fontes.md`](referencias/plataformas/fontes.md) | 10 | 7 | 8 |
 | [`ga4.md`](referencias/plataformas/ga4.md) | 13 | 13 | 6 |
-| [`google_ads.md`](referencias/plataformas/google_ads.md) | 28 | 19 | 10 |
+| [`google_ads.md`](referencias/plataformas/google_ads.md) | 29 | 20 | 11 |
 | [`gtm.md`](referencias/plataformas/gtm.md) | 18 | 15 | 13 |
 | [`mercado.md`](referencias/plataformas/mercado.md) | 5 | 2 | 0 |
-| [`meta_ads.md`](referencias/plataformas/meta_ads.md) | 18 | 14 | 8 |
-| [`paginas.md`](referencias/plataformas/paginas.md) | 12 | 12 | 5 |
-| **Total** | **131** | **108** | **62** |
+| [`meta_ads.md`](referencias/plataformas/meta_ads.md) | 19 | 15 | 8 |
+| [`paginas.md`](referencias/plataformas/paginas.md) | 13 | 13 | 5 |
+| **Total** | **142** | **119** | **70** |
 
 ## Como funciona
 

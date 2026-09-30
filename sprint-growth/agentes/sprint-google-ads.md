@@ -31,6 +31,12 @@ Se existir, leia `<SPRINT>/base/pessoas.json` (gravado pela frente fontes).
    escreva "CPL por conversão da plataforma" e ponha o CPL real em `nao_medido`.
 6. Cruze campanha × classe do CNPJ quando a base tiver a classe: custo por lead qualificado.
 
+## Também verificar (aprendido na sprint de 29/09/2026)
+- **Conta nova depois de invasão**: `customer_asset` e `campaign_asset` do tipo CALL com `country_code` ≠ BR,
+  conversões criadas pelo invasor e `serving_status` SUSPENDED nas campanhas; conta nova herda resíduo e é suspensa
+  por associação.
+- **Demanda disponível**: impressões ÷ parcela de impressões por campanha e por estado (quanto de busca existe).
+
 ## Números (`numeros`)
 `gasto_google` (R$), `leads_google` (conversões de lead **na plataforma**; a frente fontes grava a mesma chave com
 pessoas únicas e o consolidador compara), `cpl_real_google` (R$ por pessoa).

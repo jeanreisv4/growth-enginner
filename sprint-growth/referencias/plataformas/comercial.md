@@ -18,6 +18,9 @@ que é automação no CRM, com ok.
 | V8 | Abordagem e qualificação (roteiro, perguntas) | comercial | amostra de conversas | vendedor não pergunta o que qualifica | média |
 | V9 | Disciplina de registro no CRM | comercial | negócio nascendo em orçamento; ganho em 1 min | CRM como registro, não processo | média |
 | V10 | Receita por data de fechamento, novo × recorrente, piso quando parcial | comercial | CRM ou lista de assinantes | receita extrapolada de fonte incompleta | alta |
+| V11 | Caixa de entrada do CRM triada todo dia | comercial | etapa de entrada (no Kommo, filtrar por etapa: não vem no `/leads` padrão); quem falou por último | conversas paradas há semanas; cliente falando por último | alta |
+| V12 | Régua de MQL separa (taxa de MQL e critérios perguntados) | comercial | % dos formulários que viram MQL; critérios da régua × perguntas do formulário | mais de 60% vira MQL; critério da régua que ninguém pergunta | alta |
+| V13 | Qualificação por região × modalidade de atendimento (negócio com logística) | comercial | DDD ou UF × porte × serviço; perdas "Fora do raio" | lead de fora da região com serviço que exige frete ou deslocamento | média |
 
 ## Correção
 
@@ -33,3 +36,6 @@ que é automação no CRM, com ok.
 | CX-V8 | Roteiro de qualificação com as perguntas que separam o lead bom | V8, M3 | recomendação + material | roteiro aprovado | R1 | — | taxa de SQL por vendedor |
 | CX-V9 | Regra de registro: todo negócio nasce no começo do funil | V9 | recomendação + validação no CRM | regra escrita | R1 | — | negócios nascendo em orçamento = 0 |
 | CX-V10 | Fonte de receita definida (CRM ou lista) e piso declarado | V10 | memória do cliente + documento | fonte confirmada com o cliente | R1 | — | receita do mês com fonte |
+| CX-V11 | Triagem diária da caixa e lista de quem falou por último | V11 | lista do CRM entregue ao time (sem dado pessoal no documento) + rotina | lista revisada com o cliente | R1 | — | conversas paradas > 24 h caindo na próxima leitura |
+| CX-V12 | Perguntar os critérios que faltam e recalcular a régua | V12 | formulários (Meta e LP) + régua no n8n; simular a régua nova no histórico antes | taxa de MQL antes e depois mostrada | R2 | régua anterior | taxa de MQL e MQL × venda na próxima sprint |
+| CX-V13 | Perguntas de UF e modalidade, e mídia separada por modalidade | V13 | formulário + conjuntos separados (`meta_ads.md` CX-M15) + etiqueta no CRM | perguntas aprovadas pelo cliente | R2 | formulário anterior | leads fora do perfil caindo; ticket por modalidade medido |
