@@ -2,6 +2,16 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v8.4.1 · 01/10/2026 · Aprendizados de indústria química B2B e fábrica de acessórios de cortina
+
+- `referencias/armadilhas.md` (novo, lido antes de toda projeção): 18 armadilhas com o caso que as originou — entregar
+  só cenários que não fecham, dizer "não fecha" sem comparar com o mercado, verba antes do funil, recompra fora da
+  projeção principal, uma leitura só do déficit, linha copiada de outra, bloco por plataforma quebrado, venda sem valor,
+  início do contrato, projeção anterior, mix de canais no CPM e os bugs de mecânica já corrigidos.
+- `referencias/inside_sales.md`: caso fábrica de acessórios de cortina, com as três leituras (histórico, funil de mercado, recompra) e a margem
+  por R$ 1 de mídia de cada uma.
+- SKILL.md manda ler as armadilhas antes de começar. Sem mudança de código.
+
 ## v8.4 · 01/10/2026 · Recompra B2B na projeção principal
 
 - `--recompra INTERVALO,VIDA[,FATOR]` no piloto: o cliente novo paga o 1º pedido cheio; quem segue ativo repõe

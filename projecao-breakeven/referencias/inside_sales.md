@@ -105,3 +105,19 @@ de mai/25 a abr/26), IRREALISTA. Três lições:
 3. **Sem MQL e SQL na fonte, defina pelas colunas do comercial e escreva a definição.** MQL = segmento declarado no
    formulário (fábrica ou distribuidora); SQL = status de negociação, portfólio ou pedido; conexão = "Lead respondeu?".
    Em químico B2B a recompra decide o valor do cliente e quase nunca é medida: registre como a lacuna principal.
+
+**fábrica de acessórios de cortina · fábrica de acessórios para cortina** (01/10/2026). Vende para lojista (B2B), Google R$ 1.500 + Meta R$ 500,
+fee de R$ 5.000 desde jan/26, margem de 30% provisória (a projeção anterior usava 20%), 11 vendas de jan a set (ticket
+R$ 1.281 na janela, mediana R$ 1.873). Funil contra o mercado: acima em lead → MQL (64% contra 26%–40%), SQL → venda
+(43% contra 13%–20%) e CTR; abaixo em clique → lead (4,3% contra 8,2%–9,8%) e MQL → SQL (20% contra 23%–42%). Três
+leituras do mesmo cliente, que mostram a ordem certa das alavancas:
+
+| Premissas | Margem por R$ 1 de mídia | Fecha? |
+|---|---|---|
+| Histórico do cliente, verba R$ 2 mil | R$ 0,59 | não, nem com fee zero |
+| Funil de mercado nas duas etapas fracas | ~R$ 2,30 | só com verba de R$ 4 a 6 mil (sem legado zera set/27 com R$ 6 mil) |
+| + recompra trimestral por 12 meses (~4,7 pedidos) | ~R$ 2,75 já no funil de hoje | otimista fecha; Breakeven fecha com R$ 2 mil (sem legado zera jun/27) |
+
+Lições: (1) compare cada etapa com o mercado antes de dizer "não fecha"; (2) em B2B de reposição a recompra é do
+modelo de negócio e entra na projeção principal; (3) a linha "Conexão" do Growth Pack era cópia dos SQLs — entrou 69%
+de mercado como premissa marcada.

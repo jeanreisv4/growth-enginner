@@ -5,11 +5,11 @@ description: Projeção de breakeven de mídia paga a partir do histórico do cl
 
 # Projeção de breakeven
 
-**Versão 8.4 (01/10/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
+**Versão 8.4.1 (01/10/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
 
 A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não espera o usuário lembrar o que precisa informar. A segunda é a execução automática: com as premissas confirmadas, ela roda o piloto, dá o veredito e preenche o template, sem etapa manual.
 
-**Antes de começar, leia a referência do modelo:** `referencias/ecommerce.md`, `referencias/inside_sales.md` ou `referencias/plg.md`. Elas trazem as armadilhas das planilhas reais e os casos que servem para calibrar se o resultado faz sentido.
+**Antes de começar, leia `referencias/armadilhas.md`** (o que já deu errado em projeções reais e a regra que ficou) **e a referência do modelo:** `referencias/ecommerce.md`, `referencias/inside_sales.md` ou `referencias/plg.md`. Elas trazem as armadilhas das planilhas reais e os casos que servem para calibrar se o resultado faz sentido.
 
 ## 1. Entrevista (sempre nesta ordem, uma pergunta por vez)
 
