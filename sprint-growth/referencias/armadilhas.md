@@ -75,6 +75,17 @@ Formato: o que aconteceu · como detectar · o que fazer. Cliente entre parênte
   mesmo conjunto e mês antes de culpar público.
 - **Conjunto "de região" que não entrega a região.** Conjunto "Interesse Indústria Sudeste" com 56% dos leads de fora
   pelo DDD (empresa de revestimento industrial). Detectar: DDD dos leads por conjunto. Fazer: conferir a localização e perguntar a UF.
+- **Pacing que ignora a programação.** Com domingo desligado, verba ÷ dias do mês deixa o mês curto: o diário é verba
+  ÷ dias com anúncio (R$ 1.500 ÷ 27 = R$ 55 em outubro, não R$ 48; fábrica de acessórios para cortina). Conferir no dia 10 e no dia 20 (1/3 e
+  2/3 da verba). Mudou o orçamento no fim do mês: anotar a volta no dia 1, senão o mês seguinte estoura.
+- **Palavra genérica de B2B em frase puxa consumidor final.** "acessórios para cortina" levou 95% da verba e casou com
+  varão e trilho de consumidor; só 32% do gasto aparecia nos termos de pesquisa (fábrica de acessórios para cortina). O "lead" do Ads não diz se é
+  lojista: medir a qualidade por palavra pela resposta do formulário na planilha. Fazer: negativas de consumidor,
+  título de filtro ("Só para lojistas com CNPJ") fixo na posição 2 e o MQL de volta ao Google como conversão
+  secundária. Palavra de fábrica/atacado qualifica melhor, mas não tem volume para escalar.
+- **Madrugada e domingo em B2B.** De 0h às 6h, R$ 103 por conversão contra R$ 65 no horário comercial; domingo com
+  R$ 152 e nenhuma conversão em quatro meses (fábrica de acessórios para cortina). Detectar: `segments.hour` e `segments.day_of_week` de três a
+  quatro meses (A18). Fazer: programação de anúncios (CX-A10) e o pacing acima.
 
 ## Medição
 

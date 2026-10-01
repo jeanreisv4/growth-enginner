@@ -1,6 +1,14 @@
 # Changelog
 
 
+## v2.2.2 — 2026-09-30
+
+Aprendizados da otimização de uma fábrica de acessórios para cortina (B2B, só Google Ads, planilha sem CRM).
+- `referencias/armadilhas.md` (Mídia): pacing com programação de anúncios (diário = verba ÷ dias com anúncio, conferir
+  nos dias 10 e 20); palavra genérica de B2B em frase puxando consumidor final (filtro de lojista no título fixo, negativas
+  e MQL de volta como conversão secundária); madrugada e domingo em B2B (A18/CX-A10).
+- `publicar.py`: nome do cliente no mapa de anonimização.
+
 ## v2.2.1 — 2026-09-30
 
 - A skill irmã virou `tracking-e-integracoes` (antes `tracking-web-and-capi`): referências trocadas (SKILL, README,
