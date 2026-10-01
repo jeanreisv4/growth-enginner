@@ -39,7 +39,15 @@
 - **Dado do lead mora no negócio (deal custom fields)**, não no contato. PUT com um campo só mescla (não apaga os outros).
 - Automação do RD Marketing → CRM pode recriar o lead horas depois como origem "Desconhecido" (gêmeos): auditar
   duplicidade por telefone e origem.
-- Aviso de etapa: webhooks do RD CRM (a confirmar na primeira implementação de devolução).
+- **Devolução (em uso desde 30/09/2026, `scripts/devolucao_rd.py`)**: sem webhook, varredura de hora em hora.
+  `GET /deals?name=<prefixo>&deal_stage_id=<etapa>` e `?name=<prefixo>&win=true` (o `name` filtra por trecho do nome:
+  só os negócios da mídia, ex. "Lead V4"); 200 por página, `has_more`.
+- **`GET /deals/{id}` traz `deal_stage_histories`** (`deal_stage_id`, `start_date`, `end_date`): a hora real de entrada
+  em cada etapa, para o evento e para o retroativo. **Mas vem sem `contacts`**: e-mail e telefone só na listagem.
+- Ganho: `win: true` e `closed_at`; valor em `amount_total`. Nota no negócio: `POST /activities`
+  `{activity: {deal_id, user_id, text}}` (user_id obrigatório, de `GET /users`). A API v1 não tem DELETE de negócio,
+  contato nem empresa: registro de teste se apaga pela interface.
+- Token na credencial "Query Auth" do n8n (`token`); cada token é de um usuário (o dono do que o fluxo cria).
 
 ## HubSpot / Pipedrive (a confirmar na primeira implementação)
 
@@ -60,3 +68,16 @@
 ## GoHighLevel / LeadConnector (inclusive white-labels com outro nome)
 
 - API LeadConnector (contacts, opportunities, `locationId`), não a do RD. Registrar pegadinhas na primeira devolução.
+- **Campo com o mesmo nome no contato e na oportunidade.** `GET /locations/{loc}/customFields?model=contact` e
+  `?model=opportunity` listam separado; o do contato fica escondido para o comercial, o da oportunidade aparece no card
+  (se ligado na personalização do card do pipeline, que é só na interface). Mandar no `POST /opportunities/` em
+  `customFields: [{id, field_value}]`.
+- **Campo de lista (`SINGLE_OPTIONS`) só grava valor idêntico a uma opção.** Formulário manda "Prestador de serviço",
+  Meta Lead Ads manda `prestador_de_serviço`, a opção é "Prestador de serviços". Converter antes: sem acento, sem
+  pontuação/`_`, minúsculo, sem `s` final; sem opção equivalente → não enviar o campo (o texto segue no contato).
+- **`PUT /opportunities/{id}` com só `customFields`** mexe só no campo enviado (conferido: nome, etapa, status,
+  responsável, valor e os outros campos ficam iguais). Mesmo assim, no retroativo gravar um, comparar antes/depois, e
+  só então os demais.
+- `allowDuplicateOpportunity=false` na location: segunda oportunidade do contato → 400 `OPPORTUNITY_NO_DUPLICATE`;
+  o fluxo checa antes e, na reconversão, não mexe na existente (preserva a reclassificação do vendedor).
+- Cloudflare do GHL bloqueia o User-Agent do Python urllib (erro 1010): mandar UA de navegador.

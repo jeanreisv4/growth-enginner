@@ -1,5 +1,32 @@
 # Changelog — tracking-e-integracoes (antes tracking-web-and-capi)
 
+## v2.3.0 — 2026-09-30
+
+Primeira devolução com **RD Station CRM** (consultoria de ISO): a tarefa de "mandar o CRM ao Google" estava marcada
+desde agosto, mas o back-pass existente usava `uploadClickConversions` (fechado para quem não importava) e nunca
+tinha rodado.
+
+- **`scripts/devolucao_rd.py`**: RD → Google Ads pela Data Manager, gerado do brief (`devolucao_rd`). Varredura de hora
+  em hora no n8n (sem webhook): negócios do prefixo da mídia na etapa de SQL e ganhos → histórico de etapas (hora real)
+  → eventos com gclid (90 dias) ou e-mail/telefone com hash (63 dias) → nota no negócio → erro na execução se o
+  Google recusar. `--teste` (temporário, validateOnly, sem nota), `--retroativo --validar|--enviar` (todos os
+  negócios do prefixo), `--criar --desde` (desligado), `--atualizar`. No caso real: 25 SQL (6 com gclid) e 2 vendas
+  aceitos; contínuo ligado.
+- **Conector RD** em `implementacoes/crm-conectores.md`: filtro `name` + `deal_stage_id` / `win=true`,
+  `deal_stage_histories` no detalhe (que vem sem contato), nota por `POST /activities` com `user_id`, sem DELETE.
+- Armadilhas: detalhe do negócio do RD sem contato (só os com gclid iam); back-pass antigo com `uploadClickConversions`
+  desligado e sem execução. Regressão: 113 → 120 casos.
+
+## v2.2.1 — 2026-09-30
+
+Campo de segmento que só chegava ao contato num CRM GoHighLevel (fabricante de climatização).
+
+- `implementacoes/crm-conectores.md` (GoHighLevel): campos com o mesmo nome no contato e na oportunidade, campo de
+  lista só grava valor idêntico (normalizar), `PUT /opportunities/{id}` só com `customFields` não mexe no resto,
+  `OPPORTUNITY_NO_DUPLICATE`, Cloudflare × UA do Python.
+- Armadilhas novas: campo no contato e não na oportunidade, resposta do Lead Ads em formato de código,
+  `settings.binaryMode` recusado no PUT da API do n8n.
+
 ## v2.2.0 — 2026-09-30
 
 Devolução de MQL a um fabricante de acessórios para cortina que não tem CRM: o lead só existe na planilha de backup da

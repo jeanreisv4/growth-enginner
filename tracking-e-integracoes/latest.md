@@ -1,6 +1,6 @@
-# Skill: tracking-e-integracoes — v2.2.0 (antes tracking-web-and-capi)
+# Skill: tracking-e-integracoes — v2.3.0 (antes tracking-web-and-capi)
 
-> owner: growth-engineer | status: active | published: 2026-05-17 | atualizada: 2026-09-30 (v2.2.0)
+> owner: growth-engineer | status: active | published: 2026-05-17 | atualizada: 2026-09-30 (v2.3.0)
 
 ---
 
@@ -361,7 +361,7 @@ negociação), se recupera o que ficou fora, e quando desligar a automação ant
 |---|---|---|
 | Lead Ads → CRM | App próprio do cliente + credencial Facebook Lead Ads + fluxo gerado (gatilho por formulário, um webhook por app) | `implementacoes/meta-lead-ads.md` |
 | Formulário/LP → CRM | Ler UTMs **e** gclid/gbraid/wbraid/fbclid da URL; credencial no lugar de token no código | `implementacoes/crm-conectores.md` |
-| Devolução | `scripts/devolucao.py` (Meta direto ou sGTM; `meta_leadgen`; Google Data Manager) | `implementacoes/crm-kommo.md` |
+| Devolução | Kommo: `scripts/devolucao.py` (Meta direto ou sGTM; `meta_leadgen`; Google Data Manager). RD Station CRM: `scripts/devolucao_rd.py` (Google, varredura de hora em hora) | `implementacoes/crm-kommo.md`, `crm-conectores.md` |
 | Google | Conversões UPLOAD_CLICKS secundárias, conversões otimizadas para leads, credencial datamanager | `implementacoes/google-ads-offline.md` |
 | Conversacional | Índice em cache + append com nova tentativa espaçada | `implementacoes/conversacional-chatwoot.md` |
 
@@ -385,6 +385,10 @@ sai só quando o usuário desligar; então ligar a gravação na planilha pelo n
 cabem na janela (Meta 7 dias, Google 90 com clique / 63 sem) e quanto falta para cada uma vencer; com ok, `--enviar
 --webhook-url <devolução>` manda pela devolução no ar, mais velho primeiro, com a hora real da etapa. Reenviar é
 seguro (o `event_id` não repete). Se o modo automático negar, o usuário roda o comando.
+
+**RD Station CRM**: `python3 scripts/devolucao_rd.py --brief ... --n8n ... --n8n-key ...` com `--teste` (temporário,
+validateOnly), `--retroativo --validar|--enviar` (todos os negócios do prefixo, hora real pelo histórico de etapas),
+`--criar --desde <hora do retroativo>` (desligado) e ligar com ok. Retroativo e contínuo usam o mesmo `transactionId`.
 
 **Sem CRM (lead só na planilha)**: `python3 scripts/devolucao_planilha.py` com o filtro do MQL manda a importação
 secundária ao Google pela Data Manager (conta sob MCC: `--mcc`); validar antes, enviar com ok, rodar de novo a cada MQL.

@@ -58,6 +58,7 @@ hash do telefone): reenviar a planilha inteira não duplica, então dá para rod
   gclid**: gbraid/wbraid no campo gclid seriam recusados como gclid.
 - **Formulário do Meta**: não tem gclid. O Google só recebe esses leads com `sem_clique: true` (hash do e-mail e do
   telefone), e só casa se a pessoa também clicou num anúncio do Google.
+- **RD Station CRM**: `scripts/devolucao_rd.py` (contínuo de hora em hora + retroativo pelo histórico de etapas).
 - Janela: gclid vale 90 dias; conversão só com dados do usuário, 63 dias. Retroativos: `scripts/retroativos.py`.
 
 ## Colunas e conversão principal

@@ -5,7 +5,7 @@ description: Tracking e integrações de growth do cliente, da página à venda 
 
 # Tracking e Integrações
 
-**Versão 2.1.0 (30/09/2026).** Antes `tracking-web-and-capi`. Histórico em `CHANGELOG.md`; desenho do fluxo em
+**Versão 2.3.0 (30/09/2026).** Antes `tracking-web-and-capi`. Histórico em `CHANGELOG.md`; desenho do fluxo em
 `README.md`. Caminhos relativos à pasta da skill. Dados de cliente em `clientes/<cliente>/` (git local, fora da
 cópia pública).
 
@@ -31,6 +31,8 @@ Ferramentas:
 - `scripts/n8n_meta_leads.py`: leads dos formulários pela credencial de Lead Ads no n8n (sem nome/telefone completo).
 - `scripts/retroativos.py`: etapas de antes da devolução que ainda cabem na janela (Meta 7 dias, Google 90/63), enviadas
   pela devolução no ar com a hora real da etapa (só com ok).
+- `scripts/devolucao_rd.py`: RD Station CRM → Google Ads (SQL = entrada na etapa, venda = ganho) pela Data Manager,
+  varredura de hora em hora no n8n, retroativo com a hora real do histórico de etapas, nota no negócio.
 - `scripts/devolucao_planilha.py`: MQL (ou outra resposta) direto da planilha de leads ao Google Ads pela Data Manager,
   sem CRM: filtro por coluna, janela de 90/63 dias, `transactionId` estável, `--mcc` para conta sob gerente.
 - `scripts/instalar_agentes.py`: instala os agentes `integracao-*` em `.claude/agents/` (fonte: `agentes/`).

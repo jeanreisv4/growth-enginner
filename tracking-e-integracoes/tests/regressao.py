@@ -320,6 +320,38 @@ confere("retroativos: clique conta só com gclid/gbraid/wbraid preenchido",
         and not rt.tem_clique({"custom_fields_values": [{"field_id": 7, "values": [{"value": " "}]}]}, {"gclid": 7})
         and not rt.tem_clique({"custom_fields_values": [{"field_id": 8, "values": [{"value": "x"}]}]}, {"gclid": 7, "fbclid": 8}))
 
+# devolução do RD Station CRM ao Google (ids fictícios)
+import devolucao_rd as drd
+BRD = {"sigla": "TESTE", "devolucao_rd": {"prefixo_nome": "Lead Mídia", "etapa_sql": "a" * 24, "usuario_nota": "b" * 24,
+       "valores": {"SQL": 500}, "valor_venda_padrao": 5000, "campos": {"gclid": "c" * 24},
+       "google": {"customer_id": "123-456-7890", "login_customer_id": "", "acoes": {"SQL": "111", "Purchase": "222"}},
+       "n8n": {"credencial_rd": "credRD", "credencial_google": "credG"}}}
+confere("devolução RD: brief de exemplo passa na validação", drd.validar(BRD) == [])
+ruim = copy.deepcopy(BRD); ruim["devolucao_rd"]["prefixo_nome"] = ""; ruim["devolucao_rd"]["google"]["acoes"]["Purchase"] = ""
+ruim["devolucao_rd"]["_x"] = "https://crm.rdstation.com/api/v1/deals?token=abc"
+confere("devolução RD: bloqueia sem prefixo, sem ação de venda e com token no brief", len(drd.validar(ruim)) == 3)
+wp = drd.workflow(BRD, 1790000000)
+qs = lambda w, n: {q["name"]: q["value"] for q in [x for x in w["nodes"] if x["name"] == n][0]["parameters"]["queryParameters"]["parameters"]}
+montar = [x for x in wp["nodes"] if x["name"] == "Montar eventos"][0]["parameters"]["jsCode"]
+confere("devolução RD: produção agendada, filtra prefixo e etapa, desde e validateOnly falso no código",
+        wp["nodes"][0]["type"].endswith("scheduleTrigger") and qs(wp, "RD | Na etapa de SQL") == {"limit": "200", "name": "Lead Mídia", "deal_stage_id": "a" * 24}
+        and '"desde": 1790000000' in montar and '"validar_apenas": false' in montar and '"customer_id": "1234567890"' in montar)
+confere("devolução RD: contato vem da listagem (o detalhe do negócio não traz) e hora vem do histórico de etapas",
+        "porId[c.deal_id]" in montar and "deal_stage_histories" in montar and "function sha256" in montar)
+wr = drd.workflow(BRD, 1790000000, "retro_validar")
+mjs = lambda w: [x for x in w["nodes"] if x["name"] == "Montar eventos"][0]["parameters"]["jsCode"]
+confere("devolução RD: retroativo lê todos os negócios do prefixo, desde 0, só valida e não escreve nota",
+        "deal_stage_id" not in qs(wr, "RD | Na etapa de SQL") and '"desde": 0' in [x for x in wr["nodes"] if x["name"] == "Montar eventos"][0]["parameters"]["jsCode"]
+        and '"validar_apenas": true' in mjs(wr) and [x for x in wr["nodes"] if x["name"] == "RD | Nota no negócio"][0].get("disabled") is True
+        and wr["nodes"][0]["type"].endswith("webhook"))
+we = drd.workflow(BRD, 1790000000, "retro_enviar")
+confere("devolução RD: retroativo de verdade grava e escreve nota",
+        '"validar_apenas": false' in mjs(we) and not [x for x in we["nodes"] if x["name"] == "RD | Nota no negócio"][0].get("disabled"))
+bm = copy.deepcopy(BRD); bm["devolucao_rd"]["google"]["login_customer_id"] = "999-888-7777"
+confere("devolução RD: conta sob MCC leva loginAccount; credenciais só por id",
+        '"login_customer_id": "9998887777"' in mjs(drd.workflow(bm, 1)) and "loginAccount" in montar
+        and all(set((n.get("credentials") or {}).keys()) <= {"httpQueryAuth", "oAuth2Api"} for n in wp["nodes"]))
+
 # agentes de integração: fonte coerente e instalados iguais (quando a skill está dentro de um projeto)
 ag = sorted(glob_mod.glob(os.path.join(RAIZ, "agentes", "integracao-*.md")))
 confere("agentes: 4 frentes (crm, meta, google-ads, conversacional)",

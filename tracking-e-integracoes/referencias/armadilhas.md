@@ -81,7 +81,12 @@ Os scripts citados como `sprint-growth/...` ficam na skill irmã, na mesma pasta
 - **Upload offline em conta nova.** A API recusa conversões offline sem a Data Manager API (SaaS de diário de obra). Desde
   15/06/2026 a Google Ads API (`UploadClickConversions`) não aceita quem não importava offline no semestre anterior:
   `CUSTOMER_NOT_ALLOWLISTED_FOR_THIS_FEATURE`. Fazer: Data Manager API (`events:ingest`, escopo
-  `auth/datamanager`), já no `scripts/devolucao.py`; CSV agendado só como plano B.
+  `auth/datamanager`), já no `scripts/devolucao.py`; CSV agendado só como plano B. Detectar também o back-pass
+  antigo montado com `uploadClickConversions`, desligado e sem nenhuma execução: parece pronto e nunca mandou nada
+  (consultoria de ISO, 30/09/2026: tarefa marcada para agosto, nada chegava ao Google).
+- **Detalhe do negócio do RD sem contato.** `GET /deals/{id}` traz o histórico de etapas mas não `contacts`: o evento
+  montado só com o detalhe sai sem e-mail/telefone, e só os leads com gclid vão (6 de 25 no caso real). Fazer: e-mail
+  e telefone da listagem (`devolucao_rd.py` já faz).
 - **Conta sob gerente na Data Manager.** Só `operatingAccount` numa conta que a credencial acessa pela MCC devolve
   403 "The caller does not have permission" em `destinations[0]` — parece falta de acesso, mas é o `loginAccount`
   (fabricante de acessórios para cortina, 30/09/2026). Fazer: `loginAccount` = MCC (`login_customer_id` no brief,
@@ -168,3 +173,15 @@ Os scripts citados como `sprint-growth/...` ficam na skill irmã, na mesma pasta
   dias: publicar o app), token do CRM com validade escolhida na criação, e troca de token que passou pelo chat feita
   só no CRM/Meta e não no n8n. Fazer: na entrega, tabela com cada conexão e a data; fluxo de erro do n8n avisando.
 
+- **Campo preenchido no contato, e não na oportunidade.** No GoHighLevel o "Segmento do lead" existia nos dois
+  modelos com o mesmo nome; a integração gravava só o do contato, que o comercial não vê, e o time preenchia a
+  oportunidade à mão (fabricante de climatização, 30/09/2026). Detectar: listar os campos com `?model=opportunity` e
+  conferir se o corpo do `POST /opportunities/` manda cada um; oportunidade recente com o campo vazio ou editada em
+  lote no mesmo dia. Fazer: mapear na criação, converter o valor para a opção da lista, retroativo só nas vazias, e
+  avisar que o campo só aparece no card se ligado na personalização do card do pipeline (interface).
+- **Resposta do Lead Ads em formato de código.** O formulário instantâneo grava a resposta de múltipla escolha como
+  `prestador_de_serviço` / `peças_de_reposição_-_acessórios`, não o texto exibido; o lead de teste do Meta vem com
+  "<test lead: dummy data…>". Fazer: normalizar antes de casar com opção do CRM, e testar com uma linha no formato
+  real, não com o lead de teste da ferramenta.
+- **API do n8n recusa `settings.binaryMode` no PUT** ("request/body/settings must NOT have additional properties"):
+  o GET devolve a chave e o PUT não aceita. Tirar antes de reenviar o workflow.

@@ -32,8 +32,9 @@ Leia `referencias/contrato_integracao.md`, `implementacoes/crm-conectores.md` (o
    com leads parados >30 dias.
 6. **Aviso de etapa**: webhook cadastrado no CRM (destino, evento, ativo) e o workflow que recebe (ativo, responde na
    hora, execuções recentes). Mudança de etapa no CRM sem execução no n8n = webhook não entrega.
-7. **Devolução**: brief `devolucao` coerente com o CRM (funis, etapas, campos, valores) e notas "[Devolução …]"
-   recentes nos negócios.
+7. **Devolução**: brief `devolucao` (Kommo) ou `devolucao_rd` (RD Station CRM) coerente com o CRM (funis, etapas,
+   campos, valores) e notas "[Devolução …]" recentes nos negócios. Workflow de devolução desligado e sem nenhuma
+   execução (ex.: back-pass antigo com `uploadClickConversions`) = devolução que nunca rodou.
 
 ## Números (`numeros`)
 `formulario_periodo`, `fora_do_crm`, `pct_fora`, `duplicados_telefone`, `taxa_sql_venda` (%), `vendas_sem_valor`,
