@@ -38,7 +38,7 @@ USO_COMUM = ("• Como ler a tabela: a tarja colorida da esquerda diz a que bloc
              "As alavancas (as linhas que você pode mexer) têm a linha inteira pintada de amarelo.\n"
              "• Projetado: edite as células amarelas (premissas gerais à esquerda e alavancas mês a mês). Indicadores, meta de breakeven e gráficos recalculam sozinhos. "
              "Linhas em amarelo-claro puxam a premissa geral; digite um número por cima para alterar só um mês.\n"
-             "• Realizado: preencha as células de fundo vermelho-claro de cada mês (volumes e valores). Taxas, custos unitários, acumulados, resultado e ROI do realizado saem por fórmula "
+             "• Realizado: preencha as células de fundo vermelho-claro de cada mês (volumes e valores). Taxas, custos unitários, acumulados, resultado e retorno (x) do realizado saem por fórmula "
              "e ficam em branco até o mês ter dado. Parâmetros de negócio do realizado (comissão, margem) puxam o projetado (vermelho mais claro) e podem ser sobrescritos. "
              "Preencha os meses em ordem para os acumulados fecharem.")
 
@@ -56,6 +56,18 @@ def is_kpis(ctx):
     ]
 
 FMT_DEC = '#,##0.0'
+
+
+def _aplicar_ciclo(cfg, ciclo, ger_key, out_key, label_out, unidade):
+    """Ciclo de vendas com mais de dois meses: cada mês fecha uma fração das vendas originadas nele e nos anteriores.
+    O par lag/(1 − lag) vira uma premissa por mês do ciclo (M+0, M+1, M+2...), editável, e a linha de fechadas soma as safras."""
+    n = int(cfg.get('n_months', 12)); proj = grade_colunas(n)[0]
+    i = next(j for j, x in enumerate(cfg['premises']) if x[0] == 'lag')
+    cfg['premises'][i:i + 1] = [(f"ciclo{j}", f"Ciclo de venda · % {unidade} que fecha " + ("no próprio mês (M+0)" if j == 0 else f"em M+{j}"), c, FMT_PCT0)
+                                for j, c in enumerate(ciclo)]
+    forms = ["=" + "+".join(f"{proj[k - j]}{{{ger_key}}}*{{P_ciclo{j}}}" for j in range(len(ciclo)) if k - j >= 0) for k in range(n)]
+    cfg['metrics'] = [(out_key, label_out, 'mixed', forms, m[4], m[5], m[6]) if m[0] == out_key else m for m in cfg['metrics']]
+    return cfg
 
 
 def _simplificar_is(cfg, p):
@@ -108,7 +120,10 @@ def _simplificar_is(cfg, p):
             troca_['leads'] = dict(src="={c}{visitas_pagas}*{c}{conv_lp}")
             troca_['visita_venda'] = dict(src="=IFERROR({c}{vendas}/{c}{visitas_pagas},0)", tot='div:vendas/visitas_pagas', real="{c}{vendas}/{c}{visitas_pagas}")
             cfg['funnel'] = [("Visitas", 'visitas_pagas') if f[1] == 'visitas_lp' else f for f in cfg['funnel']]
-    if float(p['prem'].get('lag', 1.0)) >= 0.999:
+    ciclo = [float(x) for x in (p.get('ciclo') or [])]
+    if len(ciclo) > 2:
+        _aplicar_ciclo(cfg, ciclo, 'vendas_ger', 'vendas', "[QNTD] VENDAS FECHADAS NO MÊS (SAFRAS PELO CICLO)", "das vendas")
+    elif float(p['prem'].get('lag', 1.0)) >= 0.999:
         # o ciclo fecha tudo no mês do lead: "originadas pelos SQLs do mês" seria uma cópia de "fechadas no mês"
         tira |= {'vendas_ger', 'lag'}
         troca_['vendas'] = dict(kind='calc', src="={c}{sqls}*{c}{sql_venda}")
@@ -146,11 +161,14 @@ def _simplificar_is(cfg, p):
         # ver o atendimento subir ou cair. A de MQL está na cadeia (SQLs = MQLs × conexão × conectado → SQL);
         # a de lead é informativa, porque o MQL é critério de formulário e não depende de alguém ter ligado.
         n_ = int(p.get('n_months', 12))
+        orig_ = p.get('con_origem') or {}
         if p.get('con_lead_medida'):
-            troca_['con_lead'] = dict(kind='input', src=Ln(p['con_lead_medida'], n_))
+            troca_['con_lead'] = dict(kind='input', src=Ln(p['con_lead_medida'], n_),
+                                      **({'label': "[%] CONEXÃO — LEAD ATENDIDO (PREMISSA DE MERCADO)"} if orig_.get('lead') == 'mercado' else {}))
             cfg['premises'] = [x for x in cfg['premises'] if x[0] != 'con_lead']
         if p.get('con_mql_mensal'):
-            troca_['con_mql'] = dict(kind='input', src=Ln(p['con_mql_mensal'], n_))
+            troca_['con_mql'] = dict(kind='input', src=Ln(p['con_mql_mensal'], n_),
+                                     **({'label': "[%] CONEXÃO — MQL ATENDIDO (PREMISSA DE MERCADO)"} if orig_.get('mql') == 'mercado' else {}))
             cfg['premises'] = [x for x in cfg['premises'] if x[0] != 'con_mql']
     if p.get('con_lead_mensal') and not p.get('sem_conexao') and not p.get('atendimento') and not p.get('con_lead_medida'):   # conexão com alvo de mercado, fora da cadeia
         troca_['con_lead'] = dict(kind='input', src=Ln(p['con_lead_mensal'], int(p.get('n_months', 12))))
@@ -466,7 +484,7 @@ def ecommerce_config(p):
                          ("ic_ped", "Initiate Checkout → pedidos", pr['ic_ped'], FMT_PCT0),
                          ("ticket_ped", "Ticket médio do pedido (R$)", pr['ticket_ped'], FMT_BRL2)] if x[0] not in mo]
     if usa_venda:
-        prem += [("ped_venda", "Pedido → venda", pr['ped_venda'], FMT_PCT0)]
+        prem += [x for x in [("ped_venda", "Pedido → venda", pr['ped_venda'], FMT_PCT0)] if x[0] not in mo]
         prem += [x for x in [("ticket_fat", "Ticket médio faturado (R$)", pr['ticket_fat'], FMT_BRL2)] if x[0] not in mo]
     if usa_margem: prem += [("margem", p.get('margem_label', "Margem de contribuição"), pr['margem'], FMT_PCT1)]
     if margem_info is not None: prem += [("margem_info", "Margem de contribuição (informativa, fora do resultado)", margem_info, FMT_PCT1)]
@@ -536,8 +554,9 @@ def ecommerce_config(p):
     ]
     if usa_venda:
         mets += [
-          lever('ped_venda', "[%] PEDIDO → VENDA", FMT_PCT0, 'div:vendas/pedidos', "{c}{vendas}/{c}{pedidos}"),
-          ('vendas', "[QNTD] VENDAS", 'calc', "={c}{pedidos}*{c}{ped_venda}", FMT_INT, 'sum', 'in'),
+          lever('ped_venda', "[%] PEDIDO CAPTADO → FATURADO" if p.get('faturado') else "[%] PEDIDO → VENDA", FMT_PCT1 if p.get('faturado') else FMT_PCT0,
+                'div:vendas/pedidos', "{c}{vendas}/{c}{pedidos}"),
+          ('vendas', "[QNTD] PEDIDOS FATURADOS" if p.get('faturado') else "[QNTD] VENDAS", 'calc', "={c}{pedidos}*{c}{ped_venda}", FMT_INT, 'sum', 'in'),
           ('custo_venda', "[R$] CUSTO POR VENDA", 'calc', "=IFERROR({c}{midia}/{c}{vendas},0)", FMT_BRL2, 'div:midia/vendas', "{c}{midia}/{c}{vendas}"),
           lever('ticket_fat', "[R$] TICKET MÉDIO FATURADO", FMT_BRL2, 'div:receita_fat/vendas', "{c}{receita_fat}/{c}{vendas}"),
           ('receita_fat', "[R$] RECEITA FATURADA NO MÊS", 'calc', "={c}{vendas}*{c}{ticket_fat}", FMT_BRL, 'sum', 'in'),
@@ -609,7 +628,12 @@ def ecommerce_config(p):
         charts += [dict(type='line', title="Participação da mídia V4 no faturamento da loja", series=[('share_midia', RED, False)], y_fmt='0%')]
     charts += [dict(type='funnel', title="Funil e-commerce · acumulado no período")]
 
-    if float(pr.get('lag', 1.0)) >= 0.999:   # o ciclo fecha tudo no mês: "originados" seria cópia de "fechados"
+    ciclo = [float(x) for x in (p.get('ciclo') or [])]
+    if len(ciclo) > 2:
+        tmp = _aplicar_ciclo(dict(premises=prem, metrics=mets, n_months=n), ciclo, 'pedidos_ger', 'pedidos',
+                             "[QNTD] PEDIDOS FECHADOS NO MÊS (SAFRAS PELO CICLO)", "dos pedidos")
+        prem, mets = tmp['premises'], tmp['metrics']
+    elif float(pr.get('lag', 1.0)) >= 0.999:   # o ciclo fecha tudo no mês: "originados" seria cópia de "fechados"
         prem = [x for x in prem if x[0] != 'lag']
         mets = [('pedidos', "[QNTD] PEDIDOS FECHADOS NO MÊS", 'calc', "={c}{ic}*{c}{ic_ped}", FMT_INT, 'sum', 'in') if m[0] == 'pedidos'
                 else m for m in mets if m[0] != 'pedidos_ger']
@@ -646,7 +670,7 @@ DEMO_IS = dict(
   target=5,
   metodologia=[("NOTAS DO CENÁRIO", [USO_COMUM + "\n"
     "• Fórmulas: Impressões = Mídia ÷ CPM × 1.000 · Leads = Visitas LP × Conv. LP · Vendas = SQLs × (SQL → Venda), com lag comercial · Receita da agência = GMV × Comissão · "
-    "Resultado MC = Receita × Margem · Resultado líquido = Resultado MC − (Fee + Mídia) · ROI = Resultado ÷ Custo · Payback = 1º mês com acumulado ≥ 0.\n"
+    "Resultado MC = Receita × Margem · Resultado líquido = Resultado MC − (Fee + Mídia) · Retorno = MC ÷ Custo, em x (1,00x = se pagou) · Payback = 1º mês com acumulado ≥ 0.\n"
     "• Cenário replicado: Realista do painel Projeção · Inside Sales e E-commerce (turismo), leitura de 11/09/2026, taxas com 2 casas como exibidas no painel. "
     "M12 não aparecia por inteiro no PDF: alavancas repetem o M11, exceto MQL con. → SQL (29,9%) e Ticket médio (R$ 8.189,26), da tabela 'Taxas efetivas'.\n"
     "• Meta de breakeven: coerente com a tabela (aplica comissão e margem). O painel original calculava essa meta só com a comissão, por isso mostrava 28 vendas no M5."])],
@@ -664,7 +688,7 @@ DEMO_EC = dict(
     "• Curva linear: as taxas puxam a premissa geral; a verba de mídia do Mês 1 vem da premissa e os meses seguintes crescem pelo percentual configurado. Digite um valor por cima para fixar um mês.\n"
     "• Fórmulas: Impressões = Mídia ÷ CPM × 1.000 · Sessões pagas = Cliques × Connect rate · Sessões total = pagas + orgânicas · View Item → Carrinho → Checkout → Pedidos pelas taxas de etapa (pedidos com lag) · "
     "Receita captada = Pedidos × Ticket do pedido · Vendas = Pedidos × (Pedido → Venda) · Receita faturada = Vendas × Ticket faturado · Resultado MC = Receita faturada × Margem · "
-    "Resultado líquido = Resultado MC − (Fee + Mídia) · ROAS = Receita faturada ÷ Mídia · ROI = Resultado ÷ Custo · Payback = 1º mês com acumulado ≥ 0.\n"
+    "Resultado líquido = Resultado MC − (Fee + Mídia) · ROAS = Receita faturada ÷ Mídia · Retorno = MC ÷ Custo, em x (1,00x = se pagou) · Payback = 1º mês com acumulado ≥ 0.\n"
     "• Cenário replicado: Realista do painel Projeção · Inside Sales e E-commerce (varejo de tecidos), premissas manuais, CSV exportado em 16/09/2026; os valores batem com o CSV. "
     "Neste cenário o acumulado não fica positivo em 12 meses (payback após M12), igual ao painel."])],
 )
@@ -681,7 +705,8 @@ PREFILL = {  # métrica do template <- rótulo lido da fonte
   "inside_sales": {'fee': "Fee V4", 'midia': "Investimento", 'impress': "Impressões", 'cliques': "Cliques", 'visitas_pagas': "Visitas", 'leads': "Leads",
                    'mqls': "MQLs", 'leads_con': "Conexões", 'mql_con': "MQLs", 'sqls': "SQLs", 'vendas': "Vendas", 'gmv': "Faturamento V4"},
   "ecommerce": {'fee': "Fee V4", 'midia': "Investimento", 'impress': "Impressões", 'cliques': "Cliques", 'sessoes_pago': "Sessões", 'view_item': "Sessões",
-                'cart': "Add to Cart", 'ic': "Check Out", 'pedidos': "Transações Captada", 'receita_captada': "Receita Captada"},
+                'cart': "Add to Cart", 'ic': "Check Out", 'pedidos': "Transações Captada", 'receita_captada': "Receita Captada",
+                'vendas': "Pedidos Faturados", 'receita_fat': "Receita Faturada"},
 }
 
 def _mes_idx(nome): return MESES.index(norm(nome))
@@ -814,6 +839,7 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
     if modelo == 'plg': modelo = 'inside_sales'
     pc, det, v = d['premissas_confirmadas'], d['detectado'], d['veredito']
     tx = det['taxas_efetivas']; t = tx['taxas']
+    rec_key_fonte = det.get('receita_usada') or ("Receita Captada" if modelo == 'ecommerce' else "Faturamento V4")
     if 'rampa' not in d or 'envelope' not in d:
         sys.exit("premissas.json sem 'rampa'/'envelope': gere-o com a versão atual do piloto (modo projetar).")
     n = len(d.get('projecao') or [])
@@ -831,6 +857,8 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
     mes_alvo = int(pc['mes_alvo']); lag = float(pc.get('lag', 1.0)); acum0 = float(pc.get('acumulado_inicial', 0.0))
     ticket = float(pc['ticket']); cresc = float(pc.get('crescimento_midia', 0.0) or 0.0); teto = float(pc.get('midia_teto') or 0.0)
     env, rampa = d['envelope'], d['rampa']; taxas = rampa['taxas_mes_a_mes']
+    cen_ = pc.get('cenario') or 'desejado'
+    pm_ = pc.get('premissas_mercado') or {}
     verba_plano = pc.get('verba_plano')
     sp = d.get('split') if modelo == 'ecommerce' and 'custo_sessao_meta' in env else None   # GA4 separou Google e Meta
     ga4 = det.get('ga4') or {}
@@ -917,12 +945,15 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
     pilot_ref = {'header': "PILOTO", 'status': v['status'],
                  'valores': {5: v.get('vendas_necessarias_mes_alvo'), 6: v.get('vendas_projetadas_mes_alvo'), 7: v.get('gap_vendas')}}
     ordem = ['cpm'] + (['ctr', 'connect', 'visita_lead', 'clique_lead', 'lead_mql', 'conexao', 'conexao_sql', 'mql_sql', 'sql_venda'] if modelo == 'inside_sales'
-                       else ['custo_sessao_meta', 'ctr', 'clique_sessao', 'sessao_cart', 'cart_checkout', 'checkout_trans']) + ['ticket']
+                       else ['custo_sessao_meta', 'ctr', 'clique_sessao', 'sessao_cart', 'cart_checkout', 'checkout_trans', 'pedido_venda']) + ['ticket']
     fmt_of = lambda k: FMT_BRL2 if k in ('cpm', 'ticket', 'custo_sessao_meta') else FMT_PCT1
     mercado = [env[k]['rotulo'] for k in ordem if k in env and env[k].get('alvo_mercado')]
     envelope = {'linhas': [(env[k]['rotulo'] + (" · alvo de mercado" if env[k].get('alvo_mercado') else ""), fmt_of(k), env[k]['atual'], env[k]['mediana'], env[k]['melhor'], env[k].get('melhor_mes'), env[k].get('referencia'), env[k].get('alvo')) for k in ordem if k in env],
                 'alvo_em': f"M{rampa['atinge_alvo_em']}",
-                'nota': (f"O alvo da rampa é a mediana do período comparável em cada alavanca, e nunca é pior que a taxa atual; a rampa caminha linearmente até M{rampa['atinge_alvo_em']}. "
+                'nota': ({"desejado": "O alvo da rampa é a mediana do período comparável em cada alavanca, e nunca é pior que a taxa atual",
+                          "otimista": "Cenário otimista: o alvo da rampa é o melhor mês fechado do período (ou o benchmark de mercado, quando é maior), nunca pior que a taxa atual",
+                          "pessimista": "Cenário pessimista: não há rampa, as taxas atuais seguem constantes"}[cen_]
+                         + f"; a rampa caminha linearmente até M{rampa['atinge_alvo_em']}. "
                          f"Evidência de que o nível é atingível: {rampa.get('motivo')}."
                          + (f" Alvo por benchmark de mercado, porque o histórico é curto demais: {', '.join(mercado)} (fontes na seção de benchmarks)." if mercado else ""))}
     pb = d.get('projecao_base') or []
@@ -937,7 +968,7 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
     if share:
         rec_real = {}
         for k, h in realizados.items():
-            rec_real[k] = h.get("Receita Captada" if modelo == 'ecommerce' else "Faturamento V4") or 0
+            rec_real[k] = h.get(rec_key_fonte) or 0
         if base_nao_midia is None:
             cand = [(k, totais[chaves[k].replace(' ', '')] - rec_real.get(k, 0)) for k in realizados
                     if chaves[k].replace(' ', '') in totais and realizados[k]['status'] == 'fechado']
@@ -952,7 +983,7 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
     cons = list(v.get('resultados_48m') or [l['resultado_liquido'] for l in d.get('projecao') or []])
     for k, h in realizados.items():
         if k < len(cons):
-            rec = h.get("Receita Captada" if modelo == 'ecommerce' else "Faturamento V4") or 0
+            rec = h.get(rec_key_fonte) or 0
             cons[k] = rec * float(pc['comissao']) * float(pc['margem']) - (h.get("Fee V4") or 0) - (h.get("Investimento") or 0)
     acc, azul_cont, zera = acum0, None, None
     for t_, r_ in enumerate(cons, 1):
@@ -1050,7 +1081,7 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
                        "GMV = Vendas × Ticket · Receita = GMV × Comissão · Resultado MC = Receita × Margem · ")
                     + "Resultado do mês = MC − (Fee + Mídia) · Receita necessária = Custo ÷ Margem · Payback = 1º mês com acumulado ≥ 0.")
         extra = dict(sem_lp=sem_lp, sem_conexao=sem_conexao, conexao_so_lead=conexao_so_lead, atendimento=atendimento,
-                     con_mql_mensal=con_mql_mes, con_lead_medida=con_lead_mes,
+                     con_mql_mensal=con_mql_mes, con_lead_medida=con_lead_mes, con_origem=(con_med or {}).get('origem') or {},
                      connect_mensal=None if sem_lp else col('connect'))
     else:
         if sp:
@@ -1080,13 +1111,26 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
                        cart_ic=col('cart_checkout'), ic_ped=col('checkout_trans'), ticket_ped=col('ticket'))
         if sp: monthly['cps_meta'] = col('custo_sessao_meta')
         if not sem_etapa_venda: monthly['ticket_fat'] = col('ticket')
+        faturado = 'pedido_venda' in env
+        if faturado:
+            # A fonte separa o pedido captado (plataforma) do faturado (o que o cliente fatura): captado → faturado
+            # vira alavanca mês a mês, e o ticket da rampa é o FATURADO. O ticket do pedido captado fica constante,
+            # na média da janela, porque a receita captada é só informativa — quem paga a operação é a faturada.
+            if sem_etapa_venda: sys.exit("--sem-etapa-venda não combina com a linha Pedidos Faturados na fonte: aqui pedido e venda são eventos diferentes")
+            monthly['ped_venda'] = col('pedido_venda')
+            win_ = [h for h in hist if _chave(h['mes'], h['ano']) in {x.split(' ')[0] for x in janela}]
+            tc = sum((h.get("Transações Captada") or 0) for h in win_); rc = sum((h.get("Receita Captada") or 0) for h in win_)
+            monthly.pop('ticket_ped'); prem['ticket_ped'] = (rc / tc) if tc else ticket
+            assum += (f" Pedido captado → faturado medido na fonte ({env['pedido_venda']['atual']:.0%} na janela) e em rampa como as demais alavancas; "
+                      "a receita que paga a operação é a faturada" + (" (estimada pelo ticket do pedido captado, porque a fonte não traz a receita faturada)."
+                                                                       if det.get('receita_faturada_estimada') else ", lida da fonte."))
         title, rotulo = "Projeção E-commerce", "E-commerce"
         formulas = (("Verba Google = Mídia × (1 − participação do Meta) · Impressões = Verba Google ÷ CPM × 1.000 · Sessões Google = Cliques × Connect rate · "
                      "Sessões Meta = Verba Meta ÷ custo por sessão · Sessões pagas = Google + Meta · " if sp else
                      "Impressões = Mídia ÷ CPM × 1.000 · Sessões = Cliques × Connect rate · ")
                     + "Carrinho → Checkout → Pedidos pelas taxas de etapa sobre as sessões pagas (pedidos com lag) · "
                     "Receita = Pedidos × Ticket · Resultado do mês = Receita − (Fee + Mídia) · ROAS = Receita ÷ Mídia · Payback = 1º mês com acumulado ≥ 0.")
-        extra = dict(usa_margem=usa_margem, usa_venda=not sem_etapa_venda, share=share, margem_info=margem_informativa,
+        extra = dict(usa_margem=usa_margem, usa_venda=not sem_etapa_venda, share=share, margem_info=margem_informativa, faturado=faturado,
                      fat_total_cells=fat_cells, organicas_cells=extra_org, funil_pago=True,
                      split=({'share': sp['participacao_meta_na_verba'], 'cps': env['custo_sessao_meta']['atual']} if sp else None),
                      rotulo_org="[QNTD] SESSÕES - NÃO PAGAS" if sp else "[QNTD] SESSÕES - ORGÂNICO")
@@ -1165,7 +1209,10 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
                                         ["Sazonalidade da demanda"] + [f"{br(m, 2)}x" for m in mult_dem],
                                         ["SQL → venda usado na projeção"] + [f"{br(v * 100, 1)}%" for v in sql_usado]],
                              'nota': "A projeção mostra só a taxa usada em cada mês. A sazonalidade da demanda (Black Friday, Natal, férias) "
-                                     "entra multiplicando a conversão de SQL em venda, e a fonte do índice está na tabela de premissas de mercado."}))
+                                     "entra multiplicando a conversão de SQL em venda. "
+                                     + (f"Fonte do índice: {saz_['origem']} — cada mês comparado com a média dos meses ao redor (±6), o que tira a tendência "
+                                        "de crescimento; a média por mês do calendário vira o índice (média do ano = 1,00)." if saz_.get('origem')
+                                        else "A fonte do índice está na tabela de premissas de mercado.")}))
     if modelo == 'inside_sales' and (pc.get('cpm_crescimento') or any(abs(m - 1) > 1e-9 for m in mult_cpm)):
         letras = [chr(ord('B') + i) for i in range(n + 1)]
         cc = pc.get('cpm_crescimento') or [0, None, None]
@@ -1179,7 +1226,24 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
                                         ["Multiplicador (eleição, datas, remarketing)"] + [f"{br(m, 2)}x" for m in mult_cpm],
                                         ["CPM usado na projeção"] + [rs(x, 2) for x in cpm_usado]],
                              'nota': nota}))
+    if pm_:
+        rot_pm = {"conexao_lead": "Conexão lead (lead atendido)", "conexao_mql": "Conexão MQL (MQL atendido)"}
+        metodologia.append(("PREMISSAS DE MERCADO NO LUGAR DE DADO QUE O CLIENTE NÃO TEM", [
+            "Quando a fonte não mede uma etapa, a planilha não fica em branco: entra o benchmark verificado, marcado como premissa de mercado. "
+            "Troque pelo número real assim que o cliente medir — é o primeiro item de medição do plano."] + [
+            f"{rot_pm.get(k, (env.get(k) or {}).get('rotulo', k))}: "
+            + (f"{x['valor']:.1%}" if k not in ('cpm', 'ticket', 'custo_sessao_meta') else rs(x['valor'], 2)) + f" · fonte: {x['fonte']}."
+            for k, x in pm_.items()]))
+    ciclo_ = [float(x) for x in (pc.get('ciclo') or [1.0])]
+    if len(ciclo_) > 1:
+        metodologia.append(("CICLO DE VENDAS", [
+            f"Origem: {pc.get('ciclo_origem') or 'premissa'}. Das vendas originadas num mês, "
+            + ", ".join(f"{br(c * 100, 0)}% fecham {'no próprio mês' if j == 0 else f'em M+{j}'}" for j, c in enumerate(ciclo_)) + ".",
+            "Por isso o primeiro mês da projeção fecha só a parte do próprio mês, e as vendas dos meses seguintes somam as safras anteriores. "
+            "As frações estão nas premissas do topo da aba de projeção e podem ser editadas."]))
     xm = json.load(open(extra_met, encoding='utf-8')) if extra_met else {}
+    for titulo, conteudo in reversed(xm.get('topo', [])):   # seções que abrem a aba (ex.: restrição mapeada para a thread de aprovação)
+        metodologia.insert(0, (titulo, conteudo))
     for titulo, conteudo in xm.get('secoes', []):   # seções de análise (ex.: recompra e reativação da base, com tabela de premissas)
         metodologia.append((titulo, conteudo))
     if obs: metodologia.append(("OBSERVAÇÕES", list(obs)))
@@ -1221,11 +1285,119 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
              meta_line=f"Atualizado em {{today}}   ·   Fonte: planilha de indicadores (aba {esc(det.get('aba'))})" + (" e GA4" if ga4.get('meses') else "") + f"   ·   Janela das taxas: {esc(', '.join(janela))}   ·   Detalhes na aba Premissas",
              footer=f"Projeção {rotulo} · {cliente} · agência", prem=prem, monthly=monthly, target=mes_alvo,
              metodologia=metodologia, historico=historico, pilot_ref=pilot_ref, base_ref=base_ref, n_months=n,
-             real_prefill=prefill, month_labels=labels, envelope=envelope, metodologia_fim=[tuple(x) for x in xm.get('fim', [])], **extra)
+             real_prefill=prefill, month_labels=labels, envelope=envelope, metodologia_fim=[tuple(x) for x in xm.get('fim', [])],
+             ciclo=pc.get('ciclo'), **extra)
     cfg_ = (inside_sales_config if modelo == 'inside_sales' else ecommerce_config)(p)
     if perfil == 'plg':
         cfg_ = perfil_plg(cfg_, det.get('etapas_neutras') or [])
     return cfg_, d
+
+def _br(x, dec=0):
+    return f"{x:,.{dec}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def _mediana_(xs):
+    xs = sorted(xs); n = len(xs)
+    return None if not n else (xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2)
+
+
+def aba_legado_completo(wb, d, modelo, cliente):
+    """Aba com TODOS os meses da fonte (não só os que cabem na tabela de projeção), volumes, taxas mês a mês,
+    resultado e acumulado — e a lista do que mudou no caminho (fee, verba, salto de taxa), para a equipe achar
+    quando a operação trocou de patamar antes de escolher a janela e o período comparável."""
+    hist = [h for h in (d.get('historico') or []) if h.get('status') in ('fechado', 'corrente')]
+    if not hist:
+        return None
+    pc, det = d['premissas_confirmadas'], d['detectado']
+    margem, comissao = float(pc['margem']), float(pc.get('comissao', 1.0))
+    cadeia = [e for e in (det.get('cadeia_usada') or []) if any(h.get(e) is not None for h in hist)]
+    rec = det.get('receita_usada') or ("Receita Captada" if modelo == 'ecommerce' else "Faturamento V4")
+    rotulo = lambda h: f"{_rotulo(h['mes'], h['ano'])}" + (" (parcial)" if h['status'] == 'corrente' else "")
+    div = lambda a, b: (a / b) if (a is not None and b) else None
+    linhas = [("VOLUMES E VALORES", None, None)]
+    linhas += [("Fee V4", FMT_BRL, [h.get("Fee V4") for h in hist])]
+    if any(h.get("Fee V4 (fonte)") is not None for h in hist):
+        linhas += [("Fee V4 na fonte (antes da correção)", FMT_BRL, [h.get("Fee V4 (fonte)") for h in hist])]
+    linhas += [(e, FMT_BRL if e == "Investimento" else FMT_INT, [h.get(e) for h in hist]) for e in cadeia]
+    linhas += [(rec, FMT_BRL, [h.get(rec) for h in hist])]
+    vend = cadeia[-1] if cadeia else None
+    linhas += [("Ticket médio", FMT_BRL2, [div(h.get(rec), h.get(vend)) for h in hist])]
+    linhas += [("TAXAS MÊS A MÊS", None, None),
+               ("CPM", FMT_BRL2, [div(h.get("Investimento"), (h.get("Impressões") or 0) / 1000) for h in hist])]
+    pares = list(zip(cadeia[1:-1], cadeia[2:]))
+    taxas = {f"{a} → {b}": [div(h.get(b), h.get(a)) for h in hist] for a, b in pares}
+    linhas += [(k, FMT_PCT2, v) for k, v in taxas.items()]
+    if "Leads" in cadeia:
+        linhas += [("Custo por lead", FMT_BRL2, [div(h.get("Investimento"), h.get("Leads")) for h in hist])]
+    if vend:
+        linhas += [(f"Custo por {vend.lower()}", FMT_BRL2, [div(h.get("Investimento"), h.get(vend)) for h in hist])]
+    res = [(h.get(rec) or 0) * comissao * margem - (h.get("Fee V4") or 0) - (h.get("Investimento") or 0) for h in hist]
+    acc, acum = 0.0, []   # só os meses da fonte; o déficit de antes dela (acumulado inicial) está na aba de projeção
+    for r_ in res:
+        acc += r_; acum.append(acc)
+    linhas += [("RESULTADO", None, None), ("Resultado do mês (MC − fee − mídia)", FMT_BRL, res), ("Resultado acumulado na fonte", FMT_BRL, acum)]
+
+    # --- o que mudou no caminho
+    mud = []
+    for i in range(1, len(hist)):
+        a_, b_ = hist[i - 1].get("Fee V4"), hist[i].get("Fee V4")
+        if a_ is not None and b_ is not None and abs(a_ - b_) > 0.5:
+            mud.append(f"{rotulo(hist[i])}: fee muda de R$ {_br(a_)} para R$ {_br(b_)}.")
+        a_, b_ = hist[i - 1].get("Investimento") or 0, hist[i].get("Investimento") or 0
+        if a_ > 0 and b_ > 0 and (b_ / a_ > 1.5 or b_ / a_ < 1 / 1.5):
+            mud.append(f"{rotulo(hist[i])}: verba muda de R$ {_br(a_)} para R$ {_br(b_)} ({_br(b_ / a_, 1)}x).")
+        elif a_ > 0 and b_ == 0:
+            mud.append(f"{rotulo(hist[i])}: mídia parada (sem investimento).")
+        elif a_ == 0 and b_ > 0:
+            mud.append(f"{rotulo(hist[i])}: mídia volta a rodar (R$ {_br(b_)}).")
+    for (a, b), (nome, serie_) in zip(pares, taxas.items()):
+        for i in range(3, len(hist)):
+            den = hist[i].get(a) or 0
+            ant = [x for x, h in zip(serie_[i - 3:i], hist[i - 3:i]) if x is not None and (h.get(a) or 0) >= 10]
+            if serie_[i] is None or den < 10 or len(ant) < 2:
+                continue
+            base = _mediana_(ant)
+            if base and (serie_[i] / base > 1.5 or serie_[i] / base < 1 / 1.5):
+                mud.append(f"{rotulo(hist[i])}: {nome} vai a {_br(serie_[i] * 100, 1)}% contra {_br(base * 100, 1)}% nos meses anteriores "
+                           f"({_br(serie_[i] / base, 1)}x) — troca de campanha, de oferta ou de critério?")
+    sem_funil = [rotulo(h) for h in hist if (h.get("Investimento") or 0) > 0 and len(cadeia) > 3 and not any((h.get(e) or 0) > 0 for e in cadeia[3:])]
+    if sem_funil:
+        mud.append(f"Meses com mídia e sem nenhum dado de funil depois do clique: {', '.join(sem_funil)} (não medidos, não zero).")
+
+    ws = wb.create_sheet("Legado completo")
+    ws.sheet_view.showGridLines = False
+    ws['B2'] = f"Legado completo · {cliente or 'Cliente'}"; ws['B2'].font = font(16, True, BLACK)
+    ws['B3'] = (f"Todos os {len(hist)} meses da fonte, de {rotulo(hist[0])} a {rotulo(hist[-1])}, com as taxas mês a mês. "
+                "Serve para achar quando a operação mudou de patamar antes de escolher a janela das taxas e o período comparável.")
+    ws['B3'].font = font(10, False, GRAY)
+    r0 = 5
+    ws.cell(r0, 2, "Métrica").font = font(10, True, WHITE); ws.cell(r0, 2).fill = fill(BLACK)
+    for j, h in enumerate(hist):
+        c = ws.cell(r0, 3 + j, rotulo(h)); c.font = font(9, True, WHITE); c.fill = fill(BLACK)
+        c.alignment = Alignment(horizontal='center', wrap_text=True)
+    r = r0 + 1
+    for nome, fmt, vals in linhas:
+        if fmt is None:
+            c = ws.cell(r, 2, nome); c.font = font(9, True, RED); r += 1; continue
+        ws.cell(r, 2, nome).font = font(10)
+        for j, v in enumerate(vals):
+            if v is None: continue
+            c = ws.cell(r, 3 + j, v); c.number_format = fmt; c.font = font(10, nome.startswith("Resultado"), (RED if (nome.startswith("Resultado") and v < 0) else INK))
+        for j in range(len(hist)):
+            ws.cell(r, 3 + j).border = Border(bottom=Side(style='thin', color=LINE))
+        r += 1
+    r += 1
+    ws.cell(r, 2, "O QUE MUDOU NO CAMINHO").font = font(11, True, BLACK); r += 1
+    for t in (mud or ["Nenhuma mudança de fee, verba ou patamar de taxa detectada."]):
+        ws.cell(r, 2, f"• {t}").font = font(10); r += 1
+    ws.column_dimensions['B'].width = 44
+    for j in range(len(hist)):
+        ws.column_dimensions[get_column_letter(3 + j)].width = 12
+    ws.freeze_panes = ws.cell(r0 + 1, 3)
+    vis = [i for i, w in enumerate(wb._sheets) if not w.title.startswith('_apoio') and w is not ws]
+    wb._sheets.remove(ws); wb._sheets.insert((max(vis) + 1) if vis else len(wb._sheets), ws)   # junto das abas visíveis, antes das de apoio
+    return {'meses': len(hist), 'mudancas': mud}
+
 
 def comparar_cenarios(wb, abas_info, n):
     """No gráfico "Resultado acumulado mês a mês" de cada aba de projeção entram as linhas das outras abas (plano base × cenários),
@@ -1237,20 +1409,71 @@ def comparar_cenarios(wb, abas_info, n):
                      and ch.title.tx.rich.p[0].r and ch.title.tx.rich.p[0].r[0].t.startswith("Resultado acumulado")), None)
         if alvo is None: continue
         propria = next(j for j, (w, _, _) in enumerate(abas_info) if w is ws)
-        alvo.series[0].tx = SeriesLabel(v="Plano base" if propria == 0 else nome_aba)
+        padrao = lambda nm: "Plano base" if nm in ("Inside Sales", "E-commerce", "PLG") else nm
+        alvo.series[0].tx = SeriesLabel(v=padrao(nome_aba) if propria == 0 else nome_aba)
+        meu = abas_info[propria][1]
         for j, (_ws, inf, nome) in enumerate(abas_info):
             if _ws is ws or 'cum_cons' not in inf['M']: continue
+            # só entram no mesmo gráfico abas com o mesmo calendário: misturar "Mês 1 = mai/26" com "Mês 1 = out/26"
+            # poria meses diferentes no mesmo ponto do eixo
+            if inf.get('labels') != meu.get('labels'): continue
             sup = wb[inf['support']]
-            alvo.add_data(Reference(sup, min_col=3, max_col=2 + n, min_row=inf['M']['cum_cons'], max_row=inf['M']['cum_cons']), from_rows=True, titles_from_data=False)
+            alvo.add_data(Reference(sup, min_col=3, max_col=2 + int(inf.get('n') or n), min_row=inf['M']['cum_cons'], max_row=inf['M']['cum_cons']), from_rows=True, titles_from_data=False)
             s = alvo.series[-1]; cor = cores.get(j, GRAY)
-            s.tx = SeriesLabel(v="Plano base" if j == 0 else nome); s.smooth = False
+            s.tx = SeriesLabel(v=padrao(nome) if j == 0 else nome); s.smooth = False
             s.graphicalProperties.line.solidFill = cor; s.graphicalProperties.line.width = 22000; s.graphicalProperties.line.dashStyle = 'sysDash'
             s.marker.symbol = 'circle'; s.marker.size = 5
             s.marker.graphicalProperties = GraphicalProperties(solidFill=cor, ln=LineProperties(solidFill=cor))
-        alvo.title = "Resultado acumulado mês a mês · plano base × " + ", ".join(nm for k, (_w, _i, nm) in enumerate(abas_info) if k > 0)
+        juntos = [k for k, (_w, inf_, _n) in enumerate(abas_info) if inf_.get('labels') == meu.get('labels')]
+        if len(juntos) > 1:
+            alvo.title = "Resultado acumulado mês a mês · " + " × ".join(padrao(abas_info[k][2]) if k == 0 else abas_info[k][2] for k in juntos)
 
 
 # ===================================================================== CLI
+# Recompra B2B (cliente que repõe estoque todo mês) usa o motor da assinatura: a base de clientes ativos acumula,
+# perde a fração que para de comprar e a receita é clientes ativos × pedido mensal. A conta é a mesma; o que muda é
+# a palavra. Ordem importa: as frases longas antes das curtas, e o genérico por último.
+VOCABULARIO = {"recompra": [
+    ("Assinantes já ativos no início do Mês 1 (base herdada)", "Clientes já comprando no início do Mês 1"),
+    ("Base de assinantes e assinaturas novas por mês", "Clientes ativos e clientes novos por mês"),
+    ("BASE DE ASSINANTES NECESSÁRIA PARA ZERAR O MÊS", "CLIENTES ATIVOS NECESSÁRIOS PARA ZERAR O MÊS"),
+    ("BASE DE ASSINANTES (FIM DO MÊS)", "CLIENTES ATIVOS COMPRANDO (FIM DO MÊS)"),
+    ("ASSINATURAS ORIGINADAS PELOS SQLS DO MÊS", "CLIENTES NOVOS ORIGINADOS PELOS SQLS DO MÊS"),
+    ("ASSINATURAS NOVAS NO MÊS", "CLIENTES NOVOS NO MÊS"),
+    ("[%] CHURN MENSAL DA BASE", "[%] CLIENTES QUE PARAM DE COMPRAR NO MÊS"),
+    ("CANCELAMENTOS NO MÊS", "CLIENTES QUE PARAM DE COMPRAR NO MÊS"),
+    ("MRR (BASE × MENSALIDADE)", "RECEITA DE RECOMPRA (CLIENTES ATIVOS × PEDIDO MENSAL)"),
+    ("MENSALIDADE MÉDIA", "PEDIDO MENSAL MÉDIO POR CLIENTE"),
+    ("(MC MENSAL ÷ CHURN)", "(MC MENSAL ÷ % QUE PARA DE COMPRAR)"),
+    ("MC mensal ÷ churn", "MC mensal ÷ % que para de comprar"),
+    ("ASSINATURAS NOVAS", "CLIENTES NOVOS"), ("ASSINATURA NOVA", "CLIENTE NOVO"), ("assinatura nova", "cliente novo"),
+    ("assinaturas novas", "clientes novos"), ("ASSINANTES", "CLIENTES"), ("ASSINANTE", "CLIENTE"), ("assinantes", "clientes"),
+    ("assinante", "cliente"), ("ASSINATURA", "CLIENTE"), ("assinatura", "cliente"), ("Assinatura", "Cliente"),
+    ("MRR", "receita de recompra"), ("mensalidade", "pedido mensal"), ("churn", "% que para de comprar"),
+]}
+
+
+def aplicar_vocabulario(wb, nome):
+    """Troca o vocabulário de assinatura pelo de recompra em rótulos, textos e títulos de gráfico (fórmulas ficam de fora)."""
+    mapa = VOCABULARIO[nome]
+    def troca(t):
+        for a_, b_ in mapa:
+            t = t.replace(a_, b_)
+        return t
+    for ws in wb.worksheets:
+        for row in ws.iter_rows():
+            for c in row:
+                if isinstance(c.value, str) and not c.value.startswith("="):
+                    c.value = troca(c.value)
+        for ch in ws._charts:
+            try:
+                for par in ch.title.tx.rich.p:
+                    for r_ in par.r or []:
+                        r_.t = troca(r_.t)
+            except AttributeError:
+                pass
+
+
 def aplicar_moeda(wb):
     """Troca o 'R$' que está escrito no texto (rótulos [R$], notas, metodologia) pela moeda do template.
 
@@ -1283,11 +1506,18 @@ def main():
     ap.add_argument('--metodologia-extra', help="JSON com seções extras da Metodologia: {'secoes': [[título, linhas ou tabela]], 'fim': [...]} (fim = depois de todas as tabelas, ex.: fontes)")
     ap.add_argument('--obs', action='append', help="observação extra para as notas do template (repetível)")
     ap.add_argument('--extra', action='append',
-                    help='cenário extra em outra aba do mesmo arquivo: "premissas.json|Nome da aba|Nome do cenário|metodologia_extra.json" (repetível; os dois últimos campos são opcionais)')
+                    help='cenário extra em outra aba do mesmo arquivo: "premissas.json|Nome da aba|Nome do cenário|metodologia_extra.json|inicio" '
+                         '(repetível; os três últimos são opcionais; inicio = mês/ano do Mês 1 desta aba, "-" para nenhum, vazio = o da principal)')
     ap.add_argument('--conexao-so-lead', action='store_true',
                     help="inside sales: a linha Conexões da fonte conta só leads conectados; a conexão MQL fica em branco para preencher (sem taxa suposta)")
     ap.add_argument('--legado', help='JSON com o que uma projeção ANTERIOR prometia, para a aba Premissas mostrar projetado × realizado: '
                                      '{"titulo": "...", "nota": "...", "meses": [{"mes": "janeiro", "ano": 2026, "projetado": {"Vendas": 23, "Faturamento V4": 119600}}]}')
+    ap.add_argument('--aba-principal', help="nome da aba de projeção principal (padrão: Inside Sales / E-commerce / PLG); ex.: Desejado")
+    ap.add_argument('--ordem', help='ordem das abas de projeção, ex.: "Pessimista,Desejado,Otimista" (cada uma seguida da sua aba de premissas)')
+    ap.add_argument('--vocabulario', choices=list(VOCABULARIO),
+                    help="recompra: com --recorrencia no piloto, troca 'assinatura/MRR/churn' por 'cliente ativo/receita de recompra/% que para de comprar' (B2B que repõe estoque)")
+    ap.add_argument('--sem-legado-completo', action='store_true',
+                    help="não cria a aba 'Legado completo' (todos os meses da fonte, taxas mês a mês e o que mudou no caminho)")
     a = ap.parse_args()
     wb = Workbook()
     if a.premissas:
@@ -1295,6 +1525,8 @@ def main():
         cfg, d = config_from_premissas(a.premissas, a.modelo, a.cliente, a.cenario, a.obs, a.inicio_contrato,
                                       a.faturamento_total, a.base_nao_midia, a.margem_informativa, a.sem_etapa_venda, a.metodologia_extra,
                                       a.conexao_so_lead, a.legado)
+        if a.aba_principal:   # ex.: "Desejado" quando os três cenários vão no mesmo arquivo
+            cfg['sheet'], cfg['title'] = a.aba_principal, f"{cfg['title']} · {a.aba_principal}"
         ws = wb.active; ws.title = cfg['sheet']
         info = build_sheet(ws, cfg, LOGO)
         abas_info = [(ws, info, cfg['sheet'])]
@@ -1303,18 +1535,30 @@ def main():
             path2, aba2 = partes[0], partes[1]
             cen2 = partes[2] if len(partes) > 2 and partes[2] else a.cenario
             met2 = partes[3] if len(partes) > 3 and partes[3] else None
-            cfg2, _ = config_from_premissas(path2, a.modelo, a.cliente, cen2, a.obs, a.inicio_contrato, a.faturamento_total, a.base_nao_midia,
-                                            a.margem_informativa, a.sem_etapa_venda, met2, a.conexao_so_lead)
+            # 5º campo: o Mês 1 desta aba. "-" = sem início de contrato (projeção só daqui para frente), mesmo que a
+            # aba principal tenha um; vazio = o mesmo --inicio-contrato da principal (comportamento antigo).
+            ini2 = (None if partes[4].strip() == '-' else partes[4].strip()) if len(partes) > 4 and partes[4].strip() else a.inicio_contrato
+            cfg2, _ = config_from_premissas(path2, a.modelo, a.cliente, cen2, a.obs, ini2, a.faturamento_total, a.base_nao_midia,
+                                            a.margem_informativa, a.sem_etapa_venda, met2, a.conexao_so_lead, a.legado)
             cfg2['sheet'], cfg2['title'] = aba2, f"{cfg2['title']} · {aba2}"
             ws2 = wb.create_sheet(); ws2.title = aba2
             abas_info.append((ws2, build_sheet(ws2, cfg2, LOGO), aba2))
         if len(abas_info) > 1:
             comparar_cenarios(wb, abas_info, int(cfg.get('n_months', 12)))
+        if a.ordem:   # ordem das abas de projeção (cada uma seguida da sua aba de premissas); o resto vem depois
+            nomes = [x.strip() for x in a.ordem.split(',') if x.strip()]
+            vis = [nm_ for nm in nomes for nm_ in (nm, nome_premissas(nm)) if nm_ in wb.sheetnames]
+            wb._sheets = [wb[nm] for nm in vis] + [w for w in wb._sheets if w.title not in vis]
+            wb.active = 0
+        legado_info = None if a.sem_legado_completo else aba_legado_completo(wb, d, 'inside_sales' if a.modelo == 'plg' else a.modelo, a.cliente)
         out = a.out or f"Projecao_{a.modelo}_{re.sub(r'[^A-Za-z0-9]+', '_', a.cliente or 'cliente')}.xlsx"
+        if a.vocabulario:
+            aplicar_vocabulario(wb, a.vocabulario)
         aplicar_moeda(wb)
         wb.save(out)
         print(json.dumps({"arquivo": out, "aba": cfg['sheet'], "veredito": d['veredito']['status'], "mes_alvo": d['premissas_confirmadas']['mes_alvo'],
-                          "linhas_tabela": [info['HDR2'] + 1, info['LAST_TABLE']], "meta_top": info['META_TOP']}, ensure_ascii=False))
+                          "linhas_tabela": [info['HDR2'] + 1, info['LAST_TABLE']], "meta_top": info['META_TOP'],
+                          "legado_completo": legado_info}, ensure_ascii=False))
         return
     for i, cfg in enumerate([inside_sales_config(DEMO_IS), ecommerce_config(DEMO_EC)]):
         ws = wb.active if i == 0 else wb.create_sheet()

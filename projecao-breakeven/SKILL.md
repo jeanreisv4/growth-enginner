@@ -5,7 +5,7 @@ description: Projeção de breakeven de mídia paga a partir do histórico do cl
 
 # Projeção de breakeven
 
-**Versão 8.0 (29/09/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
+**Versão 8.3 (01/10/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
 
 A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não espera o usuário lembrar o que precisa informar. A segunda é a execução automática: com as premissas confirmadas, ela roda o piloto, dá o veredito e preenche o template, sem etapa manual.
 
@@ -91,7 +91,9 @@ A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não esp
 - Rode o cenário conservador e o médio antes de propor: se nem o médio fecha, diga. Calcule a verba que fecha o mês-alvo em cada combinação (ticket, verba) e pergunte ao usuário qual plano entra na planilha; ticket e verba são decisão do cliente.
 - `scripts/metodologia_mercado.py --benchmarks ... --analise analise.json` monta as seções da aba Premissas (análise, tabela, descartados, fontes no fim) para o `--metodologia-extra`.
 
-**1.6.4 Datas comemorativas e ofertas.** Meça a sazonalidade do produto, não do varejo em geral: Google Trends do termo exato (geo BR, 5 anos, mês contra a média do ano e semana da Black Friday contra as 8 anteriores) e IBGE PMC do setor. Entra como `--sazonalidade-demanda`. Ganho de oferta (desconto, brinde, parcelamento) não entra sem dado de conversão: vira estratégia no texto. multimídia automotiva: central multimídia sobe cerca de 5% na Black Friday, e os +90% são de smart TV.
+**1.6.4 Sazonalidade: primeiro o histórico do próprio cliente.** Pergunte se existe o **faturamento total mensal** do cliente (ERP, DRE, a linha "Total de Faturamento" do Growth Pack) com 12 meses ou mais. Se existir, ele manda: `--sazonalidade-historico` (sem valor, procura a linha de faturamento total da fonte; ou o rótulo de outra linha; ou um CSV `mês/ano,valor`). Cada mês é comparado com a média dos meses ao redor (±6), o que tira a tendência de crescimento, e a média por mês do calendário vira o índice (média do ano = 1,00), aplicado às vendas mês a mês e mostrado em tabela na aba Premissas. Use o faturamento **total**, não o da V4, que carrega a rampa da operação. Sem 12 meses, o piloto avisa e segue sem sazonalidade — aí vale o Google Trends abaixo. Na indústria de plásticos (indústria com mês forte e mês fraco), projetar sem o sazonal do cliente fazia a projeção errar mês a mês mesmo com a média certa.
+
+**Datas comemorativas e ofertas, sem histórico do cliente.** Meça a sazonalidade do produto, não do varejo em geral: Google Trends do termo exato (geo BR, 5 anos, mês contra a média do ano e semana da Black Friday contra as 8 anteriores) e IBGE PMC do setor. Entra como `--sazonalidade-demanda`. Ganho de oferta (desconto, brinde, parcelamento) não entra sem dado de conversão: vira estratégia no texto. multimídia automotiva: central multimídia sobe cerca de 5% na Black Friday, e os +90% são de smart TV.
 
 **1.6.5 Assinatura (SaaS) e PLG.** Se a receita é **recorrente** (mensalidade, plano, assinatura), o modelo transacional
 não serve: `vendas × ticket` cobra o cliente uma vez e esquece que ele paga de novo no mês seguinte. Rode com
@@ -134,13 +136,19 @@ lugar errado. **Teste antes de encaixar: divida conexões por MQLs em cada mês 
 meça no painel ou no CRM e informe com `--conexao-lead` e `--conexao-mql` (valor único ou plano mês a mês). Isso não
 muda volume, só decompõe `MQL → SQL` em `MQL → MQL conectado → SQL` e deixa as seis linhas de conexão vivas e editáveis.
 
-**1.7 Ticket e ciclo de venda (só se necessário).** Se a fonte não tem vendas suficientes, peça o ticket. Se o usuário souber o ciclo de venda, pergunte a fração das vendas que fecha ainda no mês do lead (`--lag`). Sem isso, use 1,0 e registre como premissa; com 1,0 a linha "vendas originadas pelos SQLs do mês" some da aba, porque seria cópia de "vendas fechadas no mês".
+**1.7 Ticket e ciclo de venda.** Se a fonte não tem vendas suficientes, peça o ticket. **Pergunte sempre o ciclo de venda** — em B2B a venda do lead de hoje cai no mês que vem, e projetar tudo no mês do lead antecipa a receita:
+- **Com CRM**, meça: `python3 scripts/ciclo_crm.py --csv negocios.csv --criacao "<coluna>" --fechamento "<coluna>" [--filtro-coluna Status --filtro-valor Ganho]` devolve a curva (quanto fecha em M+0, M+1, M+2, M+3) e o `--ciclo` para o piloto (ex.: `--ciclo 0.45,0.35,0.20`). Com menos de 10 vendas com as duas datas, o script recusa e a curva vira premissa.
+- **Sem CRM**, peça o ciclo médio em dias: `--ciclo-dias 45` vira curva (lead em qualquer dia do mês, fechamento D dias depois: 45 dias = 50% em M+1 e 50% em M+2). Registre como premissa.
+- `--lag L` continua valendo como atalho de dois meses. Com ciclo de três meses ou mais, a aba ganha uma premissa por mês do ciclo e a linha "vendas fechadas no mês" soma as safras; a seção "Ciclo de vendas" da aba Premissas diz a origem (medido ou premissa).
+- Sem ciclo nenhum, a venda fecha no mês do lead e a linha "vendas originadas pelos SQLs do mês" some, porque seria cópia de "vendas fechadas".
 
 **1.7.1 Landing page (inside sales).** Pergunte se a campanha manda o clique para uma página ou usa formulário nativo da plataforma. Com página, o connect rate (cliques → visitas) entra como alavanca: ele vem da linha de visitas da fonte ("Visitas", "Visitas LP", "Visualizações da Página de Destino", "Sessões - Pago") ou, se a fonte não tiver a linha, de `--connect-rate` com a taxa medida no Meta/GA4. Com formulário nativo não há página: a linha não entra e o funil vai do clique direto ao lead. **Não invente connect rate para preencher a linha.**
 
 A etapa só entra quando o connect rate é **mensurável**: a linha tem dado em todos os meses da janela e as visitas não passam dos cliques. Se a linha estiver vazia em algum mês da janela, ou se a página receber tráfego de outra origem (visitas > cliques), o piloto derruba a etapa, volta ao clique → lead e avisa — travar a taxa em 100% encolheria o funil projetado sem ninguém perceber. Quando a fonte já mede, `--connect-rate` é recusado: para sobrescrever a taxa medida use `--fixar connect=VALOR`. Com `--connect-rate` as visitas do histórico são calculadas (cliques × taxa) e aparecem assim rotuladas na aba Premissas, e a coluna Realizado dessas linhas fica em branco, porque o número não foi medido.
 
 ## 2. Regras de cálculo (declaradas no cabeçalho de toda saída)
+
+**Dado que falta vira premissa de mercado, não buraco.** Quando o cliente não mede uma etapa (conexão, SQL → venda sem nenhuma venda, ticket sem venda), use `--premissa-mercado CHAVE=VALOR|fonte` com benchmark verificado: entra marcada como premissa de mercado na aba e na aba Premissas, e vira o primeiro item de medição do plano. Nunca use no lugar de dado medido (o piloto recusa); para levar uma taxa medida até o mercado, o caminho é `--alvo`.
 
 **Taxas e breakeven**
 - **Breakeven** = margem de contribuição cobrindo fee + mídia. A definição só muda com o usuário ciente e fica registrada (`--definicao-breakeven`). Quando o critério vira receita cobrindo fee + mídia, a margem entra como 100% no modelo, e a margem real vira linha informativa (`--margem-informativa`).
@@ -172,11 +180,14 @@ A etapa só entra quando o connect rate é **mensurável**: a linha tem dado em 
 - **Connect rate (cliques → visitas/sessões):** só entra quando existe. E-commerce: com GA4, medido na janela (sessões Google ÷ cliques do Google Ads); sem GA4, informado (`--connect-rate`, tipicamente 85% a 90%) e registrado. Inside sales: medido pela linha de visitas da fonte ou informado com `--connect-rate`; sem nenhum dos dois, a etapa não existe e o funil vai do clique ao lead.
 - **Sessões não pagas** vêm do GA4 ou da linha da fonte, nunca zeradas por conveniência. A base projetada é a média dos meses fechados.
 
-**Cenários**
-- Sempre dois. O **cenário base** mantém as taxas atuais constantes: é a linha de base, nunca o plano.
+**Cenários: sempre três, cada um numa aba** (`scripts/tres_cenarios.py`)
+- **Pessimista** (`--cenario pessimista`): as taxas atuais ficam constantes até o fim, sem rampa. É a linha de base, nunca o plano.
+- **Desejado** (padrão): a rampa até a mediana do período comparável. É o plano e o compromisso.
+- **Otimista** (`--cenario otimista`): a rampa até o **melhor mês fechado** do período, ou até o benchmark de `--alvo` quando ele é maior. É o teto do que já aconteceu no cliente ou no mercado, nunca uma combinação inventada; alavanca fixada (`--fixar`, `--premissa-mercado`) não muda em nenhum cenário.
+- Os três usam o mesmo histórico e as mesmas premissas confirmadas; só o alvo da rampa muda. A planilha sai com as abas Pessimista, Desejado e Otimista, cada uma com a sua aba Premissas, e o gráfico de resultado acumulado de cada aba mostra as três linhas.
 - A **rampa** leva cada alavanca, linearmente até o mês-alvo, do nível atual até a **mediana do período comparável**, nunca piorando nenhuma. A mediana é o alvo porque o melhor mês estica a projeção quando a base é pequena.
 - O **mês de referência** (o mês fechado com mais vendas por real de mídia) é citado como evidência de que o nível já foi atingido. Ele nunca é um mês parcial.
-- A rampa entregue no template usa alpha 1. Ir além da mediana só como cenário pedido explicitamente.
+- A rampa entregue no template usa alpha 1. Ir além da mediana só no cenário otimista ou num cenário pedido explicitamente (`--extra`).
 
 **Meses vividos**
 - Não recebem projeção. A linha de resultado consolidado usa o **realizado onde existe** e o projetado à frente, e alimenta KPIs, payback e gráficos. O piloto faz o mesmo no veredito: o resultado dos meses vividos (a partir do mês corrente, ou de `--inicio` quando o Mês 1 é o início do contrato) entra pelo realizado, para o status, o payback e as datas baterem com a planilha.
@@ -186,7 +197,7 @@ A etapa só entra quando o connect rate é **mensurável**: a linha tem dado em 
 
 Rode o piloto com as premissas confirmadas:
 
-`python3 scripts/breakeven_pilot.py projetar --fonte ... --aba ... --modelo ... --fee F --midia M --margem G --comissao C --mes-alvo K --horizonte H [--crescimento-midia X --midia-teto T] [--desde mês/ano] [--incluir-corrente --janela N] [--acumulado-inicial D] [--lag L] [--ticket T] [--fixar alavanca=valor] [--ga4 ga4.json] [--definicao-breakeven "..."] --out premissas.json`
+`python3 scripts/breakeven_pilot.py projetar --fonte ... --aba ... --modelo ... --fee F --midia M --margem G --comissao C --mes-alvo K --horizonte H [--crescimento-midia X --midia-teto T] [--desde mês/ano] [--incluir-corrente --janela N] [--acumulado-inicial D] [--ciclo 0.5,0.3,0.2 | --ciclo-dias N | --lag L] [--cenario pessimista|desejado|otimista] [--sazonalidade-historico] [--premissa-mercado chave=valor|fonte] [--ticket T] [--fixar alavanca=valor] [--ga4 ga4.json] [--definicao-breakeven "..."] --out premissas.json`
 
 O veredito vem na resposta, antes do template, e sempre traz **duas datas**, mesmo quando caem depois de dezembro:
 - **no azul a partir de:** o mês a partir do qual todo mês fecha com resultado ≥ 0 (o breakeven do mês, sustentado);
@@ -227,8 +238,8 @@ O atalho chama `gerador/build_workbook.py`, que lê o `premissas.json` como font
 - Os rótulos acompanham o número de meses; nada de "12 MESES" fixo.
 
 **Mapeamento das cadeias**
-- **Inside sales:** com landing page medida, o funil é clique → visita (connect rate) → lead; sem ela (formulário nativo ou fonte sem a linha de visitas), começa em clique → lead. **As linhas de Leads conectados e MQLs conectados aparecem sempre** (o usuário acompanha essa visão). Com "Conexões" na fonte, conexão MQL é 100% e Lead → MQL = (Leads → Conexões) × (Conexões → MQLs). Se a linha Conexões conta só leads conectados e o cliente não mede MQL conectado (multimídia automotiva), use `--conexao-so-lead` no gerador: a conexão lead vem da fonte e a de MQL fica em branco para preencher. Sem ela, **nenhuma taxa é inventada**: a conexão de lead e a de MQL ficam em branco (amarelo, para preencher quando o cliente medir), as linhas de conectados ficam informativas, o realizado fica aberto e o funil segue MQL → SQL sem mudar a projeção. A demo (turismo do painel antigo) mantém todas as linhas.
-- **E-commerce:** o template tem View Item e Pedido → Venda. O gerador usa 100% nas duas, porque o GA4 conta view item em eventos. O ticket faturado é igual ao do piloto, a verba cresce pelo percentual e pelo teto, e a comissão multiplica a margem quando é diferente de 1.
+- **Inside sales:** com landing page medida, o funil é clique → visita (connect rate) → lead; sem ela (formulário nativo ou fonte sem a linha de visitas), começa em clique → lead. **As linhas de Leads conectados e MQLs conectados aparecem sempre** (o usuário acompanha essa visão). Com "Conexões" na fonte, conexão MQL é 100% e Lead → MQL = (Leads → Conexões) × (Conexões → MQLs). Se a linha Conexões conta só leads conectados e o cliente não mede MQL conectado (multimídia automotiva), use `--conexao-so-lead` no gerador: a conexão lead vem da fonte e a de MQL fica em branco para preencher. Sem ela, **a conexão entra como premissa de mercado, não em branco** (regra nova da v8.1, a partir da indústria de plásticos): `--premissa-mercado conexao_lead=0.69|<fonte>` e `--premissa-mercado conexao_mql=0.80|<fonte>`, com o benchmark verificado (a mesma regra de fonte primária da seção 1.6.3). A linha ganha o rótulo "(PREMISSA DE MERCADO)", a aba Premissas lista o número e a fonte, e o funil não muda de volume: a conexão decompõe MQL → SQL em MQL → MQL conectado → SQL. Se o benchmark de conexão MQL for menor que a própria MQL → SQL do cliente, o piloto recusa (a etapa seguinte passaria de 100%). Sem benchmark verificado, aí sim a célula fica em branco. A demo (turismo do painel antigo) mantém todas as linhas.
+- **E-commerce:** o template tem View Item e Pedido → Venda. View item fica em 100%, porque o GA4 conta view item em eventos. **Pedido captado → faturado é alavanca quando a fonte traz a linha "Pedidos Faturados"** (ou "Vendas Faturadas"): a taxa é medida, entra na rampa como as demais e a receita que paga a operação passa a ser a **faturada** ("Receita Faturada" da fonte, ou estimada pelo ticket do pedido captado, com aviso). Pergunte ao cliente quanto do pedido captado vira faturado (cancelamento, fraude, boleto não pago) quando a fonte não separa. Sem a linha, pedido → venda fica em 100% como antes. A verba cresce pelo percentual e pelo teto, e a comissão multiplica a margem quando é diferente de 1.
 - **Com GA4** (`split` no premissas.json), a aba de e-commerce ganha os blocos "Tráfego pago · Google", "Tráfego pago · Meta" e "Sessões do site", mais a participação do Meta na verba como premissa editável.
 
 **Como a aba se lê (v7.1).** A projeção é dividida em blocos com cor própria e tarja vertical na coluna A: **investimento** (cinza), **marketing** (vermelho V4, da verba ao lead), **vendas** (âmbar, do lead à receita), **financeiro** (verde) e **resultado** (preto). Todo rótulo começa pela unidade — `[R$]`, `[%]`, `[QNTD]` ou `[X]` — e a linha inteira de uma alavanca (rótulo, meses e total) fica pintada na cor da alavanca, para o cliente saber de relance o que pode mexer.
@@ -245,7 +256,27 @@ O atalho chama `gerador/build_workbook.py`, que lê o `premissas.json` como font
 
 **Cenários em abas.** `--extra "premissas.json|Nome da aba|Nome do cenário|metodologia.json"` (repetível) põe cada cenário numa aba de projeção do mesmo arquivo, com a própria aba de premissas. O gráfico "Resultado acumulado mês a mês" de todas as abas mostra as linhas de todos os cenários, para comparar o payback.
 
-Entregue o arquivo e, no chat, o veredito com os números-chave: payback, resultado acumulado, ROAS projetado contra o realizado da janela, e vendas necessárias contra projetadas.
+**Legado completo.** Toda planilha ganha a aba **Legado completo**: todos os meses da fonte (não só os que cabem na tabela), volumes, taxas mês a mês, resultado e a lista **"O que mudou no caminho"** — fee, verba que mudou mais de 1,5x, mídia parada ou retomada, taxa que saltou 1,5x contra a mediana dos três meses anteriores, meses com mídia e sem funil medido. Leia essa lista antes de escolher a janela e o `--desde`. Para o legado sair inteiro, a fonte precisa trazer os meses desde o início do contrato, mesmo sem funil (indústria química B2B: maio/25 a abril/26 só com fee e mídia). `--sem-legado-completo` tira a aba.
+
+**Cenário Breakeven: sempre, sem o usuário pedir.** Pessimista, desejado e otimista só usam o histórico do cliente e a verba de hoje, e quase nunca fecham. Toda projeção sai também com a aba **Breakeven**, montada sozinha pelo `scripts/cenario_breakeven.py`, que o `tres_cenarios.py` roda em cada leitura (sem e com legado). Ela responde "o que precisa ser verdade para bater", e a busca segue esta ordem:
+1. **Funil no nível de mercado onde o cliente está abaixo dele.** Os níveis vêm de `referencias/mercado_alavancas.json`, só com fonte primária; o padrão é `b2b_industria`, e outro setor entra com `--mercado`/`--setor`. A etapa que já está acima do mercado fica onde está. O alvo é o maior entre o mercado e a mediana do próprio cliente, e o ticket vai à mediana do cliente.
+2. **Verba em degraus** (+50% da verba atual por mês, no mínimo R$ 500, até 8x): vale o menor teto em que o mês fica no azul e o acumulado zera em até 24 meses depois do último mês vivido; se nenhum zerar, o menor teto em que o mês vira. Verba só ajuda quando a mídia se paga (margem por R$ 1 de mídia acima de 1) — é por isso que o funil vem antes.
+3. **Recompra** (inside sales): do menor número de pedidos por cliente para o maior, com verba de 1x a 3x. Usa o motor da assinatura, e o gerador recebe `--vocabulario recompra` sozinho.
+4. **Nada fecha:** a aba sai com a melhor tentativa e diz que a conversa é de estrutura (fee, margem, ticket).
+
+A aba traz, no topo da Premissas: o que precisa ser verdade, a tabela "onde o cliente está × mercado × fonte × usado", a sensibilidade à verba (e à recompra, quando entra) e os **riscos sem suavizar** (lead → venda resultante contra o de hoje, trava do melhor mês, CPM constante na escala). A thread de aprovação ganha a seção **"O cenário que bate"**. Nunca entregue uma projeção só com cenários que não fecham: se o usuário precisa perguntar "qual bate?", a skill falhou. fábrica de acessórios de cortina (01/10/2026): clique → lead de 4,3% para 8,2% e MQL → SQL de 20% para 42%, verba até R$ 5 mil, acumulado sem legado zerado em fev/28. indústria química B2B: o funil de mercado não basta e entra recompra de cerca de 6,7 pedidos por cliente.
+
+**Thread de aprovação: sempre com a restrição mapeada até agora.** O `tres_cenarios.py` roda o `scripts/aprovacao.py`, que escreve `aprovacao.md` — texto curto, pronto para colar no Slack ou no ClickUp — e põe o mesmo bloco no topo da aba Premissas de cada cenário. Ele traz o veredito, os três cenários (no azul, acumulado zera, acumulado no fim), **onde está a restrição** e o que ainda não é medido. A restrição segue esta ordem: **estrutura** (nem com fee zero a mídia se paga — nenhuma taxa resolve), **retorno da mídia** abaixo de 1 (mais verba piora), ou **funil** (a alavanca que, sozinha, fecha o mês-alvo com o menor salto, e se esse nível já aconteceu). As lacunas que o usuário conhece (recompra não medida, margem provisória) entram com `--restricao "..."`. Mande o texto da thread junto com a planilha.
+
+**Cenário-meta e recompra B2B.** Quando nenhum dos três fecha, monte o cenário-meta, que mostra o que precisa ser verdade, como aba a mais: `--cenario-extra "Cenário-meta|<argumentos a mais do piloto>|metodologia_meta.json"`, com a explicação item por item e a tabela de sensibilidade no JSON. Em B2B que repõe estoque (químico, insumo), a recompra é a alavanca que decide e quase nunca é medida. Modele com o motor da assinatura (`--recorrencia --churn X`, em que X é a fração de clientes ativos que para de comprar por mês, e `1/X` é o número de pedidos por cliente) e `--vocabulario recompra` no gerador, que troca "assinatura/MRR/churn" por "cliente ativo/receita de recompra/% que para de comprar". Na indústria química B2B, o mês só vira com cerca de 6,7 pedidos por cliente, junto com conversão e ticket melhores. O acumulado só zera com cerca de 9 pedidos.
+
+**Com legado e sem legado, na mesma planilha.** Quando o cliente tem déficit herdado, entregue as duas leituras: `--sem-legado "--horizonte 3 --mes-alvo 3"` no `tres_cenarios.py` monta, **na frente**, os mesmos cenários começando no mês seguinte ao último fechado, com acumulado zero e sem `--inicio` (abas "<Cenário> sem legado"), e depois os com legado ("<Cenário> com legado"), cada aba com o seu Mês 1 (o gerador aceita o 5º campo do `--extra`; o gráfico de acumulado só junta abas do mesmo calendário). O cenário-extra aceita argumentos e metodologia próprios para a leitura sem legado (campos 4 e 5). **Sem legado responde se continuar vale a pena** (o que já foi gasto não volta, qualquer que seja a decisão); **com legado responde se o contrato inteiro se paga**. Na indústria química B2B o meta sem legado zera o acumulado em dez/29; com legado, não zera em 48 meses.
+
+Rodar tudo de uma vez:
+
+`python3 scripts/tres_cenarios.py --cliente "<nome>" --out <Cliente>_cenarios.xlsx --piloto "<argumentos do projetar, sem --out>" --gerador "<argumentos do gerador, sem --premissas/--out>" [--restricao "..."]`
+
+Entregue o arquivo e, no chat, o veredito com os números-chave: payback, resultado acumulado, ROAS projetado contra o realizado da janela, e vendas necessárias contra projetadas — e o texto da thread de aprovação.
 
 ## 5. Validação antes de entregar
 
@@ -264,7 +295,9 @@ Dependências: `python3` com `pandas`, `openpyxl` e `pycel` (`python3 -m pip ins
 
 - Não projeta sem fee e verba confirmados pelo usuário.
 - Não usa o mês corrente parcial como histórico sem pedido explícito, nem como mês de referência.
-- Não leva taxa além da mediana do período por conta própria. Alvo de mercado só com benchmark verificado e com o usuário ciente (`--alvo`).
+- Não leva taxa além da mediana do período por conta própria, fora do cenário otimista. Alvo de mercado só com benchmark verificado e com o usuário ciente (`--alvo`).
+- Não deixa etapa sem dado em branco quando existe benchmark verificado (`--premissa-mercado`), nem usa benchmark no lugar de dado medido.
+- Não entrega sem os três cenários, sem o cenário Breakeven (o que bate) e sem o texto da thread de aprovação com a restrição mapeada.
 - Não passa tráfego não pago pelo funil pago.
 - Não deixa taxa acima de 100% sem explicar a causa.
 - Não deixa bloco de instruções na aba do cliente, nem usa azul.

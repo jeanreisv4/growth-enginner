@@ -41,6 +41,14 @@ Use `scripts/ga4_resumo.py`. Ele já trata as armadilhas abaixo.
 - **Participação da mídia no faturamento da loja.** O faturamento total vem do Power BI do cliente (`--faturamento-total`). Confira se o valor do mês parcial está atualizado, porque ele envelhece rápido.
 - **Crescimento contra mês parcial sai inflado** (varejo de tecidos: +71% de setembro para outubro). Isso fica anotado na Metodologia.
 
+## 3.1 Pedido captado × faturado (v8.1)
+
+O pedido que a plataforma registra (captado) não é o que o cliente fatura: cancelamento, fraude, boleto não pago e
+troca tiram uma fatia. Quando a fonte traz a linha "Pedidos Faturados" (e, de preferência, "Receita Faturada"), a etapa
+captado → faturado vira alavanca da rampa e a receita que paga a operação passa a ser a faturada. Sem a receita
+faturada, ela é estimada pelo ticket do pedido captado, com aviso na aba Premissas. Se a fonte não separa, pergunte ao
+cliente quanto do captado é faturado antes de aceitar 100%.
+
 ## 4. Caso varejo de tecidos, para calibrar a intuição
 
 Os números abaixo são da janela de agosto (fechado) e setembro (parcial até 17/09), com fee de R$ 7.998 e verba de R$ 4.000 crescendo 5% ao mês até R$ 6.000.

@@ -1,0 +1,18 @@
+{
+ "nota": "Nível de mercado por alavanca, usado pelo cenário Breakeven automático (scripts/cenario_breakeven.py). Só sobe a etapa do cliente que está ABAIXO deste nível; a que está acima fica onde está. Todos os números vêm de levantamentos verificados da skill (fonte primária aberta): industria_plasticos_b2b_benchmarks.json e multimidia_automotiva_benchmarks.json. Para outro setor, crie um arquivo no mesmo formato e passe --mercado.",
+ "setores": {
+  "b2b_industria": {
+   "descricao": "Indústria, fábrica e distribuição B2B (Brasil e EUA). Padrão do inside sales.",
+   "alavancas": {
+    "clique_lead": {"valor": 0.082, "fonte": "LocaliQ/WordStream, Search Advertising Benchmarks (2026): Industrial & Commercial 8,20%; RD Station, Dados RD Station (2025): landing pages de Engenharia e Indústria Geral 9,8%"},
+    "visita_lead": {"valor": 0.098, "fonte": "RD Station, Dados RD Station (2025): conversão de landing page em Engenharia e Indústria Geral 9,8%"},
+    "lead_mql": {"valor": 0.31, "fonte": "First Page Sage, Lead-to-MQL Benchmarks (2025): média de todas as indústrias 31% (Manufacturing 26%)"},
+    "mql_sql": {"valor": 0.42, "fonte": "Forrester/SiriusDecisions, Measuring the Impact of Successful Sales Handoffs: o comercial aceita 42% dos leads do marketing (Brasil: 23% a 31%, Meetime)"},
+    "conexao": {"valor": 0.69, "fonte": "Foureyes, Dealership Close Rates by Metro (2026): contato com 69% dos leads inbound (47% a 79%) — aproximação"},
+    "conexao_sql": {"valor": 0.23, "fonte": "Meetime, Inside Sales Benchmark Brasil: 23% dos leads inbound trabalhados pela pré-venda viram oportunidade"},
+    "sql_venda": {"valor": 0.16, "fonte": "First Page Sage, SQL to Closed Won (2026): mediana industrial 16% (Manufacturing 13%, Heavy Equipment 20%)"}
+   }
+  }
+ },
+ "padrao_por_modelo": {"inside_sales": "b2b_industria", "plg": "b2b_industria"}
+}

@@ -5,7 +5,7 @@ Ler antes de projetar qualquer cliente de inside sales. Os casos de referência 
 ## 1. A planilha de indicadores (Growth Pack)
 
 - **Rótulos variam por cliente.** MQLs, SQLs, Vendas e Faturamento aparecem como "MQLs (manual)", "SQL (manual)", "Vendas (manual)", "Valor de venda (manual)" ou "Total de Faturamento (manual)". Os sinônimos do piloto cobrem esses casos. Se aparecer um rótulo novo, acrescente-o em `SINONIMOS` e não renomeie a planilha do cliente.
-- **A linha Conexões é opcional na fonte, mas a visão de conectados é obrigatória na planilha.** Sem o dado, a cadeia segue Leads → MQLs direto, e as linhas de Leads conectados e MQLs conectados ficam com a taxa em branco para o cliente preencher. O usuário recusou taxa suposta ("não coloque"), inclusive a do painel antigo (90% e 80%). Com ela, Lead → MQL no template = (Leads → Conexões) × (Conexões → MQLs), o que reproduz os volumes do piloto.
+- **A linha Conexões é opcional na fonte, mas a visão de conectados é obrigatória na planilha.** Sem o dado, a cadeia segue Leads → MQLs direto, e as linhas de Leads conectados e MQLs conectados ficam com a taxa em branco para o cliente preencher. O usuário recusou taxa suposta ("não coloque"), inclusive a do painel antigo (90% e 80%). **Mudou na v8.1 (indústria de plásticos):** taxa suposta continua proibida, mas benchmark verificado entra no lugar do buraco, marcado como premissa de mercado (`--premissa-mercado conexao_lead=...|fonte`). Com ela, Lead → MQL no template = (Leads → Conexões) × (Conexões → MQLs), o que reproduz os volumes do piloto.
 - **Sem a linha Gross Margin, a margem vira pergunta obrigatória.** Na consultoria B2B não havia a linha, e o usuário informou 25%. Registre nas observações que a margem foi informada, não lida.
 - **O ano vem da "Data Inicial".** Na consultoria B2B, janeiro e fevereiro caíam em 2025 se o ano fosse deduzido pela posição da coluna.
 - **Uma linha homônima vazia de outro bloco não é etapa.** A aba principal da EZ não tem "Conexões", e o piloto achava a do bloco Meta, vazia, o que zerava lead → MQL e o funil inteiro. Hoje, etapa opcional sem nenhum valor conta como ausente. Desconfie de qualquer taxa 0% ou de um funil que zera.
@@ -21,7 +21,7 @@ Ler antes de projetar qualquer cliente de inside sales. Os casos de referência 
 - **Receita do cliente ou GMV com comissão?** No turismo, a agência recebe 15% do GMV, então o resultado é GMV × comissão × margem. Nos demais, a receita já é do cliente (comissão 1).
 - **Déficit histórico entra na projeção?** Calcule e informe primeiro o acumulado dos meses fechados. Na consultoria B2B, o déficit de R$ 53.812 entrou como acumulado inicial (`--acumulado-inicial -53812`), e por isso o acumulado de dezembro fecha em −R$ 71,9 mil mesmo com os meses melhorando.
 - **Desde quando o histórico é comparável?** Mudança de oferta, canal ou campanha reinicia a comparação. Na consultoria B2B foi a partir de maio de 2026 (`--desde maio/2026`).
-- **Ciclo de venda.** Se o usuário souber que parte das vendas fecha no mês seguinte ao lead, use `--lag`. Sem essa informação, o lag é 1 e fica registrado como premissa.
+- **Ciclo de venda.** Pergunte sempre. Com CRM, meça a curva com `scripts/ciclo_crm.py` e use `--ciclo`; sem CRM, `--ciclo-dias` com o ciclo médio informado. `--lag` ficou como atalho de dois meses.
 
 ## 3. Regras de modelagem
 
@@ -88,3 +88,20 @@ checkout na Hotmart, trial de 7 dias sem cartão. Fee R$ 5.941,81. **Primeiro cl
 **Regra que saiu da SaaS de diário de obra:** antes de aceitar uma taxa de etapa baixa, pergunte se ela é **comportamento** ou
 **encanamento quebrado**. Se for encanamento, o número certo é a taxa de quem passa pelo cano que funciona, e o
 conserto vira cenário — com a diferença entre as duas linhas medindo, em reais, quanto vale a correção.
+
+**indústria química B2B · Domissanitários** (01/10/2026). Indústria química B2B com duas linhas (domissanitários e lavanderia
+branca); a projeção cobre só domissanitários. Fee R$ 2.250 (contrato; o Growth Pack mostra R$ 2.500), verba R$ 2.500 no
+Meta, margem 30% provisória, ticket R$ 929 (média das 2 vendas com UTM), 1 venda a cada ~100 leads. Cada R$ 1 de mídia
+devolve R$ 0,07; o fee que fecharia é negativo; acumulado de −R$ 82,8 mil em dezembro (com −R$ 48,9 mil de déficit
+de mai/25 a abr/26), IRREALISTA. Três lições:
+
+1. **Growth Pack que soma linhas de produto não serve de fonte de mídia.** A verba do GP misturava lavanderia,
+   institucional e domissanitários, e não tinha nenhuma linha de lead ou venda. A mídia veio da API (Meta e Google)
+   **por campanha**, filtrando pelo nome, e o funil da planilha do comercial. O Google, que parecia canal de
+   domissanitários, gastava quase tudo em Lavanderia e Institucional.
+2. **A data do primeiro lead não é a data do contrato.** O backup começava em maio/26, mas a projeção anterior
+   tratava o contrato desde maio/25 (−R$ 63,5 mil). Pergunte o início do contrato e peça a projeção anterior **antes**
+   de calcular o déficit: o déficit inicial dobrou depois que ela chegou.
+3. **Sem MQL e SQL na fonte, defina pelas colunas do comercial e escreva a definição.** MQL = segmento declarado no
+   formulário (fábrica ou distribuidora); SQL = status de negociação, portfólio ou pedido; conexão = "Lead respondeu?".
+   Em químico B2B a recompra decide o valor do cliente e quase nunca é medida: registre como a lacuna principal.

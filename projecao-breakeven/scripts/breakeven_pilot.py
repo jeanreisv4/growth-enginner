@@ -33,8 +33,11 @@ MODELOS = {
         "ticket": "Ticket Médio",
     },
     "ecommerce": {
-        "etapas": ["Investimento", "Impressões", "Cliques", "Sessões", "Add to Cart", "Check Out", "Transações Captada"],
-        "opcionais": [],
+        # Pedidos Faturados é opcional: quando a fonte separa o pedido captado (o que a plataforma registra) do pedido
+        # faturado (o que o cliente de fato fatura, depois de cancelamento, fraude e boleto não pago), a etapa
+        # captado → faturado vira alavanca. Sem a linha, a cadeia termina no pedido captado, como sempre.
+        "etapas": ["Investimento", "Impressões", "Cliques", "Sessões", "Add to Cart", "Check Out", "Transações Captada", "Pedidos Faturados"],
+        "opcionais": ["Pedidos Faturados"],
         "receita": "Receita Captada",
         "ticket": "Ticket Médio",
     },
@@ -50,6 +53,8 @@ SINONIMOS = {
     "Transações Captada": ["Transações Captada", "Vendas Captados V4", "Transações", "Pedidos (captado)", "Purchase"],
     "Check Out": ["Check Out", "Initiate Checkout", "Checkout"],
     "Conexões": ["Conexões", "Conexões (manual)"],
+    "Pedidos Faturados": ["Pedidos Faturados", "Pedidos Faturados V4", "Pedidos faturados (manual)", "Vendas Faturadas", "Transações Faturadas"],
+    "Receita Faturada": ["Receita Faturada", "Receita Faturada V4", "Receita Faturada (manual)", "Faturamento Faturado"],
     # visitas na landing page (connect rate = visitas ÷ cliques); sem essa linha o funil vai do clique direto ao lead.
     # Só rótulos inequívocos de LP: "Sessões*" é do bloco GA4 e conta o site inteiro, o que capturaria a linha errada.
     "Visitas": ["Visitas", "Visitas LP", "Visitas na LP", "Visitas na Página de Destino",
@@ -82,7 +87,7 @@ PERFIL = None   # perfil ativo nesta execução (--modelo plg)
 LINHAS_FIXAS = {"fee": "Fee V4", "midia_plano": "Plano de Mídia Mês", "margem": "Gross Margin"}
 EXTRAS = {  # lidas da fonte só para informação/premissa; não fazem parte da cadeia de conversão
     "inside_sales": [],
-    "ecommerce": ["Sessões Orgânicas", "Sessões Gerais"],
+    "ecommerce": ["Sessões Orgânicas", "Sessões Gerais", "Receita Faturada"],
 }
 MESES_PT = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho",
             "agosto", "setembro", "outubro", "novembro", "dezembro"]
@@ -108,6 +113,9 @@ RECORRENCIA = None  # assinatura (SaaS): {'churn': [taxa por mês], 'base_inicia
                     # Convenção declarada: base_t = base_(t-1) × (1 − churn_t) + novas_t; a safra nova não sofre churn no mês em que entra.
 VERBA_PLANO = None  # verba mês a mês (--verba-plano); depois do último mês do plano, repete o último valor
 TAXA_MAX = 1.0    # taxa de etapa não pode passar de 100%: quando a fonte dá mais, o denominador está subcontado
+CENARIO = "desejado"  # pessimista (taxas atuais, sem rampa), desejado (rampa até a mediana) ou otimista (rampa até o melhor mês ou o mercado)
+CICLO = None        # ciclo de vendas: fração das vendas originadas no mês t que FECHA em t, t+1, t+2... (soma 1). Sem ele, [lag, 1 − lag]
+PREMISSA_MERCADO = {}  # {alavanca: (valor, fonte)}: benchmark no lugar de dado que o cliente não tem (nunca no lugar de dado medido)
 
 
 # ----------------------------------------------------------------------------- utilidades
@@ -214,6 +222,17 @@ def ler_historico(df, modelo, ga4=None):
     for e in cfg.get("opcionais", []):
         if e in dados and not any((v or 0) > 0 for v in dados[e]):
             del dados[e]
+    cfg["receita_faturada_estimada"] = False
+    if modelo == "ecommerce":
+        cfg["receita"] = "Receita Captada"
+        if "Pedidos Faturados" in dados:
+            # Com o pedido faturado na fonte, a receita que paga a operação é a FATURADA, não a captada.
+            # Sem a linha de receita faturada, ela sai do ticket do pedido captado (cada faturado vale o mesmo).
+            cap, fat, rc = dados.get("Transações Captada") or [], dados["Pedidos Faturados"], dados.get("Receita Captada") or []
+            if not any((x or 0) > 0 for x in dados.get("Receita Faturada") or []):
+                dados["Receita Faturada"] = [((r or 0) * (f or 0) / c) if c else None for r, f, c in zip(rc, fat, cap)]
+                cfg["receita_faturada_estimada"] = True
+            cfg["receita"] = "Receita Faturada"
     cfg["etapas_neutras"] = []
     for alvo, origem in (PERFIS[PERFIL].get("neutras", {}).items() if PERFIL else []):
         if alvo not in dados and origem in dados:   # etapa não medida: passa o volume adiante, sem taxa inventada
@@ -251,7 +270,8 @@ def ler_historico(df, modelo, ga4=None):
     for k, (c, nome, ano) in enumerate(cols):
         inv = dados["Investimento"][k] or 0
         idx = MESES_NORM.index(nome) + 1
-        corrente = (ano == hoje.year and idx == hoje.month) if ano else False
+        # mês corrente sem investimento ainda não começou (dia 1, ou fonte não atualizada): é futuro, não realizado zerado
+        corrente = ((ano == hoje.year and idx == hoje.month) if ano else False) and inv > 0
         futuro = (ano and (ano > hoje.year or (ano == hoje.year and idx > hoje.month))) or inv == 0
         status = "corrente" if corrente else ("futuro" if futuro else "fechado")
         meses.append({"col": c, "mes": nome, "ano": ano, "status": status,
@@ -331,7 +351,8 @@ def taxas_efetivas(meses, modelo, janela, incluir_corrente=False):
     soma = {e: sum((m.get(e) or 0) for m in fechados) for e in et + extra}
     taxas, alertas = {}, []
     pares = ([("Impressões", "Cliques"), ("Cliques", "Sessões Google"), ("Sessões", "Add to Cart"), ("Add to Cart", "Check Out"),
-              ("Check Out", "Transações Captada")] if split(modelo) else list(zip(et[1:-1], et[2:])))
+              ("Check Out", "Transações Captada")] + ([("Transações Captada", "Pedidos Faturados")] if "Pedidos Faturados" in et else [])
+             if split(modelo) else list(zip(et[1:-1], et[2:])))
     for a, b in pares:
         bruta = (soma[b] / soma[a]) if soma[a] else 0.0
         taxas[f"{a} → {b}"] = min(bruta, TAXA_MAX)
@@ -428,13 +449,15 @@ def alavancas(modelo):
         else:
             fim = [("lead_mql", "Leads → MQLs", "MQLs", "Leads"), ("mql_sql", "MQLs → SQLs", "SQLs", "MQLs")]
         return [("ctr", "Impressões → Cliques", "Cliques", "Impressões")] + meio + fim + [("sql_venda", "SQLs → Vendas", "Vendas", "SQLs")]
+    faturado = ([("pedido_venda", "Pedidos captados → faturados", "Pedidos Faturados", "Transações Captada")]
+                if "Pedidos Faturados" in MODELOS["ecommerce"]["etapas"] else [])
     if split(modelo):
         return [("ctr", "Impressões → Cliques (Google)", "Cliques", "Impressões"), ("clique_sessao", "Cliques → Sessões Google (connect)", "Sessões Google", "Cliques"),
                 ("sessao_cart", "Sessões pagas → Add to Cart", "Add to Cart", "Sessões"), ("cart_checkout", "Add to Cart → Check Out", "Check Out", "Add to Cart"),
-                ("checkout_trans", "Check Out → Transações Captada", "Transações Captada", "Check Out")]
+                ("checkout_trans", "Check Out → Transações Captada", "Transações Captada", "Check Out")] + faturado
     return [("ctr", "Impressões → Cliques", "Cliques", "Impressões"), ("clique_sessao", "Cliques → Sessões", "Sessões", "Cliques"),
             ("sessao_cart", "Sessões → Add to Cart", "Add to Cart", "Sessões"), ("cart_checkout", "Add to Cart → Check Out", "Check Out", "Add to Cart"),
-            ("checkout_trans", "Check Out → Transações Captada", "Transações Captada", "Check Out")]
+            ("checkout_trans", "Check Out → Transações Captada", "Transações Captada", "Check Out")] + faturado
 
 
 def informativas(modelo):
@@ -461,6 +484,40 @@ def _rot(m): return f"{m['mes']}/{m['ano']}"
 def _rs(v):
     """R$ no padrão brasileiro, para os textos que o cliente lê na aba Premissas."""
     return "R$ " + f"{v:,.0f}".replace(",", "·").replace(".", ",").replace("·", ".")
+
+def ciclo_de_dias(dias, largura=30.0):
+    """Ciclo médio em dias → curva por mês, supondo o lead em qualquer dia do mês (uniforme) e o fechamento D dias depois.
+    Com D = 45: o lead do dia 1 fecha no dia 46 (M+1) e o do dia 30 no dia 75 (M+2) → 50% em M+1 e 50% em M+2."""
+    d = max(float(dias), 0.0)
+    k0, r = int(d // largura), (d % largura) / largura
+    curva = [0.0] * (k0 + 2)
+    curva[k0] += 1 - r
+    curva[k0 + 1] += r
+    while len(curva) > 1 and curva[-1] < 1e-9:
+        curva.pop()
+    return curva
+
+
+def indice_sazonal(pontos):
+    """Índice de sazonalidade por mês do calendário a partir do faturamento do próprio cliente.
+    pontos = [(ano, mês 1-12, valor)]. Cada mês é comparado com a média dos meses ao redor (±6, a janela de um ano),
+    o que tira a tendência de crescimento; a média das razões por mês do calendário vira o índice, normalizado para
+    a média dos 12 meses dar 1. Mês do calendário sem dado fica em 1."""
+    ps = sorted((a * 12 + (m - 1), v) for a, m, v in pontos if v and v > 0)
+    if len(ps) < 12:
+        return None
+    por_mes = {}
+    for x, v in ps:
+        viz = [w for y, w in ps if abs(y - x) <= 6]
+        if len(viz) < 9:
+            continue
+        por_mes.setdefault(x % 12 + 1, []).append(v / (sum(viz) / len(viz)))
+    if len(por_mes) < 6:
+        return None
+    idx = {m: (sum(por_mes[m]) / len(por_mes[m]) if m in por_mes else 1.0) for m in range(1, 13)}
+    media = sum(idx.values()) / 12
+    return {m: round(x / media, 4) for m, x in idx.items()}, {m: len(por_mes.get(m, [])) for m in range(1, 13)}
+
 
 def _levers_do_mes(m, modelo):
     """Alavancas observadas em um mês (None quando o denominador não existe)."""
@@ -598,7 +655,11 @@ def projetar_curva(levers, modelo, fee, midia, margem, comissao, acumulado_inici
     """Cadeia mês a mês com alavancas variáveis.
     lag = fração das vendas que cai no mês do lead; crescimento_midia = crescimento mensal da verba (0.10 = +10%/mês)."""
     cadeia = alavancas(modelo)
-    linhas, acum, pend = [], acumulado_inicial, 0.0
+    linhas, acum = [], acumulado_inicial
+    # Ciclo de vendas: as vendas ORIGINADAS no mês t (SQLs × SQL → venda) fecham ao longo de t, t+1, t+2...
+    # segundo a curva medida no CRM (ciclo_crm.py) ou derivada do ciclo médio em dias. Sem curva, vale o lag antigo.
+    ciclo = list(CICLO) if CICLO else ([lag, 1 - lag] if lag < 0.999 else [1.0])
+    originadas = []
     base_ass = float(RECORRENCIA["base_inicial"]) if RECORRENCIA else 0.0
     if CRM:   # coortes de clientes por mês de compra (s = 1 é o Mês 1); compras de antes do Mês 1 entram pela idade no Mês 1
         base_leads = float(CRM["base"].get("leads_sem_compra") or 0)
@@ -632,8 +693,8 @@ def projetar_curva(levers, modelo, fee, midia, margem, comissao, acumulado_inici
         if split(modelo):
             volumes["midia_google"], volumes["midia_meta"] = midia_g, midia_m
         geradas = vol * saz_d   # sazonalidade de demanda: mais (ou menos) vendas com o mesmo funil
-        vendas = geradas * lag + pend
-        pend = geradas * (1 - lag)
+        originadas.append(geradas)
+        vendas = sum(c * originadas[-1 - k] for k, c in enumerate(ciclo) if k < len(originadas))
         receita = vendas * (lv["ticket"] or 0.0)
         extra = {}
         if RECORRENCIA:   # assinatura: o funil entrega assinaturas NOVAS; a receita do mês é a base inteira × mensalidade
@@ -671,6 +732,7 @@ def projetar_curva(levers, modelo, fee, midia, margem, comissao, acumulado_inici
             liquido = REALIZADO[t]
         acum += liquido
         linhas.append({"mes": t, **{k: round(v, 2) for k, v in volumes.items()}, "midia": round(midia_t, 2), "vendas": round(vendas, 2),
+                       "vendas_originadas": round(geradas, 2),
                        "receita": round(receita, 2), "receita_total": round(receita_total, 2), **extra, "receita_cobre_custo": bool(receita_total >= fee + midia_t), "resultado_mc": round(mc, 2),
                        "custo": round(fee_t + midia_t, 2), "fee": round(fee_t, 2), "roas": round(receita / midia_t, 2) if midia_t else None,
                        "resultado_liquido": round(liquido, 2), "acumulado": round(acum, 2),
@@ -856,23 +918,30 @@ def caminho(env, modelo, meses_ref, fee, midia, margem, comissao, mes_alvo, hori
             "payback_sem_teto": next((l["mes"] for l in longo if l["acumulado"] >= 0), None)}
 
 
+ALVO_CENARIO = {"desejado": "a mediana do período comparável",
+                "otimista": "o melhor mês do período (ou o mercado, quando é maior)",
+                "pessimista": "a taxa atual (o cenário pessimista não tem rampa)"}
+
+
 def leitura(v, env, mes_alvo, horizonte):
     pb, pc, a = v["payback_taxas_atuais"], v["payback_melhor_historico"], v["alpha_necessario_para_mes_alvo"]
     ref = env["_referencia"]
+    alvo_txt = ALVO_CENARIO[CENARIO]
     txt = (f"Com as taxas atuais o acumulado zera em M{pb}. " if pb else f"Com as taxas atuais o acumulado não zera em {horizonte} meses. ")
     if v["status"] == "REALISTA":
         txt += f"A meta de M{mes_alvo} é realista sem melhorar nenhuma taxa. "
     elif pc:
-        txt += (f"Levando cada alavanca gradualmente até a mediana do período comparável (rampa até M{K_rampa(mes_alvo)}), o acumulado zera em M{pc}: "
+        txt += (f"Levando cada alavanca gradualmente até {alvo_txt} (rampa até M{K_rampa(mes_alvo)}), o acumulado zera em M{pc}: "
                 f"é a partir daí que a meta fica realista. ")
     else:
-        txt += f"Nem levando todas as alavancas à mediana do período o acumulado zera em {horizonte} meses. "
+        txt += f"Nem levando todas as alavancas até {alvo_txt} o acumulado zera em {horizonte} meses. "
     if v["status"] == "REALISTA COM RAMPA":
-        txt += f"Para bater M{mes_alvo} basta percorrer {a:.0%} do caminho entre a taxa atual e a mediana."
+        txt += f"Para bater M{mes_alvo} basta percorrer {a:.0%} do caminho entre a taxa atual e {alvo_txt}."
     elif v["status"] == "IRREALISTA" and a is not None:
-        txt += f"Para bater M{mes_alvo} seria preciso ir {a - 1:.0%} além da mediana do período; a meta em M{mes_alvo} é irrealista."
+        txt += f"Para bater M{mes_alvo} seria preciso ir {a - 1:.0%} além de {alvo_txt}; a meta em M{mes_alvo} é irrealista."
     elif v["status"] == "IRREALISTA":
-        txt += f"Nem dobrando a distância até a mediana a meta de M{mes_alvo} fecha; ela é irrealista com este fee, mídia e margem."
+        txt += (f"Nem dobrando a distância até {alvo_txt} a meta de M{mes_alvo} fecha; ela é irrealista com este fee, mídia e margem."
+                if CENARIO != "pessimista" else f"Com as taxas de hoje a meta de M{mes_alvo} não fecha.")
     azul, zera = v.get("no_azul_continuo_desde"), v.get("acumulado_zera_em")
     txt += (f" Com o realizado dos meses já vividos e a projeção à frente, o resultado fica no azul de forma contínua a partir do M{azul}" if azul
             else " Com o realizado dos meses já vividos e a projeção à frente, nenhum mês fica no azul de forma contínua em 48 meses")
@@ -883,7 +952,7 @@ def leitura(v, env, mes_alvo, horizonte):
         txt += "."
     txt += f" Evidência de que o nível é atingível: {ref['motivo']}."
     if v["alavanca_com_mais_folga_no_historico"]:
-        txt += f" A alavanca com mais folga até a mediana é {v['alavanca_com_mais_folga_no_historico']} ({v['folga_por_alavanca'][v['alavanca_com_mais_folga_no_historico']]}x)."
+        txt += f" A alavanca com mais folga até o alvo é {v['alavanca_com_mais_folga_no_historico']} ({v['folga_por_alavanca'][v['alavanca_com_mais_folga_no_historico']]}x)."
     if v.get("teto_receita_historico"):
         txt += f" Melhor mês já realizado: {_rs(v['teto_receita_historico'])} em {v['teto_receita_mes']}."
     if v.get("alerta_teto_receita"):
@@ -930,7 +999,20 @@ def main():
     p.add_argument("--base-inicial", type=float, default=0.0, help="assinantes ja ativos no Mes 1 (base herdada); padrao 0")
     p.add_argument("--verba-plano", help="verba mês a mês separada por vírgula, a partir do Mês 1 (ex.: 2000,4000,5000,5000); substitui crescimento e teto")
     p.add_argument("--midia-teto", type=float, help="teto da verba mensal; o crescimento para ao atingir esse valor")
-    p.add_argument("--lag", type=float, default=1.0, help="fração das vendas no mês do lead (1 = sem lag)")
+    p.add_argument("--lag", type=float, default=1.0, help="fração das vendas no mês do lead (1 = sem lag); atalho para --ciclo LAG,1-LAG")
+    p.add_argument("--ciclo", help="ciclo de vendas: fração das vendas originadas no mês que fecha em M+0, M+1, M+2... (soma 1), "
+                                   "ex.: 0.45,0.35,0.20. Meça no CRM com scripts/ciclo_crm.py (criação × fechamento das vendas ganhas)")
+    p.add_argument("--ciclo-dias", type=float, help="sem CRM: ciclo médio em dias (ex.: 45), convertido numa curva por mês; premissa do usuário")
+    p.add_argument("--cenario", choices=["desejado", "pessimista", "otimista"], default="desejado",
+                   help="pessimista = taxas atuais sem rampa; desejado = rampa até a mediana do período (padrão); "
+                        "otimista = rampa até o melhor mês do período ou o benchmark de --alvo, o que for maior")
+    p.add_argument("--sazonalidade-historico", nargs="?", const="auto",
+                   help="sazonalidade da demanda tirada do faturamento do PRÓPRIO cliente (12+ meses): sem valor, procura a linha de faturamento "
+                        "total da fonte; ou o rótulo de outra linha; ou um CSV 'mês/ano,valor'. Substitui --sazonalidade-demanda")
+    p.add_argument("--premissa-mercado", action="append", default=[], metavar="CHAVE=VALOR[|FONTE]",
+                   help="benchmark no lugar de dado que o cliente NÃO tem (nunca no lugar de dado medido): conexao_lead e conexao_mql "
+                        "quando a fonte não tem a linha Conexões, ou qualquer alavanca sem evento na janela (ex.: sql_venda, ticket). "
+                        "A fonte do número vai para a aba Premissas")
     p.add_argument("--definicao-breakeven", default="margem de contribuição cobrindo fee + mídia", help="texto da definição usada; mude só com o usuário ciente (ex.: receita atribuída cobrindo fee + mídia)")
     p.add_argument("--incluir-corrente", action="store_true", help="inclui o mês corrente (parcial) na janela de taxas e no período de referência; só quando o usuário pedir")
     p.add_argument("--desde", help="primeiro mês fechado comparável (ex.: maio/2026); limita o período de referência da rampa")
@@ -949,7 +1031,18 @@ def main():
     p.add_argument("--out", default="premissas.json")
     a = p.parse_args()
 
-    global VERBA_PLANO, RAMPA_ATE, RAMPA_DESDE, ORGANICO, CRM, FEE_PLANO, SAZ, CPM_CRESC, RECORRENCIA, CONEXAO_MEDIDA, PERFIL
+    global VERBA_PLANO, RAMPA_ATE, RAMPA_DESDE, ORGANICO, CRM, FEE_PLANO, SAZ, CPM_CRESC, RECORRENCIA, CONEXAO_MEDIDA, PERFIL, CENARIO, CICLO
+    CENARIO = a.cenario
+    if a.ciclo or a.ciclo_dias is not None:
+        if a.lag < 0.999:
+            sys.exit("--ciclo/--ciclo-dias substituem o --lag: use um só")
+        if a.ciclo and a.ciclo_dias is not None:
+            sys.exit("--ciclo (medido) e --ciclo-dias (premissa) são alternativos: use um só")
+        CICLO = ([float(x) for x in a.ciclo.replace(";", ",").split(",") if x.strip()] if a.ciclo else ciclo_de_dias(a.ciclo_dias))
+        if any(x < 0 for x in CICLO) or abs(sum(CICLO) - 1) > 0.01:
+            sys.exit(f"--ciclo: as frações precisam ser positivas e somar 1 (somam {sum(CICLO):.2f})")
+        CICLO = [x / sum(CICLO) for x in CICLO]
+        a.lag = CICLO[0]
     if a.modelo in PERFIS:
         PERFIL, pf = a.modelo, PERFIS[a.modelo]
         for k, alts in pf["sinonimos"].items():
@@ -1033,6 +1126,8 @@ def main():
         "janela_inclui_mes_corrente": a.incluir_corrente,
         "ga4": MODELOS[a.modelo].get("ga4"),
         "split_google_meta": split(a.modelo),
+        "receita_usada": MODELOS[a.modelo]["receita"],
+        "receita_faturada_estimada": MODELOS[a.modelo].get("receita_faturada_estimada", False),
     }
     if a.modo == "detectar":
         print(json.dumps(detectado, ensure_ascii=False, indent=2, default=str))
@@ -1061,6 +1156,49 @@ def main():
             VOL_REAL[t] = {"Leads": float(m.get("Leads") or 0), "Vendas": float(m.get(MODELOS[a.modelo]["etapas"][-1]) or 0)}
             REAL_FIN[t] = ((m.get(rec_key_) or 0) * a.comissao * a.margem, (m.get(LINHAS_FIXAS["fee"]) or 0) + (m.get("Investimento") or 0))
             tx["alertas"].append(f"M{t} ({m['mes']}/{m['ano']}{', parcial' if m['status'] == 'corrente' else ''}) entra pelo realizado: resultado de R$ {REALIZADO[t]:,.0f}.")
+    if a.sazonalidade_historico:
+        # Sazonalidade do PRÓPRIO cliente: o faturamento total mês a mês (não o da V4, que carrega a rampa da operação).
+        if a.sazonalidade_demanda:
+            sys.exit("--sazonalidade-historico e --sazonalidade-demanda são alternativos: use um só")
+        arg = a.sazonalidade_historico
+        pontos, origem_saz = [], None
+        if arg.lower().endswith(".csv"):
+            for linha_ in open(arg, encoding="utf-8").read().splitlines():
+                partes = [x.strip() for x in linha_.replace(";", ",").split(",", 1)]
+                if len(partes) < 2 or "/" not in partes[0]: continue
+                nome_m, ano_m = partes[0].split("/")
+                nm = norm(nome_m)
+                idx_m = (MESES_NORM.index(nm) + 1) if nm in MESES_NORM else (int(nm) if nm.isdigit() else None)
+                if idx_m and num(partes[1]): pontos.append((int(ano_m), idx_m, num(partes[1])))
+            origem_saz = f"faturamento do arquivo {arg}"
+        else:
+            cols_ = colunas_de_mes(df)
+            rotulos = ([arg] if arg != "auto" else
+                       ["Total de Faturamento (manual)", "Faturamento Total", "Faturamento total da empresa", "Total de Faturamento"])
+            for rt in rotulos:
+                i_ = achar_linha(df, rt)
+                if i_ is None: continue
+                vals = [num(df.iat[i_, c]) for c, _, _ in cols_]
+                pts = [(ano, MESES_NORM.index(nm) + 1, v) for (c, nm, ano), v in zip(cols_, vals) if ano and v]
+                if len(pts) >= 12:
+                    pontos, origem_saz = pts, f"linha '{rt}' da fonte"; break
+        res_saz = indice_sazonal(pontos) if pontos else None
+        if not res_saz:
+            tx["alertas"].append("Sazonalidade do histórico pedida, mas a fonte não tem 12 meses de faturamento total com valor "
+                                 f"({len(pontos)} encontrados): a projeção segue sem sazonalidade. Traga o faturamento mensal do cliente "
+                                 "(ERP, DRE ou CSV 'mês/ano,valor') ou use Google Trends/IBGE com --sazonalidade-demanda.")
+        else:
+            indice, n_por_mes = res_saz
+            m1 = meses[i0] if i0 < len(meses) else meses[-1]
+            mes1 = MESES_NORM.index(m1["mes"]) + 1 + (i0 - len(meses) + 1 if i0 >= len(meses) else 0)
+            dem = [indice[(mes1 - 1 + t) % 12 + 1] for t in range(48)]
+            SAZ = {"demanda": dem, "cpm": (SAZ or {}).get("cpm", []), "origem": f"histórico do cliente: {origem_saz}",
+                   "indice_mensal": {MESES_PT[m - 1]: indice[m] for m in range(1, 13)},
+                   "anos_por_mes": {MESES_PT[m - 1]: n_por_mes[m] for m in range(1, 13)}, "pontos": len(pontos)}
+            fortes = sorted(indice.items(), key=lambda x: -abs(x[1] - 1))[:3]
+            tx["alertas"].append(f"Sazonalidade da demanda pelo histórico do cliente ({origem_saz}, {len(pontos)} meses): "
+                                 + ", ".join(f"{MESES_PT[m - 1]} {x:.2f}x" for m, x in fortes)
+                                 + ". O índice multiplica as vendas de cada mês; a tabela completa está na aba Premissas.")
     if split(a.modelo):  # a divisão da verba fica constante na projeção (premissa comercial editável no template)
         MODELOS[a.modelo]["participacao_meta"] = env["_split"]["participacao_meta_na_verba"]
     if a.connect_rate is not None and a.modelo == "ecommerce":
@@ -1089,6 +1227,39 @@ def main():
             f"{env[chave]['rotulo']}: fixado em {valor:,.2f} a pedido do usuário ({antes_txt})." if eh_dinheiro else
             f"{env[chave]['rotulo']}: fixada em {valor:.2%} a pedido do usuário ({antes_txt})"
             + ("." if antes is None else "; o histórico mistura campanhas diferentes nessa etapa."))
+    for item in a.premissa_mercado:   # benchmark no lugar de dado que falta (nunca no lugar de dado medido)
+        corpo, _, fonte_pm = item.partition("|")
+        chave, valor = corpo.split("=", 1); chave = chave.strip(); valor = float(valor); fonte_pm = fonte_pm.strip() or "benchmark de mercado"
+        if chave in ("conexao_lead", "conexao_mql"):
+            if a.modelo != "inside_sales" or "Conexões" in MODELOS["inside_sales"]["etapas"]:
+                sys.exit(f"--premissa-mercado {chave}: a fonte já mede a conexão (linha Conexões); benchmark não entra no lugar de dado medido. "
+                         "Para usar o mercado como alvo da rampa, use --alvo conexao=VALOR")
+            if not 0 < valor <= 1: sys.exit(f"--premissa-mercado {chave}: taxa entre 0 e 1")
+            CONEXAO_MEDIDA = dict(CONEXAO_MEDIDA or {"lead": None, "mql": None})
+            lado = chave.split("_")[1]
+            if CONEXAO_MEDIDA.get(lado): sys.exit(f"--premissa-mercado {chave}: a conexão já foi informada como medida (--conexao-{lado})")
+            if lado == "mql":   # MQL → SQL = conexão MQL × (MQL conectado → SQL): a conexão não pode ser menor que a própria MQL → SQL
+                teto = max(x for x in (env["mql_sql"].get("atual"), env["mql_sql"].get("alvo"), env["mql_sql"].get("melhor")) if x is not None)
+                if valor < teto:
+                    sys.exit(f"--premissa-mercado conexao_mql={valor:.0%} fica abaixo da própria MQL → SQL do cliente ({teto:.0%}): "
+                             "MQL conectado → SQL passaria de 100%. O benchmark não serve a este funil.")
+            CONEXAO_MEDIDA[lado] = [valor]
+            CONEXAO_MEDIDA.setdefault("origem", {})[lado] = "mercado"
+            PREMISSA_MERCADO[chave] = {"valor": valor, "fonte": fonte_pm}
+            tx["alertas"].append(f"Conexão {lado.upper() if lado == 'mql' else 'lead'}: a fonte não mede, então entra {valor:.0%} como premissa de mercado "
+                                 f"({fonte_pm}). Informativa: decompõe o funil sem mudar o volume projetado; troque pelo número real quando o cliente medir.")
+            continue
+        if chave not in env or chave.startswith("_"):
+            sys.exit(f"--premissa-mercado {chave}: alavanca inexistente; use conexao_lead, conexao_mql ou uma de {[k for k in env if not k.startswith('_')]}")
+        e = env[chave]
+        if e.get("atual") not in (None, 0, 0.0) or e.get("mediana") is not None:
+            sys.exit(f"--premissa-mercado {chave}: o cliente já tem dado nesta etapa ({e.get('atual')}); benchmark não entra no lugar de dado medido. "
+                     "Use --alvo para o mercado como alvo da rampa ou --fixar para outra premissa.")
+        e["atual"] = e["alvo"] = valor; e["fixada"] = True; e["premissa_mercado"] = True
+        PREMISSA_MERCADO[chave] = {"valor": valor, "fonte": fonte_pm}
+        eh_taxa = chave not in ("cpm", "ticket", "custo_sessao_meta")
+        tx["alertas"].append(f"{e['rotulo']}: sem dado do cliente na janela; entra {valor:.2%} como premissa de mercado ({fonte_pm})." if eh_taxa else
+                             f"{e['rotulo']}: sem dado do cliente na janela; entra {valor:,.2f} como premissa de mercado ({fonte_pm}).")
     conexao = None   # (conexão atual, lead → MQL atual) quando a conexão tem alvo de mercado
     for item in a.alvo:   # benchmark de mercado como alvo da rampa (histórico curto demais para dar a mediana)
         chave, valor = item.split("=", 1); chave = chave.strip(); valor = float(valor)
@@ -1117,6 +1288,26 @@ def main():
                              "o histórico é curto demais para esta etapa, e a fonte está na aba Premissas.")
     if env["ticket"]["atual"] is None:
         env["ticket"]["atual"] = ticket
+    # Cenários: o mesmo histórico e as mesmas premissas, com três alvos de rampa diferentes.
+    # Pessimista: nada melhora (as taxas da janela seguem até o fim). Desejado: a mediana do período (o plano).
+    # Otimista: o melhor mês fechado do período, ou o benchmark de --alvo quando ele é maior — sempre um nível
+    # que já aconteceu no cliente ou no mercado, nunca uma combinação inventada. Alavanca fixada não muda.
+    for k, e in env.items():
+        if k.startswith("_") or e.get("atual") is None:
+            continue
+        if CENARIO == "pessimista":
+            e["alvo"] = e["atual"]
+        elif CENARIO == "otimista" and not e.get("fixada"):
+            melhor_ = lambda x, y: (min(x, y) if e["sentido"] == "menor" else max(x, y)) if None not in (x, y) else (x if y is None else y)
+            cand = e.get("melhor") if e.get("melhor") is not None else e.get("alvo")
+            if e.get("alvo_mercado"):
+                cand = melhor_(cand, e.get("alvo"))
+            cand = melhor_(cand, e["atual"])
+            e["alvo"] = cand
+    if CENARIO != "desejado":
+        tx["alertas"].append({"pessimista": "Cenário pessimista: as taxas da janela ficam constantes até o fim, sem rampa.",
+                              "otimista": "Cenário otimista: cada alavanca caminha até o melhor mês fechado do período (ou até o benchmark de mercado, quando é maior); "
+                                          "é o teto do que já aconteceu, não a promessa."}[CENARIO])
     v, cen = veredito(env, a.modelo, a.fee, a.midia, a.margem, a.comissao, a.mes_alvo, a.horizonte, a.acumulado_inicial, a.lag, ticket, a.crescimento_midia, a.midia_teto)
     taxas_mes = curva_alavancas(env, a.modelo, cen["alpha"], K_rampa(a.mes_alvo), a.horizonte, ticket)
     if conexao:   # conexão mês a mês, coerente com lead → MQL (a planilha mostra os leads conectados subindo junto)
@@ -1137,8 +1328,12 @@ def main():
                                   "ticket": ticket, "mes_alvo": a.mes_alvo, "horizonte": a.horizonte,
                                   "lag": a.lag, "acumulado_inicial": a.acumulado_inicial, "crescimento_midia": a.crescimento_midia, "midia_teto": a.midia_teto, "connect_rate": a.connect_rate,
                                   "definicao_breakeven": a.definicao_breakeven, "fixadas": a.fixar, "alvos_mercado": a.alvo, "verba_plano": VERBA_PLANO, "sazonalidade": SAZ, "cpm_crescimento": list(CPM_CRESC) if CPM_CRESC else None, "rampa_ate": K_rampa(a.mes_alvo), "rampa_desde": RAMPA_DESDE, "inicio": a.inicio, "organico": ORGANICO, "fee_historico": a.fee_historico, "crm": CRM, "fee_plano": FEE_PLANO, "recorrencia": RECORRENCIA, "conexao_medida": CONEXAO_MEDIDA, "perfil": PERFIL,
+                                  "cenario": CENARIO, "ciclo": (CICLO or ([a.lag, 1 - a.lag] if a.lag < 0.999 else [1.0])),
+                                  "ciclo_origem": ("medido (--ciclo)" if a.ciclo else (f"premissa: ciclo médio de {a.ciclo_dias:g} dias" if a.ciclo_dias is not None else
+                                                   ("premissa: --lag" if a.lag < 0.999 else "sem ciclo: a venda fecha no mês do lead"))),
+                                  "premissas_mercado": PREMISSA_MERCADO,
                                   "realizado_usado": {str(k): round(x, 2) for k, x in REALIZADO.items()},
-                                  "regra_taxas": (f"janela de {a.janela} mês(es) fechado(s)" + (" + mês corrente parcial" if a.incluir_corrente else "") + ", ponderada por volume; rampa até a mediana do período comparável")},
+                                  "regra_taxas": (f"janela de {a.janela} mês(es) fechado(s)" + (" + mês corrente parcial" if a.incluir_corrente else "") + ", ponderada por volume; " + {"desejado": "rampa até a mediana do período comparável", "otimista": "rampa até o melhor mês do período (ou o mercado, quando maior)", "pessimista": "sem rampa: as taxas atuais ficam constantes"}[CENARIO])},
         "detectado": detectado, "historico": meses, "historico_resultado": hist_result,
         "teto_receita": env.get("_teto_receita"),
         "envelope": {k: e for k, e in env.items() if not k.startswith("_")},

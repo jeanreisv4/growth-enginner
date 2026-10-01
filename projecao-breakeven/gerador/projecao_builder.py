@@ -91,6 +91,13 @@ class Ctx:
     def last(self, key): return f"{self.proj_last}{self.R[key]}"
     def prem(self, key): return self.P.get(key)
 
+def nome_premissas(aba):
+    """Nome da aba de premissas de uma aba de projeção. O Excel limita o nome a 31 caracteres: com nome longo
+    ("Pessimista sem legado"), o prefixo encurta para não cortar o fim do nome, que é o que distingue as abas."""
+    nome = f"Premissas · {aba}"
+    return nome if len(nome) <= 31 else f"Prem. · {aba}"[:31]
+
+
 def build_sheet(ws, cfg, logo_path):
     n = int(cfg.get('n_months', N_MONTHS_MAX))
     PROJ, REAL, SUPC, TOT_P, TOT_R, MARGIN_COL, ALL_TABLE_COLS = grade_colunas(n)
@@ -532,7 +539,7 @@ def build_sheet(ws, cfg, logo_path):
     # ---- aba de metodologia (fonte, janela, alertas, premissas assumidas, cenário base)
     MET = cfg.get('metodologia'); BASE = cfg.get('base_ref')
     if MET or BASE or HIST or ENV or LEG:
-        met = wb.create_sheet(f"Premissas · {ws.title}"[:31])
+        met = wb.create_sheet(nome_premissas(ws.title))
         met.sheet_view.showGridLines = False
         met.column_dimensions['A'].width = 3; met.column_dimensions['B'].width = 46
         for j in range(3, 3 + max(len(SUPC), 7) + 18): met.column_dimensions[get_column_letter(j)].width = 14
@@ -660,7 +667,8 @@ def build_sheet(ws, cfg, logo_path):
     ws.sheet_properties.pageSetUpPr = PageSetupProperties(fitToPage=True)
     ws.print_options.horizontalCentered = True
     ws.oddFooter.center.text = cfg['footer']; ws.oddFooter.center.size = 8
-    return {'R': R, 'M': M, 'P': P, 'HDR1': HDR1, 'HDR2': HDR2, 'META_TOP': META_TOP, 'LAST_TABLE': LAST_TABLE, 'LAST_ROW': LAST_ROW, 'support': sup.title}
+    return {'R': R, 'M': M, 'P': P, 'HDR1': HDR1, 'HDR2': HDR2, 'META_TOP': META_TOP, 'LAST_TABLE': LAST_TABLE, 'LAST_ROW': LAST_ROW, 'support': sup.title,
+            'labels': list(cfg.get('month_labels') or []), 'n': n}
 
 
 # ===================================================================== blocos comuns

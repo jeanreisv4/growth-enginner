@@ -2,6 +2,78 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v8.3 · 01/10/2026 · Cenário Breakeven automático em toda projeção
+
+O usuário não deve ter de pedir "qual cenário bate": toda projeção sai com ele.
+
+- `scripts/cenario_breakeven.py` (chamado pelo `tres_cenarios.py` em cada leitura; `--sem-breakeven` desliga): funil no
+  nível de mercado só onde o cliente está abaixo (alvo = maior entre mercado e mediana do cliente; ticket à mediana),
+  verba em degraus até o menor teto que vira o mês e zera o acumulado em até 24 meses depois do último mês vivido,
+  recompra como fallback (menor número de pedidos e menor verba que zeram), e "nada fecha" com a conversa de estrutura.
+  Metodologia no topo da Premissas: o que precisa ser verdade, cliente × mercado × fonte, sensibilidade à verba e à
+  recompra, riscos (lead → venda resultante, trava do melhor mês, CPM constante).
+- `referencias/mercado_alavancas.json`: nível de mercado por alavanca, só com fonte primária verificada (setor
+  `b2b_industria`: clique → lead 8,2%, visita → lead 9,8%, lead → MQL 31%, MQL → SQL 42%, conexão 69%, conexão → SQL
+  23%, SQL → venda 16%). `--mercado`/`--setor` para outro setor.
+- Thread de aprovação: seção "O cenário que bate". O gerador recebe `--vocabulario recompra` sozinho quando alguma aba
+  usa recompra.
+- fábrica de acessórios de cortina: verba até R$ 5 mil + clique → lead 8,2% + MQL → SQL 42% → sem legado zera em fev/28. indústria química B2B: funil de
+  mercado + verba até R$ 7,5 mil + ~6,7 pedidos por cliente → zera em mai/29 (sem legado) e ago/29 (com legado).
+
+## v8.2 · 01/10/2026 · Leitura sem legado na frente da com legado
+
+- `tres_cenarios.py --sem-legado "ARGS"`: os mesmos cenários (e os extras) também sem legado — Mês 1 no mês seguinte ao
+  último fechado, acumulado zero, sem `--inicio` — em abas "<Cenário> sem legado" na frente das "<Cenário> com legado".
+  Cenário-extra ganhou campos 4 e 5 (argumentos e metodologia da leitura sem legado).
+- Gerador: 5º campo do `--extra` = Mês 1 daquela aba ("-" = nenhum); o projetado × realizado (`--legado`) vai para todas
+  as abas; o gráfico de acumulado só junta abas com o mesmo calendário; aba de premissas com nome longo vira "Prem. · <aba>"
+  (limite de 31 caracteres do Excel, sem cortar o fim que distingue as abas).
+- `aprovacao.py --sufixo`. Regressão: leitura sem e com legado, ordem das abas e Mês 1 de cada uma.
+- indústria química B2B: 8 abas (pessimista, desejado, otimista e meta, sem e com legado).
+
+## v8.1.1 · 01/10/2026 · Cenário-meta e vocabulário de recompra
+
+- `tres_cenarios.py --cenario-extra "Nome|args do piloto|metodologia.json"`: aba a mais depois do otimista, com a
+  própria explicação na Premissas e listada na thread de aprovação (`aprovacao.py --extra`). Nome de arquivo sem acento.
+- `--vocabulario recompra` no gerador: recompra B2B modelada com o motor da assinatura passa a falar de cliente ativo,
+  cliente novo, receita de recompra e "% que para de comprar" em rótulos, textos e títulos de gráfico.
+- indústria química B2B: cenário-meta com 6,7 pedidos por cliente + conexão → SQL 20%, SQL → venda 33%, pedido R$ 1.468 — mês no azul
+  em set/27, acumulado não zera em 48 meses (zera com ~9 pedidos). Regressão cobre o cenário extra e o vocabulário.
+
+## v8.1 · 01/10/2026 · Três cenários, restrição na thread de aprovação, legado completo
+
+Pedido do usuário depois da revisão da indústria de plásticos, testado na indústria química B2B.
+
+- **Três cenários em abas** (`--cenario pessimista|desejado|otimista` no piloto, `scripts/tres_cenarios.py` para rodar
+  tudo): pessimista = taxas atuais sem rampa; desejado = rampa até a mediana (o plano); otimista = rampa até o melhor mês
+  fechado ou o benchmark de `--alvo`, o que for maior. Abas Pessimista, Desejado e Otimista, cada uma com a sua Premissas.
+  O gerador ganhou `--aba-principal` e `--ordem`, e o gráfico de acumulado nomeia cada linha pelo cenário.
+- **Thread de aprovação com a restrição mapeada** (`scripts/aprovacao.py`): `aprovacao.md` pronto para colar e o mesmo
+  bloco no topo da aba Premissas (`topo` no JSON de metodologia). Restrição em ordem: estrutura → retorno da mídia → funil,
+  mais as lacunas de medição (`--restricao`).
+- **Benchmark no lugar de dado que falta** (`--premissa-mercado CHAVE=VALOR|fonte`): conexão lead/MQL sem a linha
+  Conexões, ou qualquer alavanca sem evento. Marcado "(PREMISSA DE MERCADO)", listado com a fonte; recusado no lugar de
+  dado medido e quando a conexão MQL fica abaixo da própria MQL → SQL. Substitui a regra antiga de deixar em branco.
+- **Sazonalidade do próprio cliente** (`--sazonalidade-historico`): índice por mês do calendário a partir do faturamento
+  total (linha da fonte ou CSV), sem tendência (±6 meses), média 1,00. Sem 12 meses, avisa e segue sem.
+- **Ciclo de vendas em curva** (`--ciclo 0.45,0.35,0.20`, `--ciclo-dias N`, `scripts/ciclo_crm.py` para medir no CRM):
+  as vendas fechadas somam as safras; uma premissa por mês do ciclo na aba e a seção "Ciclo de vendas" na Premissas.
+- **Aba Legado completo**: todos os meses da fonte com taxas mês a mês e "O que mudou no caminho" (fee, verba, mídia
+  parada, salto de taxa, meses sem funil medido). `--sem-legado-completo` tira.
+- **E-commerce: pedido captado → faturado** vira alavanca quando a fonte traz "Pedidos Faturados"; a receita passa a ser
+  a faturada (lida ou estimada pelo ticket do captado).
+- **Retorno em x também no texto**: a Metodologia dizia "ROI = Resultado ÷ Custo"; agora "Retorno = MC ÷ Custo, em x".
+- **Correção:** mês corrente sem investimento (dia 1, fonte ainda não atualizada) era tratado como realizado zerado e
+  zerava a "receita necessária para zerar o mês" no e-commerce; agora é futuro.
+- **Regressão:** 7 casos novos (curva de ciclo, premissa de mercado, sazonalidade do cliente, otimista, pessimista,
+  e-commerce faturado, três cenários + thread de aprovação de ponta a ponta).
+
+## v8.0.1 · 01/10/2026 · Caso indústria química B2B (referência)
+
+- `referencias/inside_sales.md` ganhou o caso indústria química B2B: mídia por campanha via API quando o Growth Pack soma linhas
+  de produto, início do contrato antes do déficit (a projeção anterior dobrou o déficit) e definição de MQL/SQL pelas
+  colunas do comercial. Sem mudança de código.
+
 ## v8.0 · 29/09/2026 · Terceiro modelo: PLG (product-led growth)
 
 Até aqui a skill tinha dois modelos, inside sales e e-commerce. A SaaS de diário de obra (SaaS de diário de obra, trial de 7 dias,

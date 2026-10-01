@@ -126,6 +126,28 @@ CASOS = [
          exige=["[%] COMISSÃO SOBRE O GMV (MARGEM DA AGÊNCIA)", "[R$] RESULTADO MC (= RECEITA DA AGÊNCIA)",
                 "[X] ROAS DE BREAKEVEN (RECEITA NECESSÁRIA ÷ MÍDIA)", "[R$] RECEITA NECESSÁRIA PARA ZERAR O MÊS"],
          sem=["[%] MARGEM DE CONTRIBUIÇÃO"]),
+    # v8.1: ciclo de vendas em curva (3 meses), premissa de mercado no lugar da conexão que falta, sazonalidade do
+    # próprio cliente, cenários pessimista e otimista, aba de legado completo e captado → faturado no e-commerce.
+    dict(nome="inside_sales_ciclo_curva", modelo="inside_sales", csv="indicadores_inside_sales.csv", aba="Inside Sales",
+         receita="[R$] FATURAMENTO (VENDAS × TICKET)", extra_piloto=["--ciclo", "0.5,0.3,0.2"], extra_gerador=[],
+         exige=["[QNTD] VENDAS ORIGINADAS PELOS SQLS DO MÊS", "[QNTD] VENDAS FECHADAS NO MÊS (SAFRAS PELO CICLO)"],
+         metodologia=["CICLO DE VENDAS"]),
+    dict(nome="inside_sales_premissa_mercado", modelo="inside_sales", csv="indicadores_inside_sales_sem_conexao.csv", aba="Inside Sales",
+         receita="[R$] FATURAMENTO (VENDAS × TICKET)", extra_gerador=[],
+         extra_piloto=["--premissa-mercado", "conexao_lead=0.6|Foureyes 2024", "--premissa-mercado", "conexao_mql=0.8|teste"],
+         exige=["[%] CONEXÃO — LEAD ATENDIDO (PREMISSA DE MERCADO)", "[%] CONEXÃO — MQL ATENDIDO (PREMISSA DE MERCADO)"],
+         metodologia=["PREMISSAS DE MERCADO NO LUGAR DE DADO"]),
+    dict(nome="inside_sales_sazonal_cliente", modelo="inside_sales", csv="indicadores_inside_sales.csv", aba="Inside Sales",
+         receita="[R$] FATURAMENTO (VENDAS × TICKET)", extra_gerador=[],
+         extra_piloto=["--sazonalidade-historico", os.path.join(FIX, "faturamento_total_sazonal.csv")],
+         metodologia=["SAZONALIDADE DA DEMANDA MÊS A MÊS"]),
+    dict(nome="inside_sales_otimista", modelo="inside_sales", csv="indicadores_inside_sales.csv", aba="Inside Sales",
+         receita="[R$] FATURAMENTO (VENDAS × TICKET)", extra_piloto=["--cenario", "otimista"], extra_gerador=[], abas=["Legado completo"]),
+    dict(nome="inside_sales_pessimista", modelo="inside_sales", csv="indicadores_inside_sales.csv", aba="Inside Sales",
+         receita="[R$] FATURAMENTO (VENDAS × TICKET)", extra_piloto=["--cenario", "pessimista"], extra_gerador=["--sem-legado-completo"]),
+    dict(nome="ecommerce_faturado", modelo="ecommerce", csv="indicadores_ecommerce_faturado.csv", aba="E-commerce",
+         receita="[R$] RECEITA FATURADA NO MÊS", extra_piloto=[], extra_gerador=[],
+         exige=["[%] PEDIDO CAPTADO → FATURADO", "[QNTD] PEDIDOS FATURADOS"]),
     dict(nome="ecommerce", modelo="ecommerce", csv="indicadores_ecommerce.csv", aba="E-commerce",
          receita="[R$] RECEITA ATRIBUÍDA À MÍDIA V4", extra_piloto=[], extra_gerador=["--sem-etapa-venda"]),
     dict(nome="ecommerce_ga4", modelo="ecommerce", csv="indicadores_ecommerce.csv", aba="E-commerce",
@@ -256,6 +278,16 @@ def main():
                 t_ = d["detectado"]["taxas_efetivas"].get("ticket")
                 if t_ is None or abs(t_ - caso["ticket_esperado"]) > 0.01:
                     raise RuntimeError(f"ticket da janela {t_} ≠ {caso['ticket_esperado']}: com recorrência a mensalidade vem da linha, não de receita ÷ vendas")
+            if caso["nome"] == "inside_sales_pessimista" and d["projecao"] != d["projecao_base"]:
+                raise RuntimeError("cenário pessimista com rampa: a projeção entregue tem de ser a das taxas atuais")
+            if caso["nome"] == "inside_sales_otimista":
+                base_ = json.load(open(os.path.join(tmp, "premissas_inside_sales.json"), encoding="utf-8"))
+                if d["projecao"][-1]["acumulado"] < base_["projecao"][-1]["acumulado"] - 0.01:
+                    raise RuntimeError("cenário otimista termina abaixo do desejado")
+            if caso["nome"] == "inside_sales_sazonal_cliente":
+                sz = d["premissas_confirmadas"].get("sazonalidade") or {}
+                if not (sz.get("origem", "").startswith("histórico do cliente") and sz["indice_mensal"]["dezembro"] > 1.1 > sz["indice_mensal"]["janeiro"]):
+                    raise RuntimeError(f"sazonalidade do cliente não detectada: {sz.get('indice_mensal')}")
             falhas = conferir_planilha(xlsx, caso["aba"], caso["receita"], d["projecao"], caso.get("exige", ()), caso.get("metodologia", ()),
                                        caso.get("sem", ()), caso.get("series"), caso.get("valores"))
             if caso.get("abas"):   # cenário extra em outra aba do mesmo arquivo
@@ -266,6 +298,63 @@ def main():
             falhas = [str(e)]
         total += len(falhas)
         print(f"{'OK   ' if not falhas else 'FALHA'} {caso['nome']}" + "".join(f"\n      - {f}" for f in falhas[:12]))
+    try:   # três cenários no mesmo arquivo + texto da thread de aprovação com a restrição mapeada
+        rodar([os.path.join(SKILL, "scripts", "tres_cenarios.py"), "--cliente", "Teste", "--out", "cenarios.xlsx",
+               "--piloto", f"--fonte {os.path.join(FIX, 'indicadores_inside_sales.csv')} --modelo inside_sales --fee 1200 --midia 5000 "
+                           f"--margem 0.3 --comissao 1 --mes-alvo 3 --horizonte {HORIZONTE} --crescimento-midia 0.05",
+               "--gerador", "--modelo inside_sales --vocabulario recompra", "--restricao", "teste de lacuna",
+               "--cenario-extra", "Cenário-meta|--recorrencia --churn 0.10"], tmp)
+        xl = os.path.join(tmp, "cenarios.xlsx"); nomes = openpyxl.load_workbook(xl).sheetnames
+        falhas = [] if nomes[:6] == ["Pessimista", "Premissas · Pessimista", "Desejado", "Premissas · Desejado", "Otimista", "Premissas · Otimista"] \
+            else [f"ordem das abas: {nomes[:6]}"]
+        for c in ("pessimista", "desejado", "otimista"):
+            pj = json.load(open(os.path.join(tmp, f"premissas_{c}.json"), encoding="utf-8"))
+            falhas += conferir_planilha(xl, c.capitalize(), "[R$] FATURAMENTO (VENDAS × TICKET)", pj["projecao"],
+                                        metodologia=("RESTRIÇÃO MAPEADA ATÉ AGORA", "OS TRÊS CENÁRIOS"))
+        if nomes[6:10] != ["Breakeven", "Premissas · Breakeven", "Cenário-meta", "Premissas · Cenário-meta"]:
+            falhas.append(f"Breakeven automático e cenário extra fora do lugar: {nomes[6:10]}")
+        pb_ = json.load(open(os.path.join(tmp, "premissas_breakeven.json"), encoding="utf-8"))
+        rec_be = "[R$] RECEITA DE RECOMPRA (CLIENTES ATIVOS × PEDIDO MENSAL)" if pb_["premissas_confirmadas"].get("recorrencia") else "[R$] FATURAMENTO (VENDAS × TICKET)"
+        falhas += conferir_planilha(xl, "Breakeven", rec_be, pb_["projecao"])
+        wbb = openpyxl.load_workbook(xl)   # a seção fica na premissas DA aba Breakeven (o conferir olha a primeira aba de premissas)
+        if not any(isinstance(c.value, str) and c.value.startswith("CENÁRIO BREAKEVEN") for row in wbb["Premissas · Breakeven"].iter_rows() for c in row):
+            falhas.append("Premissas · Breakeven sem a seção CENÁRIO BREAKEVEN")
+        if not (pb_["veredito"].get("no_azul_continuo_desde") or pb_["veredito"].get("acumulado_zera_em")):
+            falhas.append("cenário Breakeven automático não vira o mês nem zera o acumulado no fixture")
+        pm_ = json.load(open(os.path.join(tmp, "premissas_cenario_meta.json"), encoding="utf-8"))
+        falhas += conferir_planilha(xl, "Cenário-meta", "[R$] RECEITA DE RECOMPRA (CLIENTES ATIVOS × PEDIDO MENSAL)", pm_["projecao"],
+                                    exige=("[QNTD] CLIENTES ATIVOS COMPRANDO (FIM DO MÊS)", "[%] CLIENTES QUE PARAM DE COMPRAR NO MÊS"))
+        wb_ = openpyxl.load_workbook(xl)
+        falhas += [f"vocabulário de assinatura em {w.title}!{c.coordinate}" for w in wb_.worksheets for row in w.iter_rows() for c in row
+                   if isinstance(c.value, str) and not c.value.startswith("=") and re.search(r"(?i)assinat|assinante|\bMRR\b|churn", c.value)][:3]
+        txt = open(os.path.join(tmp, "aprovacao.md"), encoding="utf-8").read()
+        falhas += [f"thread de aprovação sem '{t}'" for t in ("Restrição mapeada até agora", "Pessimista", "Otimista", "teste de lacuna", "O cenário que bate") if t not in txt]
+    except RuntimeError as e:
+        falhas = [str(e)]
+    total += len(falhas)
+    print(f"{'OK   ' if not falhas else 'FALHA'} tres_cenarios + aprovação" + "".join(f"\n      - {f}" for f in falhas[:12]))
+    try:   # leitura sem legado na frente e com legado depois, cada aba com o seu Mês 1
+        sub = os.path.join(tmp, "sem_legado"); os.makedirs(sub, exist_ok=True)
+        rodar([os.path.join(SKILL, "scripts", "tres_cenarios.py"), "--cliente", "Teste", "--out", "sl.xlsx",
+               "--piloto", f"--fonte {os.path.join(FIX, 'indicadores_inside_sales.csv')} --modelo inside_sales --fee 1200 --midia 5000 "
+                           "--margem 0.3 --comissao 1 --inicio julho/2026 --acumulado-inicial -5000 --horizonte 6 --mes-alvo 6",
+               "--gerador", "--modelo inside_sales --inicio-contrato julho/2026", "--sem-legado", "--horizonte 3 --mes-alvo 3"], sub)
+        xl = os.path.join(sub, "sl.xlsx"); wb_ = openpyxl.load_workbook(xl)
+        vis = [w.title for w in wb_.worksheets if w.sheet_state == "visible"]
+        esperado = ["Pessimista sem legado", "Desejado sem legado", "Otimista sem legado", "Pessimista com legado", "Desejado com legado", "Otimista com legado"]
+        falhas = [] if [v for v in vis if v in esperado] == esperado else [f"ordem das abas: {vis}"]
+        falhas += [f"nome de aba com mais de 31 caracteres: {v}" for v in vis if len(v) > 31]
+        for aba in esperado:
+            pj = json.load(open(os.path.join(sub, f"premissas_{aba.split()[0].lower()}_{'sem' if 'sem' in aba else 'com'}_legado.json"), encoding="utf-8"))
+            falhas += conferir_planilha(xl, aba, "[R$] FATURAMENTO (VENDAS × TICKET)", pj["projecao"])
+            ws_ = wb_[aba]; cab = next(r for r in range(1, ws_.max_row + 1) if ws_.cell(r, 3).value == "Projetado")
+            m1 = str(ws_.cell(cab - 1, 3).value)
+            if ("jul/2026" in m1) != ("com legado" in aba):
+                falhas.append(f"{aba}: Mês 1 errado ({m1})")
+    except RuntimeError as e:
+        falhas = [str(e)]
+    total += len(falhas)
+    print(f"{'OK   ' if not falhas else 'FALHA'} sem legado + com legado" + "".join(f"\n      - {f}" for f in falhas[:12]))
     demo = os.path.join(tmp, "demo.xlsx")
     try:
         rodar([os.path.join(SKILL, "gerador", "build_workbook.py"), demo], tmp)
