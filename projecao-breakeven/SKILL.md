@@ -5,7 +5,7 @@ description: Projeção de breakeven de mídia paga a partir do histórico do cl
 
 # Projeção de breakeven
 
-**Versão 8.3 (01/10/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
+**Versão 8.4 (01/10/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
 
 A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não espera o usuário lembrar o que precisa informar. A segunda é a execução automática: com as premissas confirmadas, ela roda o piloto, dá o veredito e preenche o template, sem etapa manual.
 
@@ -20,6 +20,8 @@ A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não esp
 **1.1.0 Qual fonte manda.** Se existir mais de uma planilha (ou mais de uma aba) com o mesmo mês, **pergunte qual manda antes de ler qualquer número** e registre a resposta nas observações. Não concilie por conta própria: na indústria de plásticos, janeiro aparecia com R$ 13.074 numa aba e R$ 45.759 na outra, e a projeção inteira muda conforme a escolha. Pergunte também **o que não é fonte** — planilhas paradas, abas congeladas, bases que deixaram de atualizar. Depois de escolhida, a fonte é uma só: nunca some número de duas.
 
 **1.1.0.1 Como as vendas são contadas.** Antes de projetar, pergunte três coisas sobre a linha de vendas da fonte: (a) vem de **lançamento manual ou do CRM**; (b) é por **data de criação ou de fechamento** do negócio; (c) inclui **recompra da base** ou só cliente novo. As três mudam o número na casa das dezenas de por cento — lançamento manual costuma subcontar, e criação contra fechamento desloca a venda de mês. Se a fonte for manual e existir CRM, diga ao usuário que o número está provavelmente abaixo do real e ofereça refazer pelo CRM.
+
+**1.1.0.2 Recompra pelo modelo de negócio.** Se o cliente vende para quem repõe estoque (lojista, distribuidor, indústria, insumo, químico), **a recompra entra na projeção principal**, não só num cenário à parte — o cliente que a mídia traz compra uma vez pela mídia e depois volta sozinho. Pergunte: de quanto em quanto tempo ele volta a comprar, por quanto tempo segue comprando e se a reposição tem o mesmo valor do primeiro pedido. Rode com `--recompra INTERVALO,VIDA[,FATOR]` (ex.: `3,12` = reposição trimestral por um ano, cerca de 4,7 pedidos por cliente): o primeiro pedido entra cheio no mês da compra, quem segue ativo repõe a cada INTERVALO meses e 1/VIDA dos ativos param por mês. Sem `--inicio`, os clientes conquistados nos meses fechados entram como base ativa. A aba ganha "faturamento de clientes novos", "clientes ativos comprando" e "recompra", e o faturamento total soma os dois; as premissas ficam editáveis no topo. Se a fonte não mede recompra, é premissa do usuário e vai escrita assim (seção "Recompra" da Premissas e lacuna na thread). fábrica de acessórios de cortina: com 3,12, o otimista passou a fechar e o Breakeven fecha sem subir a verba.
 
 **1.1.1 E-commerce.** O funil da planilha fica no bloco GA4 e é do site inteiro. A receita atribuída fica em "Receita Captada V4". Meses com conversão sem valor não servem de histórico: aponte e proponha `--desde`. Detalhes em `referencias/ecommerce.md`.
 

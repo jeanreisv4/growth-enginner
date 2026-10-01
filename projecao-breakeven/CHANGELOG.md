@@ -2,6 +2,20 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v8.4 · 01/10/2026 · Recompra B2B na projeção principal
+
+- `--recompra INTERVALO,VIDA[,FATOR]` no piloto: o cliente novo paga o 1º pedido cheio; quem segue ativo repõe
+  ticket × fator a cada INTERVALO meses; 1/VIDA dos ativos param por mês. Mês vivido: a base cresce com as vendas reais.
+  Sem `--inicio`, os clientes dos meses fechados entram como base ativa (descontado quem parou). Diferente da assinatura
+  (`--recorrencia`), em que a receita é base × mensalidade.
+- Gerador: linhas "faturamento de clientes novos", "clientes ativos comprando", "recompra" e faturamento total
+  (novos + recompra); premissas editáveis; gráfico por origem; seção "Recompra · premissa do modelo de negócio".
+- Caminho e restrição: a margem por R$ 1 de mídia passa a contar a vida do cliente (1º pedido + reposições). Breakeven
+  automático: não tenta a recompra de fallback quando ela já está na projeção principal; texto "fica em R$ X" quando a
+  verba não precisa subir; riscos dizem de onde vem a diferença (funil, verba, recompra). Múltiplos com vírgula.
+- Entrevista 1.1.0.2: recompra pelo modelo de negócio. fábrica de acessórios de cortina com 3,12: otimista fecha (sem legado zera mar/27);
+  Breakeven com R$ 2 mil zera jun/27 (sem legado) e jan/28 (com legado). Regressão: caso `inside_sales_recompra`.
+
 ## v8.3 · 01/10/2026 · Cenário Breakeven automático em toda projeção
 
 O usuário não deve ter de pedir "qual cenário bate": toda projeção sai com ele.

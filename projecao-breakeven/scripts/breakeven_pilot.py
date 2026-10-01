@@ -115,6 +115,9 @@ VERBA_PLANO = None  # verba mês a mês (--verba-plano); depois do último mês 
 TAXA_MAX = 1.0    # taxa de etapa não pode passar de 100%: quando a fonte dá mais, o denominador está subcontado
 CENARIO = "desejado"  # pessimista (taxas atuais, sem rampa), desejado (rampa até a mediana) ou otimista (rampa até o melhor mês ou o mercado)
 CICLO = None        # ciclo de vendas: fração das vendas originadas no mês t que FECHA em t, t+1, t+2... (soma 1). Sem ele, [lag, 1 − lag]
+RECOMPRA = None     # recompra B2B (lojista que repõe estoque): {'intervalo', 'vida', 'fator', 'base_inicial'}. O cliente novo paga o
+                    # 1º pedido cheio no mês da compra; quem segue ativo recompra ticket × fator a cada `intervalo` meses;
+                    # 1/vida dos ativos param por mês. Diferente da assinatura: a receita não é base × mensalidade.
 PREMISSA_MERCADO = {}  # {alavanca: (valor, fonte)}: benchmark no lugar de dado que o cliente não tem (nunca no lugar de dado medido)
 
 
@@ -661,6 +664,7 @@ def projetar_curva(levers, modelo, fee, midia, margem, comissao, acumulado_inici
     ciclo = list(CICLO) if CICLO else ([lag, 1 - lag] if lag < 0.999 else [1.0])
     originadas = []
     base_ass = float(RECORRENCIA["base_inicial"]) if RECORRENCIA else 0.0
+    base_rc = float(RECOMPRA["base_inicial"]) if RECOMPRA else 0.0
     if CRM:   # coortes de clientes por mês de compra (s = 1 é o Mês 1); compras de antes do Mês 1 entram pela idade no Mês 1
         base_leads = float(CRM["base"].get("leads_sem_compra") or 0)
         coortes = {1 - int(i): float(n_) for i, n_ in CRM.get("coortes_pre", [])}
@@ -703,6 +707,13 @@ def projetar_curva(levers, modelo, fee, midia, margem, comissao, acumulado_inici
             receita = base_ass * (lv["ticket"] or 0.0)
             extra = {"assinaturas_novas": round(vendas, 2), "churn_mes": round(ch, 4),
                      "base_assinantes": round(base_ass, 2), "mrr": round(receita, 2)}
+        if RECOMPRA:   # recompra: 1º pedido dos novos + reposição dos ativos do mês anterior que seguem comprando
+            ch_r = 1.0 / RECOMPRA["vida"]
+            rep_ = base_rc * (1 - ch_r) * (lv["ticket"] or 0.0) * RECOMPRA["fator"] / RECOMPRA["intervalo"]
+            novos_ = VOL_REAL[t]["Vendas"] if t in VOL_REAL else vendas   # mês vivido: a base cresce com as vendas reais
+            base_rc = base_rc * (1 - ch_r) + novos_
+            extra = {**extra, "receita_novos": round(receita, 2), "receita_recompra": round(rep_, 2), "clientes_ativos": round(base_rc, 2)}
+            receita += rep_
         receita_total = receita
         if CRM:
             b, tx = CRM["base"], CRM["taxas"]
@@ -863,11 +874,11 @@ def veredito(env, modelo, fee, midia, margem, comissao, mes_alvo, horizonte, acu
         v["teto_receita_multiplo"] = round(mult, 2)
         if mult > 1.2:
             mid = (alvo or {}).get("midia", 0); mid_teto = tr.get("midia") or 0
-            verba = (f"com {mid / mid_teto:.1f}x a verba daquele mês" if mid_teto and mid > mid_teto * 1.05
+            verba = (f"com {str(round(mid / mid_teto, 1)).replace('.', ',')}x a verba daquele mês" if mid_teto and mid > mid_teto * 1.05
                      else (f"com a mesma verba" if mid_teto and mid <= mid_teto * 1.05 else ""))
             frouxo = " O histórico tem poucos meses fechados, então o teto é frágil." if tr.get("meses_fechados", 0) < 4 else ""
             parc = " (mês ainda em curso, então o valor dele tende a subir)" if tr.get("parcial") else ""
-            v["alerta_teto_receita"] = (f"a projeção pede {_rs(rec_alvo)} no mês-alvo, {mult:.1f}x o melhor mês já realizado "
+            v["alerta_teto_receita"] = (f"a projeção pede {_rs(rec_alvo)} no mês-alvo, {str(round(mult, 1)).replace('.', ',')}x o melhor mês já realizado "
                                         f"({_rs(tr['receita'])} em {tr['mes']}{parc}){', ' + verba if verba else ''}."
                                         f" Diga de onde vem a diferença antes de apresentar.{frouxo}")
     v["leitura"] = leitura(v, env, mes_alvo, horizonte)
@@ -909,6 +920,9 @@ def caminho(env, modelo, meses_ref, fee, midia, margem, comissao, mes_alvo, hori
     for k, *_ in alavancas(modelo):
         por_real *= (lv.get(k) or 0.0)
     mc_real = por_real * (lv.get("ticket") or 0.0) * comissao * margem
+    if RECOMPRA:   # com recompra, cada cliente que a mídia traz vale o 1º pedido + as reposições da vida dele
+        ch_r = 1.0 / RECOMPRA["vida"]
+        mc_real *= 1 + (1 - ch_r) / ch_r * RECOMPRA["fator"] / RECOMPRA["intervalo"]
     longo = rodar(env, teto=None, h=48)
     return {"criterio": f"resultado do M{mes_alvo} ≥ 0 (cada alavanca sozinha, as demais na rampa)",
             "resultado_mes_alvo_na_rampa": ult["resultado_liquido"], "acumulado_mes_alvo_na_rampa": ult["acumulado"],
@@ -1009,6 +1023,10 @@ def main():
     p.add_argument("--sazonalidade-historico", nargs="?", const="auto",
                    help="sazonalidade da demanda tirada do faturamento do PRÓPRIO cliente (12+ meses): sem valor, procura a linha de faturamento "
                         "total da fonte; ou o rótulo de outra linha; ou um CSV 'mês/ano,valor'. Substitui --sazonalidade-demanda")
+    p.add_argument("--recompra", metavar="INTERVALO,VIDA[,FATOR]",
+                   help="recompra B2B: o cliente novo paga o 1º pedido cheio e, enquanto segue ativo, recompra a cada INTERVALO meses "
+                        "por VIDA meses em média (1/VIDA dos ativos param por mês), com o pedido de reposição = FATOR × ticket (padrão 1). "
+                        "Ex.: 3,12 = reposição trimestral por um ano. Sem --inicio, os clientes já conquistados nos meses fechados entram como base")
     p.add_argument("--premissa-mercado", action="append", default=[], metavar="CHAVE=VALOR[|FONTE]",
                    help="benchmark no lugar de dado que o cliente NÃO tem (nunca no lugar de dado medido): conexao_lead e conexao_mql "
                         "quando a fonte não tem a linha Conexões, ou qualquer alavanca sem evento na janela (ex.: sql_venda, ticket). "
@@ -1031,7 +1049,7 @@ def main():
     p.add_argument("--out", default="premissas.json")
     a = p.parse_args()
 
-    global VERBA_PLANO, RAMPA_ATE, RAMPA_DESDE, ORGANICO, CRM, FEE_PLANO, SAZ, CPM_CRESC, RECORRENCIA, CONEXAO_MEDIDA, PERFIL, CENARIO, CICLO
+    global VERBA_PLANO, RAMPA_ATE, RAMPA_DESDE, ORGANICO, CRM, FEE_PLANO, SAZ, CPM_CRESC, RECORRENCIA, CONEXAO_MEDIDA, PERFIL, CENARIO, CICLO, RECOMPRA
     CENARIO = a.cenario
     if a.ciclo or a.ciclo_dias is not None:
         if a.lag < 0.999:
@@ -1199,6 +1217,21 @@ def main():
             tx["alertas"].append(f"Sazonalidade da demanda pelo histórico do cliente ({origem_saz}, {len(pontos)} meses): "
                                  + ", ".join(f"{MESES_PT[m - 1]} {x:.2f}x" for m, x in fortes)
                                  + ". O índice multiplica as vendas de cada mês; a tabela completa está na aba Premissas.")
+    if a.recompra:
+        if a.recorrencia or a.modelo != "inside_sales":
+            sys.exit("--recompra vale para inside sales e não combina com --recorrencia (assinatura)")
+        xs = [float(x) for x in a.recompra.replace(";", ",").split(",") if x.strip()]
+        if len(xs) < 2 or xs[0] < 1 or xs[1] < 1:
+            sys.exit("--recompra INTERVALO,VIDA[,FATOR]: meses entre pedidos (≥ 1) e meses que o cliente segue comprando (≥ 1)")
+        ch_r = 1.0 / xs[1]
+        vk = MODELOS[a.modelo]["etapas"][-1]
+        antes = [m for m in meses[:i0] if m["status"] == "fechado"]
+        base0 = sum((m.get(vk) or 0) * (1 - ch_r) ** (len(antes) - 1 - k) for k, m in enumerate(antes))
+        RECOMPRA = {"intervalo": xs[0], "vida": xs[1], "fator": xs[2] if len(xs) > 2 else 1.0, "base_inicial": round(base0, 4)}
+        pedidos = 1 + (1 - ch_r) / ch_r / xs[0]
+        tx["alertas"].append(f"Recompra (premissa do usuário, não medida): o cliente repõe a cada {xs[0]:g} meses por {xs[1]:g} meses em média, "
+                             f"com pedido de {RECOMPRA['fator']:.0%} do primeiro — cerca de {pedidos:.1f} pedidos por cliente. "
+                             + (f"{base0:.1f} clientes conquistados antes do Mês 1 entram como base ativa." if base0 else "A base começa vazia no Mês 1."))
     if split(a.modelo):  # a divisão da verba fica constante na projeção (premissa comercial editável no template)
         MODELOS[a.modelo]["participacao_meta"] = env["_split"]["participacao_meta_na_verba"]
     if a.connect_rate is not None and a.modelo == "ecommerce":
@@ -1331,7 +1364,7 @@ def main():
                                   "cenario": CENARIO, "ciclo": (CICLO or ([a.lag, 1 - a.lag] if a.lag < 0.999 else [1.0])),
                                   "ciclo_origem": ("medido (--ciclo)" if a.ciclo else (f"premissa: ciclo médio de {a.ciclo_dias:g} dias" if a.ciclo_dias is not None else
                                                    ("premissa: --lag" if a.lag < 0.999 else "sem ciclo: a venda fecha no mês do lead"))),
-                                  "premissas_mercado": PREMISSA_MERCADO,
+                                  "premissas_mercado": PREMISSA_MERCADO, "recompra": RECOMPRA,
                                   "realizado_usado": {str(k): round(x, 2) for k, x in REALIZADO.items()},
                                   "regra_taxas": (f"janela de {a.janela} mês(es) fechado(s)" + (" + mês corrente parcial" if a.incluir_corrente else "") + ", ponderada por volume; " + {"desejado": "rampa até a mediana do período comparável", "otimista": "rampa até o melhor mês do período (ou o mercado, quando maior)", "pessimista": "sem rampa: as taxas atuais ficam constantes"}[CENARIO])},
         "detectado": detectado, "historico": meses, "historico_resultado": hist_result,

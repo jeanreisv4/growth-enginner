@@ -204,6 +204,20 @@ def _simplificar_is(cfg, p):
                                    if x[0].startswith("GMV GERADO") else x for x in orig_kpis(ctx)]
         cfg['charts'] = cfg['charts'] + [dict(type='line', title="Faturamento (GMV) por origem: novos leads, recompra e reativação",
                                               series=[('gmv', RED, False), ('gmv_recompra', GREEN, False), ('gmv_reativ', GRAY, False)], y_fmt=FMT_BRL)]
+    rc = p.get('recompra')
+    if rc:
+        # Recompra B2B: o cliente novo paga o 1º pedido cheio; quem segue ativo repõe ticket × fator a cada N meses;
+        # 1/vida dos ativos param por mês. O faturamento do mês é novos + reposição, e é ele que vira MC.
+        troca_.setdefault('gmv', {}).update(label="[R$] FATURAMENTO TOTAL (NOVOS + RECOMPRA)", src="={c}{fat_novos}+{c}{rec_recompra}")
+        i = next(j for j, x in enumerate(cfg['premises']) if x[0] == 'lag')
+        cfg['premises'][i:i] = [
+          ("rc_int", "Recompra · meses entre um pedido e outro", rc['intervalo'], '0'),
+          ("rc_vida", "Recompra · meses que o cliente segue comprando (média)", rc['vida'], '0'),
+          ("rc_fator", "Recompra · pedido de reposição ÷ primeiro pedido", rc.get('fator', 1.0), FMT_PCT0),
+          ("rc_base0", "Recompra · clientes já ativos no início do Mês 1", rc.get('base_inicial', 0) or 0, FMT_DEC),
+        ]
+        cfg['charts'] = cfg['charts'] + [dict(type='line', title="Faturamento por origem: clientes novos e recompra",
+                                              series=[('fat_novos', RED, False), ('rec_recompra', GREEN, False)], y_fmt=FMT_BRL)]
     rec = p.get('recorrencia')
     if rec:
         # Assinatura (SaaS). O funil entrega assinaturas NOVAS; a receita do mês é a BASE INTEIRA × mensalidade.
@@ -331,6 +345,17 @@ def _simplificar_is(cfg, p):
         ]
         j = next(k for k, m in enumerate(mets) if m[0] == 'gmv') + 1
         mets[j:j] = bloco
+    if rc:
+        j = next(k for k, m in enumerate(mets) if m[0] == 'gmv')
+        mets[j:j] = [
+          ('fat_novos', "[R$] FATURAMENTO DE CLIENTES NOVOS (VENDAS × TICKET)", 'calc', "={c}{vendas}*{c}{ticket}", FMT_BRL, 'sum', '""'),
+          ('cli_ativos', "[QNTD] CLIENTES ATIVOS COMPRANDO (FIM DO MÊS)", 'calcf',
+           ("={P_rc_base0}*(1-1/{P_rc_vida})+IF({HAS}=0,{c}{vendas},{r}{vendas})",
+            "={p}{cli_ativos}*(1-1/{P_rc_vida})+IF({HAS}=0,{c}{vendas},{r}{vendas})"), FMT_DEC, 'last', '""'),
+          ('rec_recompra', "[R$] RECOMPRA (ATIVOS DO MÊS ANTERIOR × TICKET × FATOR ÷ INTERVALO)", 'calcf',
+           ("={P_rc_base0}*(1-1/{P_rc_vida})*{c}{ticket}*{P_rc_fator}/{P_rc_int}",
+            "={p}{cli_ativos}*(1-1/{P_rc_vida})*{c}{ticket}*{P_rc_fator}/{P_rc_int}"), FMT_BRL, 'sum', '""'),
+        ]
     if org:
         n_ = int(p.get('n_months', 12)); j = next(k for k, m in enumerate(mets) if m[0] == 'leads') + 1
         mets[j:j] = [
@@ -1234,6 +1259,18 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
             f"{rot_pm.get(k, (env.get(k) or {}).get('rotulo', k))}: "
             + (f"{x['valor']:.1%}" if k not in ('cpm', 'ticket', 'custo_sessao_meta') else rs(x['valor'], 2)) + f" · fonte: {x['fonte']}."
             for k, x in pm_.items()]))
+    rc_ = pc.get('recompra')
+    if rc_:
+        ch_ = 1.0 / float(rc_['vida'])
+        ped_ = 1 + (1 - ch_) / ch_ / float(rc_['intervalo'])
+        metodologia.append(("RECOMPRA · PREMISSA DO MODELO DE NEGÓCIO", [
+            f"O cliente que a mídia traz paga o primeiro pedido cheio no mês da compra e, enquanto segue ativo, repõe a cada {float(rc_['intervalo']):g} meses, "
+            f"com pedido de {float(rc_.get('fator', 1)):.0%} do primeiro. Em média ele segue comprando {float(rc_['vida']):g} meses ({ch_:.1%} dos ativos param a cada mês): "
+            f"cerca de {br(ped_, 1)} pedidos por cliente.",
+            "É premissa do usuário, não medida: a fonte só registra o primeiro pedido. Confirme com o cliente quantos dos que já compraram voltaram e de quanto em quanto tempo.",
+            (f"Clientes conquistados antes do Mês 1 entram como base ativa: {br(float(rc_.get('base_inicial') or 0), 1)} no início, já descontado quem parou."
+             if rc_.get('base_inicial') else "A base de clientes começa nos meses da própria tabela (os já vividos entram pelas vendas realizadas)."),
+            "As premissas estão no topo da aba de projeção (amarelo) e as linhas de clientes ativos e recompra mostram o efeito mês a mês."]))
     ciclo_ = [float(x) for x in (pc.get('ciclo') or [1.0])]
     if len(ciclo_) > 1:
         metodologia.append(("CICLO DE VENDAS", [
@@ -1286,7 +1323,7 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
              footer=f"Projeção {rotulo} · {cliente} · agência", prem=prem, monthly=monthly, target=mes_alvo,
              metodologia=metodologia, historico=historico, pilot_ref=pilot_ref, base_ref=base_ref, n_months=n,
              real_prefill=prefill, month_labels=labels, envelope=envelope, metodologia_fim=[tuple(x) for x in xm.get('fim', [])],
-             ciclo=pc.get('ciclo'), **extra)
+             ciclo=pc.get('ciclo'), recompra=pc.get('recompra'), **extra)
     cfg_ = (inside_sales_config if modelo == 'inside_sales' else ecommerce_config)(p)
     if perfil == 'plg':
         cfg_ = perfil_plg(cfg_, det.get('etapas_neutras') or [])

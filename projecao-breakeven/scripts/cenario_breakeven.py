@@ -133,7 +133,7 @@ def main():
             vira = [s for s in sens if s["vira"]]
             if vira: escolhido = ("verba", vira[0]["teto"], None)
     recompra = []
-    if escolhido is None and modelo == "inside_sales" and not pc.get("recorrencia"):
+    if escolhido is None and modelo == "inside_sales" and not pc.get("recorrencia") and not pc.get("recompra"):
         # recompra: do menor número de pedidos por cliente para o maior e, em cada um, da menor verba para a maior;
         # vale a primeira combinação em que o acumulado zera; sem nenhuma, a primeira em que o mês vira
         verbas_r = [a.teto_verba] if a.teto_verba else [verba0 * f for f in (1, 2, 3)]
@@ -178,7 +178,12 @@ def main():
                       + "; ".join(f"{x[0]} de {x[1]} para {x[4]}" for x in mud) + ".")
     else:
         linhas.append("Nenhuma etapa do funil está abaixo do mercado: a alavanca é verba (e, se preciso, recompra).")
-    linhas.append(f"Verba: {verba_txt}, subindo um degrau por mês e só quando o custo por lead e os SQLs do mês anterior confirmarem.")
+    linhas.append(f"Verba: {verba_txt}, subindo um degrau por mês e só quando o custo por lead e os SQLs do mês anterior confirmarem." if teto > verba0
+                  else f"Verba: fica em {rs(verba0)} — com o funil de mercado a conta fecha sem subir a verba.")
+    if pc.get("recompra"):
+        rc_ = pc["recompra"]
+        linhas.append(f"Recompra (premissa da projeção principal): reposição a cada {rc_['intervalo']:g} meses por {rc_['vida']:g} meses, "
+                      f"com pedido de {rc_.get('fator', 1):.0%} do primeiro.")
     if tipo == "recompra":
         linhas.append(f"Recompra: o funil de mercado com verba não basta; entra cliente comprando todo mês, com {br(churn * 100, 0)}% dos clientes ativos "
                       f"parando a cada mês — cerca de {br(1 / churn, 1)} pedidos por cliente. Não é medido hoje: confirme com o cliente antes de apresentar.")
@@ -194,8 +199,9 @@ def main():
         riscos.append(f"lead → venda resultante de {br(lv_proj * 100, 1)}% no fim, contra {br(lv_hoje * 100, 1)}% hoje"
                       + (" — o dobro ou mais: só se sustenta se as etapas fortes não caírem quando as fracas subirem" if lv_proj > 2 * lv_hoje else ""))
     if d["veredito"].get("alerta_teto_receita"):
+        fontes_dif = ["funil de mercado"] + (["verba maior"] if teto > verba0 else []) + (["recompra"] if (pc.get("recompra") or tipo == "recompra") else [])
         riscos.append("trava de sanidade: " + d["veredito"]["alerta_teto_receita"].replace(" Diga de onde vem a diferença antes de apresentar.", "")
-                      + " A diferença vem de funil de mercado + verba maior")
+                      + " A diferença vem de " + " + ".join(fontes_dif))
     if teto > verba0:
         riscos.append("o CPM fica constante; escalar a verba satura o público e pode encarecer o lead — por isso os degraus sobem só com o mês anterior confirmado")
     riscos.append("margem e benchmarks são os da aba; benchmark de setor é aproximação para o cliente")

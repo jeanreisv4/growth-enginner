@@ -145,6 +145,12 @@ CASOS = [
          receita="[R$] FATURAMENTO (VENDAS × TICKET)", extra_piloto=["--cenario", "otimista"], extra_gerador=[], abas=["Legado completo"]),
     dict(nome="inside_sales_pessimista", modelo="inside_sales", csv="indicadores_inside_sales.csv", aba="Inside Sales",
          receita="[R$] FATURAMENTO (VENDAS × TICKET)", extra_piloto=["--cenario", "pessimista"], extra_gerador=["--sem-legado-completo"]),
+    # v8.4: recompra B2B na projeção principal (1º pedido cheio + reposição a cada N meses enquanto o cliente segue ativo)
+    dict(nome="inside_sales_recompra", modelo="inside_sales", csv="indicadores_inside_sales.csv", aba="Inside Sales",
+         receita="[R$] FATURAMENTO TOTAL (NOVOS + RECOMPRA)", extra_piloto=["--recompra", "3,12"], extra_gerador=[],
+         series={"[R$] RECOMPRA (ATIVOS DO MÊS ANTERIOR × TICKET × FATOR ÷ INTERVALO)": "receita_recompra",
+                 "[QNTD] CLIENTES ATIVOS COMPRANDO (FIM DO MÊS)": "clientes_ativos"},
+         metodologia=["RECOMPRA · PREMISSA DO MODELO DE NEGÓCIO"]),
     dict(nome="ecommerce_faturado", modelo="ecommerce", csv="indicadores_ecommerce_faturado.csv", aba="E-commerce",
          receita="[R$] RECEITA FATURADA NO MÊS", extra_piloto=[], extra_gerador=[],
          exige=["[%] PEDIDO CAPTADO → FATURADO", "[QNTD] PEDIDOS FATURADOS"]),
