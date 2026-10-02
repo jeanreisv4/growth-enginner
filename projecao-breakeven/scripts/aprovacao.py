@@ -155,8 +155,11 @@ def main():
           "*Cenários*"] + [f"• {frase(k, r)}" for k, r in res.items()] + ["",
           f"*Restrição mapeada até agora · {tipo}*"] + [f"• {x}" for x in linhas]
     if a.breakeven:
-        be = json.load(open(a.breakeven, encoding="utf-8"))["topo"][0][1][1:]
-        md += ["", "*O cenário que bate (o que precisa ser verdade)*"] + [f"• {x}" for x in be]
+        sec_be = json.load(open(a.breakeven, encoding="utf-8"))["topo"][0]
+        be = sec_be[1][1:]
+        titulo_be = ("*O plano já bate: até onde o funil pode cair (aba Breakeven)*" if "JÁ BATE" in sec_be[0]
+                     else "*O cenário que bate (o que precisa ser verdade)*")
+        md += ["", titulo_be] + [f"• {x}" for x in be]
     if lac:
         md += ["", "*O que ainda não é medido (e pode mudar a leitura)*"] + [f"• {x}" for x in lac]
     md += ["", "Detalhe de cada cenário na aba Premissas da planilha. A restrição é revista a cada rodada da projeção."]

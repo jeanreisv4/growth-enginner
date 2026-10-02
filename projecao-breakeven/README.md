@@ -2,7 +2,7 @@
 
 ![Capa da projeção-breakeven: perguntas sendo digitadas e um gráfico em que o resultado do mês sai do vermelho para o verde e o acumulado de caixa e o de LTV cruzam o zero](assets/capa.svg)
 
-![versão](https://img.shields.io/badge/versão-8.4.2-E50914) ![regressão](https://img.shields.io/badge/regressão-35%20casos-111111)
+![versão](https://img.shields.io/badge/versão-8.5.0-E50914) ![regressão](https://img.shields.io/badge/regressão-36%20casos-111111)
 
 Skill do Claude Code que responde **em que mês o projeto se paga**. Lê o histórico do cliente (planilha padrão
 V4, CRM, export de mídia, GA4), conduz a entrevista das premissas, calcula as taxas efetivas, dá o veredito de

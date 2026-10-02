@@ -21,7 +21,7 @@ Uso (normalmente chamado pelo tres_cenarios.py):
   python3 cenario_breakeven.py --base premissas_desejado.json --piloto "<args do projetar>" --out premissas_breakeven.json \
       --metodologia metodologia_breakeven.json [--mercado arquivo.json --setor b2b_industria] [--teto-verba 6000] [--churn 0.2]
 """
-import argparse, json, os, shlex, subprocess, sys
+import argparse, json, math, os, shlex, subprocess, sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 PILOTO = os.path.join(AQUI, "breakeven_pilot.py")
@@ -55,6 +55,96 @@ def ler(d, n_real, limite_zera):
     zera, azul = v.get("acumulado_zera_em"), v.get("no_azul_continuo_desde")
     return {"azul": azul, "zera": zera, "fecha": bool(zera and zera <= n_real + limite_zera), "vira": bool(azul),
             "pior": min(l["acumulado"] for l in pr), "res_fim": pr[-1]["resultado_liquido"]}
+
+
+def de_pe(d, lim):
+    """O acumulado que zerou continua positivo no prazo e no fim da projeção (o mês do fim pode cair num vale sazonal)."""
+    pr = d["projecao"]
+    no_prazo = next((l["acumulado"] for l in pr if l["mes"] == lim), pr[-1]["acumulado"])
+    return no_prazo >= 0 and pr[-1]["acumulado"] >= 0
+
+
+def piso(a, base, args0, r0, k, env, n_real, verba0):
+    """O plano de hoje já bate: procura o menor valor da última conversão do funil (e do ticket) com que o acumulado
+    ainda zera no mesmo prazo (12 meses depois do último mês vivido), com e sem a recompra."""
+    pc = base["premissas_confirmadas"]
+    lim = n_real + 12
+
+    def roda(args, v=None, chave=k):
+        d = rodar(args + (["--fixar", f"{chave}={v:.6f}"] if v is not None else []), a.out + ".tmp")
+        r = ler(d, 0, lim) if d else None
+        if r:   # no piso, "fecha" é zerar no prazo e continuar de pé: acumulado positivo no prazo e no fim da projeção
+            r["fecha"] = r["fecha"] and de_pe(d, lim)
+        return d, r
+
+    def procurar(args, chave, hi):
+        lo_, hi_ = 0.0, hi   # hi fecha; quando nem um valor perto de zero derruba a conta, o piso é zero
+        _, r_lo = roda(args, hi * 0.001, chave)
+        if r_lo and r_lo["fecha"]:
+            return 0.0
+        for _ in range(14):
+            mid = (lo_ + hi_) / 2
+            _, r = roda(args, mid, chave)
+            if r and r["fecha"]: hi_ = mid
+            else: lo_ = mid
+        return hi_
+
+    def media_vendas(d):
+        xs = [l["vendas"] for l in d["projecao"] if n_real < l["mes"] <= lim]
+        return sum(xs) / len(xs) if xs else 0.0
+
+    plano_k = env[k].get("alvo") or env[k]["atual"]
+    piso_k = math.ceil(procurar(args0, k, plano_k) * 1000) / 1000
+    ticket0 = float((env.get("ticket") or {}).get("alvo") or (env.get("ticket") or {}).get("atual") or pc.get("ticket") or 0)
+    piso_t = math.ceil(procurar(args0, "ticket", ticket0) / 10) * 10 if ticket0 else None
+    sem_rc = None
+    if pc.get("recompra"):   # a recompra não é medida: quanto o piso depende dela
+        args_s = tirar(args0, "--recompra")
+        _, r_s = roda(args_s, plano_k)
+        sem_rc = math.ceil(procurar(args_s, k, plano_k) * 1000) / 1000 if r_s and r_s["fecha"] else None
+    d0, _ = roda(args0)
+    sens = []
+    for f in (1.0, 0.75, 0.5):
+        v = plano_k * f
+        if v > piso_k:
+            d_, r_ = roda(args0, v); sens.append((v, d_, r_))
+    d, r = roda(args0, piso_k)
+    sens.append((piso_k, d, r))
+    d = rodar(args0 + ["--fixar", f"{k}={piso_k:.6f}"], a.out)
+    if os.path.exists(a.out + ".tmp"): os.remove(a.out + ".tmp")
+    cal = calendario(d)
+    rot_k = env[k]["rotulo"]
+    pct = lambda x: f"{br(x * 100, 1)}%"
+    linhas = [f"Gerado automaticamente em toda projeção. Aqui o plano de hoje já bate o breakeven{(' (' + a.rotulo + ')') if a.rotulo else ''}: "
+              f"com a verba de {rs(verba0)} e o funil do desejado, o acumulado zera em {cal(r0['zera'])}, sem nível de mercado nem verba a mais. "
+              f"Por isso este cenário mostra o PISO: até onde o funil pode cair e a conta ainda fecha no mesmo prazo (acumulado zerado até {cal(lim)}).",
+              (f"Piso: {rot_k} pode cair de {pct(plano_k)} (plano) para {pct(piso_k)} — {br(media_vendas(d), 1)} vendas por mês em média, "
+               f"contra {br(media_vendas(d0), 1)} no plano — e o acumulado ainda zera em {cal(r['zera'])} e fica de pé. Abaixo disso, a conta deixa de fechar até {cal(lim)}."
+               if piso_k > 0 else
+               f"Piso: mesmo sem venda nova ({rot_k} perto de zero) a recompra da base de clientes já conquistados fecha a conta até {cal(lim)}. "
+               "Confira a recompra antes de apresentar: é ela, não o funil, que sustenta o plano.")]
+    if piso_t and piso_t < ticket0:
+        linhas.append(f"Ticket: com o funil do plano, o ticket médio pode cair de {rs(ticket0)} para {rs(piso_t)} no mesmo prazo.")
+    linhas.append(f"Verba: fica em {rs(verba0)}.")
+    if pc.get("recompra"):
+        rc_ = pc["recompra"]
+        linhas.append(f"Recompra (premissa da projeção principal, não medida): reposição a cada {rc_['intervalo']:g} meses por {rc_['vida']:g} meses. "
+                      + (f"Sem ela, o piso de {rot_k} sobe para {pct(sem_rc)}." if sem_rc else
+                         f"Sem ela, nem o plano zera o acumulado até {cal(lim)}: a recompra é o que segura a conta e a primeira coisa a medir."))
+    linhas.append("Resultado no piso: " + (f"mês no azul a partir de {cal(r['azul'])}" if r["azul"] else "nenhum mês fica no azul")
+                  + (f"; acumulado zera em {cal(r['zera'])}." if r["zera"] else "; o acumulado não zera em 48 meses."))
+    linhas.append("Riscos: o piso de cada alavanca vale com as outras no plano — se duas caem juntas, o piso de cada uma sobe; "
+                  "margem, recompra e sazonalidade são as premissas da aba.")
+    secoes = [[f"CENÁRIO BREAKEVEN{(' · ' + a.rotulo.upper()) if a.rotulo else ''} · O PLANO JÁ BATE: ATÉ ONDE O FUNIL PODE CAIR", linhas],
+              ["SENSIBILIDADE · " + rot_k.upper() + " COM O RESTO DO PLANO",
+               {"colunas": [rot_k, "Vendas por mês (média)", "Mês no azul a partir de", "Acumulado zera em", "Pior ponto do acumulado"],
+                "linhas": [[pct(v) + (" (plano)" if v == plano_k else " (piso, este cenário)" if v == piso_k else ""),
+                            br(media_vendas(d_), 1) if d_ else "-", (cal(r_["azul"]) if r_ else None) or "não acontece",
+                            (cal(r_["zera"]) if r_ else None) or "não zera em 48 meses", rs(r_["pior"]) if r_ else "-"] for v, d_, r_ in sens],
+                "nota": f"Verba de {rs(verba0)} em todas as linhas; o valor de {rot_k} fica constante a partir do Mês 1 projetado."}]]
+    json.dump({"topo": secoes}, open(a.metodologia, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    print(json.dumps({"tipo": "piso", "teto_verba": verba0, "churn": None, "azul": r["azul"], "zera": r["zera"], "piso": {k: piso_k, "ticket": piso_t},
+                      "args": shlex.join(args0 + ["--fixar", f"{k}={piso_k:.6f}"]), "recompra": False}, ensure_ascii=False))
 
 
 def main():
@@ -116,6 +206,16 @@ def main():
             args += ["--recorrencia", "--churn", str(churn), "--ticket", f"{float(pc['ticket']):.2f}"]
         return rodar(args, tmp), args
 
+    # 0. o plano de hoje já bate (sem mercado, sem verba a mais)? Então repetir o desejado com 18 meses não responde
+    # nada: o cenário vira o PISO — o quanto a última conversão (e o ticket) pode cair e o acumulado ainda zera no
+    # mesmo prazo. brindes corporativos B2B: um único mês bom (setembro) sustentava o plano inteiro; a pergunta era "e se não se repetir?".
+    if a.churn is None and a.teto_verba is None:
+        args0 = pil + ["--horizonte", "18", "--mes-alvo", "18"] + rampa + ["--verba-plano", ",".join(f"{x:g}" for x in plano(verba0))]
+        d0 = rodar(args0, a.out + ".tmp")
+        r0 = ler(d0, 0, n_real + 12) if d0 else None
+        conv = [k for k in TAXAS if env.get(k) and env[k].get("atual") and not env[k].get("fixada")]
+        if r0 and r0["fecha"] and de_pe(d0, n_real + 12) and conv:
+            return piso(a, base, args0, r0, conv[-1], env, n_real, verba0)
     sens, escolhido = [], None
     tetos = [verba0 + passo * i for i in range(0, 16) if verba0 + passo * i <= verba0 * 8 + 1e-6]
     if a.teto_verba is not None:

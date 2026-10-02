@@ -25,6 +25,13 @@ modelo estão em `inside_sales.md`, `ecommerce.md` e `plg.md`.
    diferentes: a primeira diz se o contrato se paga, a segunda se continuar vale a pena — o que já foi gasto não volta.
    Entregue as duas (`--sem-legado`), sem legado na frente, e cada uma procura a própria verba no Breakeven: a mesma
    verba nas duas deixava a leitura com legado sem zerar.
+20. **Repetir o desejado na aba Breakeven quando o plano já bate.** Na brindes corporativos B2B setembro (7 vendas, R$ 26 mil)
+    bastava para o desejado fechar, e a aba Breakeven saiu igual ao desejado com 18 meses, R$ 224 mil de acumulado e
+    "3,5x o melhor mês". Regra (v8.5): quando o plano já bate, a aba mostra o **piso** — até onde SQL → venda e ticket
+    podem cair e a conta ainda zera no prazo, com e sem a recompra. Projeção apoiada num mês só pede piso, não teto.
+21. **Sazonalidade crua sobre base de pico.** O índice do Google Trends é relativo à média do ano; se o funil vem de
+    setembro (índice 1,22 em brindes corporativos), aplicar outubro 1,57 conta o pico duas vezes. Divida pelo índice do
+    mês-base.
 
 ## Fonte
 

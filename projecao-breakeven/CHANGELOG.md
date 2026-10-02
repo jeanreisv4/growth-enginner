@@ -2,6 +2,20 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v8.5.0 · 02/10/2026 · Breakeven: quando o plano já bate, o piso
+
+- `cenario_breakeven.py`: antes de procurar mercado e verba, roda o desejado com a verba de hoje. Se ele zera o
+  acumulado em até 12 meses depois do último mês vivido e continua de pé (acumulado positivo no prazo e no fim), a aba
+  Breakeven vira o **piso**: o menor SQL → venda (a última conversão não fixada) e o menor ticket com que a conta ainda
+  fecha, com o resto do plano; com `--recompra`, também o piso sem ela. Seções "O PLANO JÁ BATE: ATÉ ONDE O FUNIL PODE
+  CAIR" e sensibilidade (plano, 75%, 50%, piso). Quando nem perto de zero de venda nova derruba a conta, diz que é a
+  recompra da base que sustenta o plano.
+- `aprovacao.py`: a thread troca "O cenário que bate" por "O plano já bate: até onde o funil pode cair".
+- SKILL.md: passo 0 do Breakeven e sazonalidade do Trends dividida pelo índice do mês-base.
+- `referencias/armadilhas.md`: itens 20 (repetir o desejado quando o plano já bate) e 21 (sazonalidade crua sobre base
+  de pico). Caso brindes corporativos B2B.
+- Regressão: caso "breakeven quando o plano já bate (piso)" (36 casos).
+
 ## v8.4.2 · 02/10/2026 · Breakeven: verba que zera em até 12 meses
 
 - `cenario_breakeven.py`: critério em dois degraus — a menor verba que zera o acumulado em até 12 meses depois do

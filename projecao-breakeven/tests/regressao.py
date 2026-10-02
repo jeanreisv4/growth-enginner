@@ -339,6 +339,27 @@ def main():
         falhas = [str(e)]
     total += len(falhas)
     print(f"{'OK   ' if not falhas else 'FALHA'} tres_cenarios + aprovação" + "".join(f"\n      - {f}" for f in falhas[:12]))
+    try:   # o plano já bate: a aba Breakeven vira o PISO (até onde a última conversão e o ticket podem cair)
+        sub = os.path.join(tmp, "piso"); os.makedirs(sub, exist_ok=True)
+        rodar([os.path.join(SKILL, "scripts", "tres_cenarios.py"), "--cliente", "Teste", "--out", "piso.xlsx",
+               "--piloto", f"--fonte {os.path.join(FIX, 'indicadores_inside_sales.csv')} --modelo inside_sales --fee 1200 --midia 5000 "
+                           f"--margem 0.3 --comissao 1 --mes-alvo 3 --horizonte 6 --fixar ticket=12000",
+               "--gerador", "--modelo inside_sales"], sub)
+        xl = os.path.join(sub, "piso.xlsx")
+        pb_ = json.load(open(os.path.join(sub, "premissas_breakeven.json"), encoding="utf-8"))
+        falhas = conferir_planilha(xl, "Breakeven", "[R$] FATURAMENTO (VENDAS × TICKET)", pb_["projecao"])
+        fx = [f for f in pb_["premissas_confirmadas"]["fixadas"] if f.startswith("sql_venda=")]
+        if not fx or not 0 < float(fx[-1].split("=")[1]) < 0.086:
+            falhas.append(f"piso de SQL → venda fora do esperado (entre 0 e o plano de 8,6%): {fx}")
+        wbb = openpyxl.load_workbook(xl)
+        if not any(isinstance(c.value, str) and "O PLANO JÁ BATE" in c.value for row in wbb["Premissas · Breakeven"].iter_rows() for c in row):
+            falhas.append("Premissas · Breakeven sem a seção do piso (O PLANO JÁ BATE)")
+        txt = open(os.path.join(sub, "aprovacao.md"), encoding="utf-8").read()
+        falhas += [f"thread sem '{t}'" for t in ("O plano já bate", "Piso:", "Ticket: com o funil do plano") if t not in txt]
+    except RuntimeError as e:
+        falhas = [str(e)]
+    total += len(falhas)
+    print(f"{'OK   ' if not falhas else 'FALHA'} breakeven quando o plano já bate (piso)" + "".join(f"\n      - {f}" for f in falhas[:12]))
     try:   # leitura sem legado na frente e com legado depois, cada aba com o seu Mês 1
         sub = os.path.join(tmp, "sem_legado"); os.makedirs(sub, exist_ok=True)
         rodar([os.path.join(SKILL, "scripts", "tres_cenarios.py"), "--cliente", "Teste", "--out", "sl.xlsx",
