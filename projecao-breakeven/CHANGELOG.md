@@ -2,6 +2,15 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v8.4.2 · 02/10/2026 · Breakeven: verba que zera em até 12 meses
+
+- `cenario_breakeven.py`: critério em dois degraus — a menor verba que zera o acumulado em até 12 meses depois do
+  último mês vivido; sem nenhuma, em até 24; sem nenhuma, a menor que vira o mês. Aceitar 24 de cara deixava a verba de
+  hoje zerando em 18 meses quando um degrau a mais zerava em 7, e a leitura com legado zerava antes da sem legado
+  (escritório de arquitetura: sem legado R$ 2 mil → mar/28; agora R$ 3 mil → abr/27, com legado jul/27). fábrica de acessórios de cortina com
+  legado passou de jan/28 para set/27.
+- `referencias/armadilhas.md`: item 19 (canal que sai do plano sai também do histórico).
+
 ## v8.4.1 · 01/10/2026 · Aprendizados de indústria química B2B e fábrica de acessórios de cortina
 
 - `referencias/armadilhas.md` (novo, lido antes de toda projeção): 18 armadilhas com o caso que as originou — entregar

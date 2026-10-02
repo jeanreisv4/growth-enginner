@@ -45,6 +45,11 @@ modelo estão em `inside_sales.md`, `ecommerce.md` e `plg.md`.
 
 ## Custo de mídia
 
+19. **Canal que sai do plano sai também do histórico.** No escritório de arquitetura o Q4 é só Meta: a fonte passou a
+    ser o bloco do Meta (investimento, impressões, cliques e leads do Meta), o Google saiu do legado (R$ 1.200) e os
+    leads de setembro que não eram do Meta também — o clique → lead da campanha atual caiu de 12,0% para 9,5%. Funil
+    abaixo do lead (MQL, SQL, venda) segue o consolidado quando o canal que saiu não teve gasto no período.
+
 12. **Mudança de mix entre canais muda o CPM inteiro.** A fábrica de acessórios de cortina saiu de quase todo Meta (CPM R$ 8 a R$ 18) para 75%
     Google (CPM combinado R$ 63). Mediana do período nesse caso puxa o CPM para um patamar que não volta com a divisão
     atual: fixe CPM, CTR e clique → lead na campanha atual (`--fixar`) e deixe o resto do funil usar o período longo.

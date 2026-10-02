@@ -121,17 +121,24 @@ def main():
     if a.teto_verba is not None:
         tetos = [a.teto_verba]
     if a.churn is None:
-        for i, teto in enumerate(tetos):
+        # critério em dois degraus: a menor verba que zera o acumulado em até 12 meses depois do último mês vivido;
+        # sem nenhuma, em até 24; sem nenhuma, a menor que vira o mês. Aceitar 24 de cara deixava a verba de hoje
+        # zerando em 18 meses quando um degrau a mais zerava em 8 (escritório de arquitetura).
+        for teto in tetos:
             d, args = tentar(teto, tmp=a.out + ".tmp")
             if d is None: continue
-            r = ler(d, 0, n_real + 24); r["teto"] = teto; sens.append(r)   # o acumulado zera em até 24 meses depois do último mês vivido
-            if escolhido is None and (r["fecha"] or a.teto_verba is not None):
-                escolhido = ("verba", teto, None)
-            if escolhido and len([s for s in sens if s["teto"] >= escolhido[1]]) >= 3:
+            r = ler(d, 0, n_real + 24); r["teto"] = teto
+            r["rapido"] = bool(r["zera"] and r["zera"] <= n_real + 12); sens.append(r)
+            if a.teto_verba is not None: break
+            rap = [x for x in sens if x["rapido"]]
+            if rap and len([x for x in sens if x["teto"] > rap[0]["teto"]]) >= 2:
                 break
-        if escolhido is None:   # o mês vira, mas o acumulado não zera em 24 meses: fica o menor teto que vira
-            vira = [s for s in sens if s["vira"]]
-            if vira: escolhido = ("verba", vira[0]["teto"], None)
+        escolha = (next((x for x in sens if x["rapido"]), None) or next((x for x in sens if x["fecha"]), None)
+                   or next((x for x in sens if x["vira"]), None))
+        if a.teto_verba is not None and sens:
+            escolha = sens[0]
+        if escolha:
+            escolhido = ("verba", escolha["teto"], None)
     recompra = []
     if escolhido is None and modelo == "inside_sales" and not pc.get("recorrencia") and not pc.get("recompra"):
         # recompra: do menor número de pedidos por cliente para o maior e, em cada um, da menor verba para a maior;
