@@ -710,7 +710,11 @@ def projetar_curva(levers, modelo, fee, midia, margem, comissao, acumulado_inici
         if RECOMPRA:   # recompra: 1º pedido dos novos + reposição dos ativos do mês anterior que seguem comprando
             ch_r = 1.0 / RECOMPRA["vida"]
             rep_ = base_rc * (1 - ch_r) * (lv["ticket"] or 0.0) * RECOMPRA["fator"] / RECOMPRA["intervalo"]
-            novos_ = VOL_REAL[t]["Vendas"] if t in VOL_REAL else vendas   # mês vivido: a base cresce com as vendas reais
+            # parte das vendas do funil já é recompra de quem comprou antes (medido no CRM): ela não é cliente novo,
+            # então não entra no faturamento de novos nem cresce a base — senão a recompra contaria duas vezes
+            novo_ = 1 - RECOMPRA.get("no_funil", 0.0)
+            receita *= novo_
+            novos_ = (VOL_REAL[t]["Vendas"] if t in VOL_REAL else vendas) * novo_   # mês vivido: a base cresce com as vendas reais
             base_rc = base_rc * (1 - ch_r) + novos_
             extra = {**extra, "receita_novos": round(receita, 2), "receita_recompra": round(rep_, 2), "clientes_ativos": round(base_rc, 2)}
             receita += rep_
@@ -922,7 +926,7 @@ def caminho(env, modelo, meses_ref, fee, midia, margem, comissao, mes_alvo, hori
     mc_real = por_real * (lv.get("ticket") or 0.0) * comissao * margem
     if RECOMPRA:   # com recompra, cada cliente que a mídia traz vale o 1º pedido + as reposições da vida dele
         ch_r = 1.0 / RECOMPRA["vida"]
-        mc_real *= 1 + (1 - ch_r) / ch_r * RECOMPRA["fator"] / RECOMPRA["intervalo"]
+        mc_real *= (1 - RECOMPRA.get("no_funil", 0.0)) * (1 + (1 - ch_r) / ch_r * RECOMPRA["fator"] / RECOMPRA["intervalo"])
     longo = rodar(env, teto=None, h=48)
     return {"criterio": f"resultado do M{mes_alvo} ≥ 0 (cada alavanca sozinha, as demais na rampa)",
             "resultado_mes_alvo_na_rampa": ult["resultado_liquido"], "acumulado_mes_alvo_na_rampa": ult["acumulado"],
@@ -1026,7 +1030,12 @@ def main():
     p.add_argument("--recompra", metavar="INTERVALO,VIDA[,FATOR]",
                    help="recompra B2B: o cliente novo paga o 1º pedido cheio e, enquanto segue ativo, recompra a cada INTERVALO meses "
                         "por VIDA meses em média (1/VIDA dos ativos param por mês), com o pedido de reposição = FATOR × ticket (padrão 1). "
-                        "Ex.: 3,12 = reposição trimestral por um ano. Sem --inicio, os clientes já conquistados nos meses fechados entram como base")
+                        "Ex.: 3,12 = reposição trimestral por um ano. Sem --inicio, os clientes já conquistados nos meses fechados entram como base. "
+                        "4º valor opcional NO_FUNIL: parcela das vendas do funil que já é recompra (medida no CRM; ex.: 3,12,1,0.12) — "
+                        "sai do faturamento de novos e da base para não contar a recompra duas vezes")
+    p.add_argument("--recompra-medida", metavar="ORIGEM",
+                   help="a recompra de --recompra foi medida, não é premissa do usuário: diga onde e como (ex.: 'CRM, ganhos casados por telefone, jun–set/26'); "
+                        "o texto vai para a seção Recompra da aba Premissas")
     p.add_argument("--premissa-mercado", action="append", default=[], metavar="CHAVE=VALOR[|FONTE]",
                    help="benchmark no lugar de dado que o cliente NÃO tem (nunca no lugar de dado medido): conexao_lead e conexao_mql "
                         "quando a fonte não tem a linha Conexões, ou qualquer alavanca sem evento na janela (ex.: sql_venda, ticket). "
@@ -1043,6 +1052,9 @@ def main():
     p.add_argument("--cpm-crescimento-ate", type=int, help="último mês em que o CPM base cresce (ex.: o mês em que a verba para de subir); depois fica estável")
     p.add_argument("--sazonalidade-demanda", help="multiplicador de vendas mês a mês a partir do Mês 1, ex.: 1,1,1.3,1.15 (Black Friday em novembro); depois da lista, 1")
     p.add_argument("--sazonalidade-cpm", help="multiplicador de CPM mês a mês a partir do Mês 1, ex.: 1,1,1.25,1; depois da lista, 1")
+    p.add_argument("--etapa-implicita", action="append", default=[], metavar="ETAPA",
+                   help="a linha da fonte desta etapa (ex.: SQLs) não mede: o volume vem da etapa anterior × a taxa fixada com --fixar, "
+                        "e a etapa seguinte é medida sobre ele (o realizado da tabela segue o da fonte)")
     p.add_argument("--fixar", action="append", default=[], metavar="ALAVANCA=VALOR",
                    help="fixa uma alavanca (atual e alvo) quando o histórico mistura campanhas diferentes; ex.: clique_lead=0.0615. Chaves: cpm, ctr, clique_lead (ou connect e visita_lead, quando há linha de visitas), lead_mql, mql_sql, sql_venda, ticket (inside sales); cpm, ctr, clique_sessao, sessao_cart, cart_checkout, checkout_trans, ticket, custo_sessao_meta (e-commerce)")
     p.add_argument("--ga4", help="resumo mensal do GA4 (saída do ga4_resumo.py): separa Google e Meta e mede carrinho e checkout do pago")
@@ -1122,8 +1134,27 @@ def main():
             if m.get(LINHAS_FIXAS["fee"]) is not None:
                 m[LINHAS_FIXAS["fee"] + " (fonte)"] = m[LINHAS_FIXAS["fee"]]
                 m[LINHAS_FIXAS["fee"]] = a.fee_historico
-    tx = taxas_efetivas(meses, a.modelo, a.janela, a.incluir_corrente)
-    tx["alertas"] += avisos
+    # Etapa implícita: a linha da fonte para esta etapa não mede (histórico perdido, contagem manual que oscila sem
+    # relação com as vendas). A taxa que leva a ela fica fixada (--fixar) e a etapa SEGUINTE é medida sobre o volume
+    # implícito (etapa anterior × taxa fixada), não sobre a linha da fonte. O realizado da tabela continua o da fonte.
+    # distribuidora de peças automotivas: SQLs manuais 64, 207, 33 com 24, 23, 22 vendas — SQL → venda de 37%, 11% e 67%, enquanto lead → venda
+    # ficava em 1,6% a 2,0%.
+    meses_med, avisos_imp = meses, []
+    for et in a.etapa_implicita:
+        lev = next(((k, den_) for k, _, num_, den_ in alavancas(a.modelo) if num_ == et), None)
+        fx = {i.split("=", 1)[0].strip(): float(i.split("=", 1)[1]) for i in a.fixar}
+        if not lev or lev[0] not in fx:
+            sys.exit(f"--etapa-implicita {et}: fixe a taxa que leva a ela ({lev[0] if lev else '?'}) com --fixar")
+        k_, den_ = lev
+        if meses_med is meses:
+            meses_med = [dict(m) for m in meses]
+        for m in meses_med:
+            if m.get(den_) is not None:
+                m[et] = (m.get(den_) or 0) * fx[k_]
+        avisos_imp.append(f"{et}: a linha da fonte não mede a etapa; o volume vem de {den_} × {fx[k_]:.2%} ({k_} fixada) e a etapa seguinte "
+                          f"é medida sobre ele. A tabela mostra o realizado da fonte nos meses vividos.")
+    tx = taxas_efetivas(meses_med, a.modelo, a.janela, a.incluir_corrente)
+    tx["alertas"] += avisos + avisos_imp
     if a.fee_historico is not None:
         fonte = sorted({m.get(LINHAS_FIXAS["fee"] + " (fonte)") for m in meses if m.get(LINHAS_FIXAS["fee"] + " (fonte)")})
         tx["alertas"].append(f"Fee da fonte ({', '.join(f'R$ {x:,.0f}' for x in fonte)}) substituído por R$ {a.fee_historico:,.0f}, o fee do contrato informado pelo usuário, em todo o histórico.")
@@ -1157,7 +1188,7 @@ def main():
     ticket = a.ticket or tx["ticket"]
     if not ticket:
         sys.exit("Ticket médio indisponível: informe --ticket.")
-    env = envelope(meses, a.modelo, a.janela, a.desde, a.incluir_corrente)
+    env = envelope(meses_med, a.modelo, a.janela, a.desde, a.incluir_corrente)
     # calendário do Mês 1 e realizado dos meses já vividos (entra no lugar da projeção, como na linha consolidada da planilha)
     rot_ = lambda m: f"{m['mes']}/{m['ano']}".replace(" ", "")
     if a.inicio:
@@ -1226,11 +1257,16 @@ def main():
         ch_r = 1.0 / xs[1]
         vk = MODELOS[a.modelo]["etapas"][-1]
         antes = [m for m in meses[:i0] if m["status"] == "fechado"]
-        base0 = sum((m.get(vk) or 0) * (1 - ch_r) ** (len(antes) - 1 - k) for k, m in enumerate(antes))
-        RECOMPRA = {"intervalo": xs[0], "vida": xs[1], "fator": xs[2] if len(xs) > 2 else 1.0, "base_inicial": round(base0, 4)}
+        nf = xs[3] if len(xs) > 3 else 0.0
+        if not 0 <= nf < 1:
+            sys.exit("--recompra INTERVALO,VIDA,FATOR,NO_FUNIL: NO_FUNIL é a parcela das vendas do funil que já é recompra (0 a <1)")
+        base0 = sum((m.get(vk) or 0) * (1 - nf) * (1 - ch_r) ** (len(antes) - 1 - k) for k, m in enumerate(antes))
+        RECOMPRA = {"intervalo": xs[0], "vida": xs[1], "fator": xs[2] if len(xs) > 2 else 1.0, "no_funil": nf, "base_inicial": round(base0, 4), "medida": a.recompra_medida}
         pedidos = 1 + (1 - ch_r) / ch_r / xs[0]
-        tx["alertas"].append(f"Recompra (premissa do usuário, não medida): o cliente repõe a cada {xs[0]:g} meses por {xs[1]:g} meses em média, "
+        tx["alertas"].append(f"Recompra ({'medida no CRM' if a.recompra_medida else 'premissa do usuário, não medida'}): o cliente repõe a cada {xs[0]:g} meses por {xs[1]:g} meses em média, "
                              f"com pedido de {RECOMPRA['fator']:.0%} do primeiro — cerca de {pedidos:.1f} pedidos por cliente. "
+                             + (f"{nf:.0%} das vendas do funil já são recompra de quem comprou antes: saem do faturamento de clientes novos e da base, "
+                                "para a recompra não contar duas vezes. " if nf else "")
                              + (f"{base0:.1f} clientes conquistados antes do Mês 1 entram como base ativa." if base0 else "A base começa vazia no Mês 1."))
     if split(a.modelo):  # a divisão da verba fica constante na projeção (premissa comercial editável no template)
         MODELOS[a.modelo]["participacao_meta"] = env["_split"]["participacao_meta_na_verba"]

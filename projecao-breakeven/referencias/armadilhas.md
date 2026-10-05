@@ -33,7 +33,26 @@ modelo estão em `inside_sales.md`, `ecommerce.md` e `plg.md`.
     setembro (índice 1,22 em brindes corporativos), aplicar outubro 1,57 conta o pico duas vezes. Divida pelo índice do
     mês-base.
 
+22. **Sazonalidade de busca aplicada à mídia de interrupção.** Na distribuidora de peças automotivas o Trends de "compressor ar condicionado
+    automotivo" subiu 50% de julho a setembro e as vendas V4 ficaram planas (24, 23, 22): metade da verba é Meta, que
+    não segue a busca. Confira a sazonalidade contra as vendas do próprio cliente nos meses da janela antes de aplicar;
+    se não acompanhou, aplique só à parcela de busca (`1 + parcela × (índice ÷ base − 1)`) e escreva isso como premissa.
+
 ## Fonte
+
+23. **Linha de etapa que não mede.** Na distribuidora de peças automotivas os SQLs manuais foram 64, 207 e 33 com 24, 23 e 22 vendas (SQL → venda
+    de 37%, 11% e 67%), enquanto lead → venda ficava entre 1,6% e 2,0%: o histórico de SQL se perdeu. Fixar só a etapa
+    de entrada deixava a de saída medida sobre a linha quebrada (otimista com 67%). Regra (v8.6): `--etapa-implicita
+    SQLs` com `--fixar mql_sql=<agrupado>` — o volume da etapa vem da anterior × a taxa fixada e a seguinte é medida
+    sobre ele; o realizado da tabela continua o da fonte.
+24. **Recompra que já está nas vendas do funil.** No CRM da distribuidora de peças automotivas, 12% das vendas V4 de jun a set eram de quem já tinha
+    comprado (o cliente volta pelo anúncio e ganha a etiqueta V4 de novo). Somar `--recompra` em cima contava essas
+    vendas duas vezes. Regra (v8.6): meça no CRM (ganhos casados por telefone) a parcela das vendas do funil que é
+    recompra e passe como 4º valor (`--recompra 16,24,0.7,0.12`, com `--recompra-medida 'origem'`): ela segue na
+    linha de vendas, como no Growth Pack, mas sai do faturamento de novos e não cresce a base.
+25. **Mercado mexendo em etapa fixada.** Com MQL = lead (o cliente não mede MQL) e lead → SQL fixado em 8%, o Breakeven
+    comparava "MQL → SQL" com os 42% do mercado e subiria a etapa 5x. Etapa fixada pelo usuário fica onde está no
+    Breakeven ("fica (fixada pelo usuário)"); quem mexe no funil de mercado é só o que foi medido.
 
 6. **Linha copiada de outra.** Na fábrica de acessórios de cortina, "Conexão (manual)" repetia a linha de SQLs mês a mês. Compare as linhas do
    funil entre si antes de aceitar: linha idêntica a outra não é medida — vira premissa de mercado (`--premissa-mercado`)

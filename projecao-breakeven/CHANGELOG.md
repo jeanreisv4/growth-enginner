@@ -2,6 +2,21 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v8.6.0 · 05/10/2026 · Etapa que não mede, recompra que já está no funil
+
+- `breakeven_pilot.py --etapa-implicita ETAPA`: a linha da fonte da etapa (ex.: SQLs) não mede; o volume vem da etapa
+  anterior × a taxa fixada com `--fixar` e a etapa seguinte é medida sobre ele. Os cenários continuam variando pelo
+  lead → venda real, e o realizado da tabela segue o da fonte. Caso distribuidora de peças automotivas: SQLs manuais 64, 207, 33 com 24, 23, 22 vendas.
+- `--recompra INTERVALO,VIDA,FATOR,NO_FUNIL`: 4º valor = parcela das vendas do funil que já é recompra (medida no CRM).
+  Ela segue na linha de vendas, sai do faturamento de clientes novos e não cresce a base; o template ganha a premissa
+  editável "Recompra · parcela das vendas do funil que já é recompra". `--recompra-medida 'origem'` troca "premissa"
+  por "medida" na aba Premissas, no Breakeven e na thread.
+- `cenario_breakeven.py`: etapa fixada pelo usuário não vai ao nível de mercado ("fica (fixada pelo usuário)").
+- SKILL.md: medir a recompra no CRM antes de perguntar, etapa implícita, sazonalidade de busca só na parcela de busca
+  quando as vendas do cliente não acompanharam o índice.
+- `referencias/armadilhas.md`: itens 22 a 25. `publicar.py`: distribuidora de peças automotivas no mapa de anonimização.
+- Regressão: caso "SQL implícito + recompra já no funil + etapa fixada fora do mercado" (37 casos).
+
 ## v8.5.0 · 02/10/2026 · Breakeven: quando o plano já bate, o piso
 
 - `cenario_breakeven.py`: antes de procurar mercado e verba, roda o desejado com a verba de hoje. Se ele zera o

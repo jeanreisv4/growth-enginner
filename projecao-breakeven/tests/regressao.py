@@ -360,6 +360,40 @@ def main():
         falhas = [str(e)]
     total += len(falhas)
     print(f"{'OK   ' if not falhas else 'FALHA'} breakeven quando o plano já bate (piso)" + "".join(f"\n      - {f}" for f in falhas[:12]))
+    try:   # SQL que não mede (etapa implícita) + recompra que já está nas vendas do funil + etapa fixada fora do mercado (v8.6)
+        sub = os.path.join(tmp, "implicita"); os.makedirs(sub, exist_ok=True)
+        rodar([os.path.join(SKILL, "scripts", "tres_cenarios.py"), "--cliente", "Teste", "--out", "imp.xlsx",
+               "--piloto", f"--fonte {os.path.join(FIX, 'indicadores_inside_sales.csv')} --modelo inside_sales --fee 1200 --midia 5000 "
+                           "--margem 0.3 --comissao 1 --mes-alvo 6 --horizonte 6 --fixar conexao=0.6 --fixar conexao_sql=0.13 "
+                           "--etapa-implicita SQLs --recompra 6,24,0.7,0.2 --recompra-medida 'CRM de teste'",
+               "--gerador", "--modelo inside_sales"], sub)
+        xl = os.path.join(sub, "imp.xlsx")
+        pj = json.load(open(os.path.join(sub, "premissas_desejado.json"), encoding="utf-8"))
+        rot_nf = "[R$] FATURAMENTO DE CLIENTES NOVOS (VENDAS × (1 − % JÁ RECOMPRA) × TICKET)"
+        falhas = conferir_planilha(xl, "Desejado", "[R$] FATURAMENTO TOTAL (NOVOS + RECOMPRA)", pj["projecao"],
+                                   exige=("Recompra · parcela das vendas do funil que já é recompra",), metodologia=("RECOMPRA · MEDIDA",),
+                                   series={rot_nf: "receita_novos",
+                                           "[R$] RECOMPRA (ATIVOS DO MÊS ANTERIOR × TICKET × FATOR ÷ INTERVALO)": "receita_recompra",
+                                           "[QNTD] CLIENTES ATIVOS COMPRANDO (FIM DO MÊS)": "clientes_ativos"})
+        sv = pj["envelope"]["sql_venda"]["atual"]   # medido sobre o SQL implícito (jul–set): 7 vendas ÷ (645 conexões × 13%), não ÷ 87 SQLs da fonte
+        if abs(sv - 7 / (645 * 0.13)) > 1e-4:
+            falhas.append(f"SQL → venda medido sobre a linha da fonte, não sobre o SQL implícito: {sv:.4%}")
+        l1 = pj["projecao"][0]
+        esp = l1["vendas"] * 0.8 * pj["rampa"]["taxas_mes_a_mes"][0]["ticket"]   # vendas sai arredondada em 2 casas
+        if abs(l1["receita_novos"] - esp) > 0.005 * esp:
+            falhas.append(f"faturamento de novos não desconta os 20% que já são recompra: {l1['receita_novos']:,.2f}")
+        if [h.get("SQLs") for h in pj["historico"]][:3] != [29, 32, 34]:
+            falhas.append("o realizado de SQLs deixou de ser o da fonte")
+        wbb = openpyxl.load_workbook(xl)
+        txt_b = [c.value for row in wbb["Premissas · Breakeven"].iter_rows() for c in row if isinstance(c.value, str)]
+        if "fica (fixada pelo usuário)" not in txt_b:
+            falhas.append("Breakeven levou ao mercado uma etapa fixada pelo usuário (conexão)")
+        if any(a_.startswith("conexao=") for a_ in json.load(open(os.path.join(sub, "premissas_breakeven.json"), encoding="utf-8"))["premissas_confirmadas"]["alvos_mercado"]):
+            falhas.append("--alvo de mercado na conexão fixada")
+    except RuntimeError as e:
+        falhas = [str(e)]
+    total += len(falhas)
+    print(f"{'OK   ' if not falhas else 'FALHA'} SQL implícito + recompra já no funil + etapa fixada fora do mercado" + "".join(f"\n      - {f}" for f in falhas[:12]))
     try:   # leitura sem legado na frente e com legado depois, cada aba com o seu Mês 1
         sub = os.path.join(tmp, "sem_legado"); os.makedirs(sub, exist_ok=True)
         rodar([os.path.join(SKILL, "scripts", "tres_cenarios.py"), "--cliente", "Teste", "--out", "sl.xlsx",

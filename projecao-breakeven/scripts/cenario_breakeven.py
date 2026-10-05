@@ -128,7 +128,7 @@ def piso(a, base, args0, r0, k, env, n_real, verba0):
     linhas.append(f"Verba: fica em {rs(verba0)}.")
     if pc.get("recompra"):
         rc_ = pc["recompra"]
-        linhas.append(f"Recompra (premissa da projeção principal, não medida): reposição a cada {rc_['intervalo']:g} meses por {rc_['vida']:g} meses. "
+        linhas.append(f"Recompra ({'medida no CRM' if rc_.get('medida') else 'premissa da projeção principal, não medida'}): reposição a cada {rc_['intervalo']:g} meses por {rc_['vida']:g} meses. "
                       + (f"Sem ela, o piso de {rot_k} sobe para {pct(sem_rc)}." if sem_rc else
                          f"Sem ela, nem o plano zera o acumulado até {cal(lim)}: a recompra é o que segura a conta e a primeira coisa a medir."))
     linhas.append("Resultado no piso: " + (f"mês no azul a partir de {cal(r['azul'])}" if r["azul"] else "nenhum mês fica no azul")
@@ -176,7 +176,9 @@ def main():
         if not e or e.get("atual") is None:
             continue
         atual = e["atual"]
-        if m and atual < m["valor"]:
+        if m and e.get("fixada"):   # o usuário fixou a etapa por um motivo (medição, campanha atual): o mercado não a mexe
+            linhas_m.append([e["rotulo"], f"{br(atual * 100, 1)}%", f"{br(m['valor'] * 100, 1)}%", m["fonte"], "fica (fixada pelo usuário)"])
+        elif m and atual < m["valor"]:
             alvo = max(m["valor"], e.get("mediana") or 0)
             alvos += ["--alvo", f"{k}={alvo:.4f}"]
             linhas_m.append([e["rotulo"], f"{br(atual * 100, 1)}%", f"{br(m['valor'] * 100, 1)}%", m["fonte"], f"{br(alvo * 100, 1)}%"])
@@ -289,8 +291,9 @@ def main():
                   else f"Verba: fica em {rs(verba0)} — com o funil de mercado a conta fecha sem subir a verba.")
     if pc.get("recompra"):
         rc_ = pc["recompra"]
-        linhas.append(f"Recompra (premissa da projeção principal): reposição a cada {rc_['intervalo']:g} meses por {rc_['vida']:g} meses, "
-                      f"com pedido de {rc_.get('fator', 1):.0%} do primeiro.")
+        linhas.append(f"Recompra ({'medida no CRM, na projeção principal' if rc_.get('medida') else 'premissa da projeção principal'}): "
+                      f"reposição a cada {rc_['intervalo']:g} meses por {rc_['vida']:g} meses, com pedido de {rc_.get('fator', 1):.0%} do primeiro"
+                      + (f"; {rc_['no_funil']:.0%} das vendas do funil já são recompra e não contam como cliente novo." if rc_.get('no_funil') else "."))
     if tipo == "recompra":
         linhas.append(f"Recompra: o funil de mercado com verba não basta; entra cliente comprando todo mês, com {br(churn * 100, 0)}% dos clientes ativos "
                       f"parando a cada mês — cerca de {br(1 / churn, 1)} pedidos por cliente. Não é medido hoje: confirme com o cliente antes de apresentar.")

@@ -215,7 +215,7 @@ def _simplificar_is(cfg, p):
           ("rc_vida", "Recompra · meses que o cliente segue comprando (média)", rc['vida'], '0'),
           ("rc_fator", "Recompra · pedido de reposição ÷ primeiro pedido", rc.get('fator', 1.0), FMT_PCT0),
           ("rc_base0", "Recompra · clientes já ativos no início do Mês 1", rc.get('base_inicial', 0) or 0, FMT_DEC),
-        ]
+        ] + ([("rc_nf", "Recompra · parcela das vendas do funil que já é recompra", rc['no_funil'], FMT_PCT0)] if rc.get('no_funil') else [])
         cfg['charts'] = cfg['charts'] + [dict(type='line', title="Faturamento por origem: clientes novos e recompra",
                                               series=[('fat_novos', RED, False), ('rec_recompra', GREEN, False)], y_fmt=FMT_BRL)]
     rec = p.get('recorrencia')
@@ -346,12 +346,14 @@ def _simplificar_is(cfg, p):
         j = next(k for k, m in enumerate(mets) if m[0] == 'gmv') + 1
         mets[j:j] = bloco
     if rc:
+        nf_ = "*(1-{P_rc_nf})" if rc.get('no_funil') else ""   # parte das vendas do funil já é recompra: não é cliente novo
         j = next(k for k, m in enumerate(mets) if m[0] == 'gmv')
         mets[j:j] = [
-          ('fat_novos', "[R$] FATURAMENTO DE CLIENTES NOVOS (VENDAS × TICKET)", 'calc', "={c}{vendas}*{c}{ticket}", FMT_BRL, 'sum', '""'),
+          ('fat_novos', "[R$] FATURAMENTO DE CLIENTES NOVOS (VENDAS × TICKET)" if not nf_ else "[R$] FATURAMENTO DE CLIENTES NOVOS (VENDAS × (1 − % JÁ RECOMPRA) × TICKET)",
+           'calc', "={c}{vendas}*{c}{ticket}" + nf_, FMT_BRL, 'sum', '""'),
           ('cli_ativos', "[QNTD] CLIENTES ATIVOS COMPRANDO (FIM DO MÊS)", 'calcf',
-           ("={P_rc_base0}*(1-1/{P_rc_vida})+IF({HAS}=0,{c}{vendas},{r}{vendas})",
-            "={p}{cli_ativos}*(1-1/{P_rc_vida})+IF({HAS}=0,{c}{vendas},{r}{vendas})"), FMT_DEC, 'last', '""'),
+           ("={P_rc_base0}*(1-1/{P_rc_vida})+IF({HAS}=0,{c}{vendas},{r}{vendas})" + nf_,
+            "={p}{cli_ativos}*(1-1/{P_rc_vida})+IF({HAS}=0,{c}{vendas},{r}{vendas})" + nf_), FMT_DEC, 'last', '""'),
           ('rec_recompra', "[R$] RECOMPRA (ATIVOS DO MÊS ANTERIOR × TICKET × FATOR ÷ INTERVALO)", 'calcf',
            ("={P_rc_base0}*(1-1/{P_rc_vida})*{c}{ticket}*{P_rc_fator}/{P_rc_int}",
             "={p}{cli_ativos}*(1-1/{P_rc_vida})*{c}{ticket}*{P_rc_fator}/{P_rc_int}"), FMT_BRL, 'sum', '""'),
@@ -1263,11 +1265,15 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
     if rc_:
         ch_ = 1.0 / float(rc_['vida'])
         ped_ = 1 + (1 - ch_) / ch_ / float(rc_['intervalo'])
-        metodologia.append(("RECOMPRA · PREMISSA DO MODELO DE NEGÓCIO", [
+        metodologia.append(("RECOMPRA · MEDIDA" if rc_.get('medida') else "RECOMPRA · PREMISSA DO MODELO DE NEGÓCIO", [
             f"O cliente que a mídia traz paga o primeiro pedido cheio no mês da compra e, enquanto segue ativo, repõe a cada {float(rc_['intervalo']):g} meses, "
             f"com pedido de {float(rc_.get('fator', 1)):.0%} do primeiro. Em média ele segue comprando {float(rc_['vida']):g} meses ({ch_:.1%} dos ativos param a cada mês): "
             f"cerca de {br(ped_, 1)} pedidos por cliente.",
-            "É premissa do usuário, não medida: a fonte só registra o primeiro pedido. Confirme com o cliente quantos dos que já compraram voltaram e de quanto em quanto tempo.",
+            (f"Medida: {rc_['medida']}." if rc_.get('medida') else
+             "É premissa do usuário, não medida: a fonte só registra o primeiro pedido. Confirme com o cliente quantos dos que já compraram voltaram e de quanto em quanto tempo."),
+            *([f"{float(rc_['no_funil']):.0%} das vendas do funil já são recompra de quem comprou antes (o cliente volta pelo anúncio): elas seguem na linha de vendas, "
+               "como no Growth Pack, mas saem do faturamento de clientes novos e não crescem a base — a recompra delas já está na linha de recompra."]
+              if rc_.get('no_funil') else []),
             (f"Clientes conquistados antes do Mês 1 entram como base ativa: {br(float(rc_.get('base_inicial') or 0), 1)} no início, já descontado quem parou."
              if rc_.get('base_inicial') else "A base de clientes começa nos meses da própria tabela (os já vividos entram pelas vendas realizadas)."),
             "As premissas estão no topo da aba de projeção (amarelo) e as linhas de clientes ativos e recompra mostram o efeito mês a mês."]))
