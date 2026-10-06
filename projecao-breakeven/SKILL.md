@@ -5,7 +5,7 @@ description: Projeção de breakeven de mídia paga a partir do histórico do cl
 
 # Projeção de breakeven
 
-**Versão 8.6.0 (05/10/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
+**Versão 8.7.0 (06/10/2026).** O histórico está em `CHANGELOG.md`. Os caminhos abaixo são relativos à pasta da skill (`.claude/skills/projecao-breakeven/`).
 
 A skill tem duas metades. A primeira é a entrevista: ela **conduz**, e não espera o usuário lembrar o que precisa informar. A segunda é a execução automática: com as premissas confirmadas, ela roda o piloto, dá o veredito e preenche o template, sem etapa manual.
 
@@ -183,7 +183,7 @@ A etapa só entra quando o connect rate é **mensurável**: a linha tem dado em 
 - **Sessões não pagas** vêm do GA4 ou da linha da fonte, nunca zeradas por conveniência. A base projetada é a média dos meses fechados.
 
 **Cenários: sempre três, cada um numa aba** (`scripts/tres_cenarios.py`)
-- **Pessimista** (`--cenario pessimista`): as taxas atuais ficam constantes até o fim, sem rampa. É a linha de base, nunca o plano.
+- **Pessimista** (`--cenario pessimista`): nada melhora — as taxas atuais ficam constantes e, onde a janela está acima da mediana do período (cliente no melhor trimestre), a alavanca volta à mediana ao longo da rampa. Sem essa volta, pessimista e desejado saíam iguais (loja de pisos, v8.7). É a linha de base, nunca o plano.
 - **Desejado** (padrão): a rampa até a mediana do período comparável. É o plano e o compromisso.
 - **Otimista** (`--cenario otimista`): a rampa até o **melhor mês fechado** do período, ou até o benchmark de `--alvo` quando ele é maior. É o teto do que já aconteceu no cliente ou no mercado, nunca uma combinação inventada; alavanca fixada (`--fixar`, `--premissa-mercado`) não muda em nenhum cenário.
 - Os três usam o mesmo histórico e as mesmas premissas confirmadas; só o alvo da rampa muda. A planilha sai com as abas Pessimista, Desejado e Otimista, cada uma com a sua aba Premissas, e o gráfico de resultado acumulado de cada aba mostra as três linhas.

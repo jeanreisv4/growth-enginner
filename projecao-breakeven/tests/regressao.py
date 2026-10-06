@@ -284,8 +284,15 @@ def main():
                 t_ = d["detectado"]["taxas_efetivas"].get("ticket")
                 if t_ is None or abs(t_ - caso["ticket_esperado"]) > 0.01:
                     raise RuntimeError(f"ticket da janela {t_} ≠ {caso['ticket_esperado']}: com recorrência a mensalidade vem da linha, não de receita ÷ vendas")
-            if caso["nome"] == "inside_sales_pessimista" and d["projecao"] != d["projecao_base"]:
-                raise RuntimeError("cenário pessimista com rampa: a projeção entregue tem de ser a das taxas atuais")
+            if caso["nome"] == "inside_sales_pessimista":   # nada melhora: alvo = atual, ou a mediana quando a janela está acima dela
+                env_ = {k: e for k, e in d["envelope"].items() if not k.startswith("_") and e.get("atual") is not None}
+                for k, e in env_.items():
+                    pior_ = max if e["sentido"] == "menor" else min
+                    esp = e["atual"] if e.get("fixada") or e.get("mediana") is None else pior_(e["atual"], e["mediana"])
+                    if abs(e["alvo"] - esp) > 1e-9:
+                        raise RuntimeError(f"cenário pessimista: {k} com alvo {e['alvo']} (esperado {esp})")
+                if all(abs(e["alvo"] - e["atual"]) < 1e-12 for e in env_.values()) and d["projecao"] != d["projecao_base"]:
+                    raise RuntimeError("cenário pessimista com rampa sem alavanca acima da mediana: a projeção tem de ser a das taxas atuais")
             if caso["nome"] == "inside_sales_otimista":
                 base_ = json.load(open(os.path.join(tmp, "premissas_inside_sales.json"), encoding="utf-8"))
                 if d["projecao"][-1]["acumulado"] < base_["projecao"][-1]["acumulado"] - 0.01:
@@ -416,6 +423,33 @@ def main():
         falhas = [str(e)]
     total += len(falhas)
     print(f"{'OK   ' if not falhas else 'FALHA'} sem legado + com legado" + "".join(f"\n      - {f}" for f in falhas[:12]))
+    try:   # cliente no melhor trimestre e contrato já pago: pessimista volta à mediana; o piso com legado não gasta a folga
+        sub = os.path.join(tmp, "pico"); os.makedirs(sub, exist_ok=True)
+        rodar([os.path.join(SKILL, "scripts", "tres_cenarios.py"), "--cliente", "Teste", "--out", "pico.xlsx",
+               "--piloto", f"--fonte {os.path.join(FIX, 'indicadores_pico.csv')} --modelo inside_sales --fee 2000 --midia 3000 "
+                           "--margem 0.3 --comissao 1 --inicio janeiro/2026 --acumulado-inicial 0 --horizonte 12 --mes-alvo 12",
+               "--gerador", "--modelo inside_sales --inicio-contrato janeiro/2026", "--sem-legado", "--horizonte 3 --mes-alvo 3"], sub)
+        xl = os.path.join(sub, "pico.xlsx"); falhas = []
+        pj = {f"{c}_{s_}": json.load(open(os.path.join(sub, f"premissas_{c}_{s_}_legado.json"), encoding="utf-8"))
+              for c in ("pessimista", "desejado", "breakeven") for s_ in ("sem", "com")}
+        e_ = pj["pessimista_sem"]["envelope"]["sql_venda"]
+        if not (e_["atual"] > e_["mediana"] and abs(e_["alvo"] - e_["mediana"]) < 1e-9):
+            falhas.append(f"pessimista: SQL → venda devia voltar à mediana {e_['mediana']:.4f} (atual {e_['atual']:.4f}, alvo {e_['alvo']:.4f})")
+        if not pj["pessimista_sem"]["projecao"][-1]["acumulado"] < pj["desejado_sem"]["projecao"][-1]["acumulado"]:
+            falhas.append("pessimista igual ao desejado com a janela acima da mediana")
+        piso_ = pj["breakeven_com"]["envelope"]["sql_venda"]["alvo"]
+        if not piso_ > 0.01:
+            falhas.append(f"piso com legado gastou a folga do contrato: SQL → venda {piso_:.4f}")
+        txt = json.dumps(json.load(open(os.path.join(sub, "metodologia_breakeven_com_legado.json"), encoding="utf-8")), ensure_ascii=False)
+        if "não gasta essa folga" not in txt:
+            falhas.append("aba Breakeven com legado não explica a folga do contrato")
+        for aba in ("Pessimista sem legado", "Breakeven com legado"):
+            falhas += conferir_planilha(xl, aba, "[R$] FATURAMENTO (VENDAS × TICKET)",
+                                        pj[aba.split()[0].lower() + ("_sem" if "sem" in aba else "_com")]["projecao"])
+    except RuntimeError as e:
+        falhas = [str(e)]
+    total += len(falhas)
+    print(f"{'OK   ' if not falhas else 'FALHA'} melhor trimestre: pessimista na mediana + piso sem gastar a folga" + "".join(f"\n      - {f}" for f in falhas[:12]))
     demo = os.path.join(tmp, "demo.xlsx")
     try:
         rodar([os.path.join(SKILL, "gerador", "build_workbook.py"), demo], tmp)

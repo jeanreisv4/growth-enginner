@@ -2,6 +2,22 @@
 
 Cada versão muda o que o cliente vê. Antes de publicar uma versão nova, rode `python3 tests/regressao.py`.
 
+## v8.7.0 · 06/10/2026 · Cliente no melhor trimestre, contrato que já se pagou
+
+- `breakeven_pilot.py --cenario pessimista`: nada melhora — cada alavanca fica na taxa atual e, onde a janela está acima
+  da mediana do período, volta à mediana ao longo da rampa. Antes, cliente no melhor trimestre tinha pessimista igual ao
+  desejado (loja de pisos: os dois em R$ 75.721; agora pessimista R$ 46.708, desejado R$ 75.721, otimista R$ 105.038).
+- `cenario_breakeven.py`, piso: quando o contrato já se pagou (leitura com legado e acumulado positivo no último mês
+  vivido), o piso não gasta a folga — os meses daqui para frente têm de se pagar sozinhos. Antes, os R$ 134 mil da
+  loja de pisos cobriam os meses à frente até sem venda e o piso saía SQL → venda = 0% (e a linha "necessário para zerar o
+  mês" zerava). A aba diz quanto é a folga.
+- `--etapa-implicita` repetido (MQLs e SQLs) quando as duas linhas manuais não fecham entre si: o otimista deixa de
+  combinar melhores meses de etapas quebradas (R$ 606 mil em 3 meses com SQL → venda de 63% num mês de 8 SQLs).
+- SKILL.md e textos (thread, aba Premissas, gerador): a nova regra do pessimista.
+- `referencias/armadilhas.md`: itens 26 a 29. `publicar.py`: loja de pisos no mapa de anonimização.
+- Regressão: caso "melhor trimestre: pessimista na mediana + piso sem gastar a folga" e checagem do pessimista pela
+  regra nova (38 casos).
+
 ## v8.6.0 · 05/10/2026 · Etapa que não mede, recompra que já está no funil
 
 - `breakeven_pilot.py --etapa-implicita ETAPA`: a linha da fonte da etapa (ex.: SQLs) não mede; o volume vem da etapa

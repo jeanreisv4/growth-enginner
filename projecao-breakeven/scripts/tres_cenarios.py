@@ -2,7 +2,7 @@
 """
 tres_cenarios.py — roda o piloto nos três cenários e monta uma planilha só, com uma aba por cenário.
 
-  Pessimista  taxas atuais, sem rampa (nada melhora)
+  Pessimista  taxas atuais (nada melhora), ou de volta à mediana onde a janela está acima dela
   Desejado    rampa até a mediana do período comparável (o plano; é o compromisso)
   Otimista    rampa até o melhor mês fechado do período, ou o benchmark de --alvo quando ele é maior
 

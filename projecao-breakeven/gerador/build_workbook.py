@@ -979,7 +979,7 @@ def config_from_premissas(path, modelo, cliente, cenario, obs=None, inicio_contr
                 'alvo_em': f"M{rampa['atinge_alvo_em']}",
                 'nota': ({"desejado": "O alvo da rampa é a mediana do período comparável em cada alavanca, e nunca é pior que a taxa atual",
                           "otimista": "Cenário otimista: o alvo da rampa é o melhor mês fechado do período (ou o benchmark de mercado, quando é maior), nunca pior que a taxa atual",
-                          "pessimista": "Cenário pessimista: não há rampa, as taxas atuais seguem constantes"}[cen_]
+                          "pessimista": "Cenário pessimista: nada melhora; cada alavanca fica na taxa atual e, onde a janela está acima da mediana do período, volta à mediana"}[cen_]
                          + f"; a rampa caminha linearmente até M{rampa['atinge_alvo_em']}. "
                          f"Evidência de que o nível é atingível: {rampa.get('motivo')}."
                          + (f" Alvo por benchmark de mercado, porque o histórico é curto demais: {', '.join(mercado)} (fontes na seção de benchmarks)." if mercado else ""))}

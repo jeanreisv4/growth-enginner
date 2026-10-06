@@ -113,7 +113,7 @@ RECORRENCIA = None  # assinatura (SaaS): {'churn': [taxa por mês], 'base_inicia
                     # Convenção declarada: base_t = base_(t-1) × (1 − churn_t) + novas_t; a safra nova não sofre churn no mês em que entra.
 VERBA_PLANO = None  # verba mês a mês (--verba-plano); depois do último mês do plano, repete o último valor
 TAXA_MAX = 1.0    # taxa de etapa não pode passar de 100%: quando a fonte dá mais, o denominador está subcontado
-CENARIO = "desejado"  # pessimista (taxas atuais, sem rampa), desejado (rampa até a mediana) ou otimista (rampa até o melhor mês ou o mercado)
+CENARIO = "desejado"  # pessimista (taxas atuais, ou a mediana quando a janela está acima dela), desejado (rampa até a mediana) ou otimista (rampa até o melhor mês ou o mercado)
 CICLO = None        # ciclo de vendas: fração das vendas originadas no mês t que FECHA em t, t+1, t+2... (soma 1). Sem ele, [lag, 1 − lag]
 RECOMPRA = None     # recompra B2B (lojista que repõe estoque): {'intervalo', 'vida', 'fator', 'base_inicial'}. O cliente novo paga o
                     # 1º pedido cheio no mês da compra; quem segue ativo recompra ticket × fator a cada `intervalo` meses;
@@ -938,7 +938,7 @@ def caminho(env, modelo, meses_ref, fee, midia, margem, comissao, mes_alvo, hori
 
 ALVO_CENARIO = {"desejado": "a mediana do período comparável",
                 "otimista": "o melhor mês do período (ou o mercado, quando é maior)",
-                "pessimista": "a taxa atual (o cenário pessimista não tem rampa)"}
+                "pessimista": "a taxa atual, ou a mediana do período quando a janela está acima dela"}
 
 
 def leitura(v, env, mes_alvo, horizonte):
@@ -1022,7 +1022,7 @@ def main():
                                    "ex.: 0.45,0.35,0.20. Meça no CRM com scripts/ciclo_crm.py (criação × fechamento das vendas ganhas)")
     p.add_argument("--ciclo-dias", type=float, help="sem CRM: ciclo médio em dias (ex.: 45), convertido numa curva por mês; premissa do usuário")
     p.add_argument("--cenario", choices=["desejado", "pessimista", "otimista"], default="desejado",
-                   help="pessimista = taxas atuais sem rampa; desejado = rampa até a mediana do período (padrão); "
+                   help="pessimista = taxas atuais, ou a mediana do período quando a janela está acima dela; desejado = rampa até a mediana do período (padrão); "
                         "otimista = rampa até o melhor mês do período ou o benchmark de --alvo, o que for maior")
     p.add_argument("--sazonalidade-historico", nargs="?", const="auto",
                    help="sazonalidade da demanda tirada do faturamento do PRÓPRIO cliente (12+ meses): sem valor, procura a linha de faturamento "
@@ -1358,14 +1358,17 @@ def main():
     if env["ticket"]["atual"] is None:
         env["ticket"]["atual"] = ticket
     # Cenários: o mesmo histórico e as mesmas premissas, com três alvos de rampa diferentes.
-    # Pessimista: nada melhora (as taxas da janela seguem até o fim). Desejado: a mediana do período (o plano).
+    # Pessimista: nada melhora (as taxas da janela seguem até o fim) e, onde a janela está acima da mediana do período,
+    # a alavanca volta à mediana — sem isso, cliente no melhor trimestre tinha pessimista igual ao desejado (loja de pisos, v8.7).
+    # Desejado: a mediana do período (o plano), nunca pior que a taxa atual.
     # Otimista: o melhor mês fechado do período, ou o benchmark de --alvo quando ele é maior — sempre um nível
     # que já aconteceu no cliente ou no mercado, nunca uma combinação inventada. Alavanca fixada não muda.
     for k, e in env.items():
         if k.startswith("_") or e.get("atual") is None:
             continue
         if CENARIO == "pessimista":
-            e["alvo"] = e["atual"]
+            pior_ = max if e["sentido"] == "menor" else min
+            e["alvo"] = e["atual"] if e.get("fixada") or e.get("mediana") is None else pior_(e["atual"], e["mediana"])
         elif CENARIO == "otimista" and not e.get("fixada"):
             melhor_ = lambda x, y: (min(x, y) if e["sentido"] == "menor" else max(x, y)) if None not in (x, y) else (x if y is None else y)
             cand = e.get("melhor") if e.get("melhor") is not None else e.get("alvo")
@@ -1374,7 +1377,7 @@ def main():
             cand = melhor_(cand, e["atual"])
             e["alvo"] = cand
     if CENARIO != "desejado":
-        tx["alertas"].append({"pessimista": "Cenário pessimista: as taxas da janela ficam constantes até o fim, sem rampa.",
+        tx["alertas"].append({"pessimista": "Cenário pessimista: nada melhora — cada alavanca fica na taxa atual e, onde a janela está acima da mediana do período, volta à mediana ao longo da rampa.",
                               "otimista": "Cenário otimista: cada alavanca caminha até o melhor mês fechado do período (ou até o benchmark de mercado, quando é maior); "
                                           "é o teto do que já aconteceu, não a promessa."}[CENARIO])
     v, cen = veredito(env, a.modelo, a.fee, a.midia, a.margem, a.comissao, a.mes_alvo, a.horizonte, a.acumulado_inicial, a.lag, ticket, a.crescimento_midia, a.midia_teto)
@@ -1402,7 +1405,7 @@ def main():
                                                    ("premissa: --lag" if a.lag < 0.999 else "sem ciclo: a venda fecha no mês do lead"))),
                                   "premissas_mercado": PREMISSA_MERCADO, "recompra": RECOMPRA,
                                   "realizado_usado": {str(k): round(x, 2) for k, x in REALIZADO.items()},
-                                  "regra_taxas": (f"janela de {a.janela} mês(es) fechado(s)" + (" + mês corrente parcial" if a.incluir_corrente else "") + ", ponderada por volume; " + {"desejado": "rampa até a mediana do período comparável", "otimista": "rampa até o melhor mês do período (ou o mercado, quando maior)", "pessimista": "sem rampa: as taxas atuais ficam constantes"}[CENARIO])},
+                                  "regra_taxas": (f"janela de {a.janela} mês(es) fechado(s)" + (" + mês corrente parcial" if a.incluir_corrente else "") + ", ponderada por volume; " + {"desejado": "rampa até a mediana do período comparável", "otimista": "rampa até o melhor mês do período (ou o mercado, quando maior)", "pessimista": "taxas atuais, ou rampa de volta à mediana onde a janela está acima dela"}[CENARIO])},
         "detectado": detectado, "historico": meses, "historico_resultado": hist_result,
         "teto_receita": env.get("_teto_receita"),
         "envelope": {k: e for k, e in env.items() if not k.startswith("_")},

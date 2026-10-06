@@ -69,9 +69,18 @@ def piso(a, base, args0, r0, k, env, n_real, verba0):
     ainda zera no mesmo prazo (12 meses depois do último mês vivido), com e sem a recompra."""
     pc = base["premissas_confirmadas"]
     lim = n_real + 12
+    # Contrato que já se pagou (leitura com legado e acumulado positivo no último mês vivido): a folga do que já foi
+    # ganho cobria os meses à frente até sem venda nenhuma, e o piso saía zero (loja de pisos: R$ 134 mil de folga, SQL → venda
+    # de 0%). O piso não gasta a folga: os meses daqui para frente têm de se pagar sozinhos, como na leitura sem legado.
+    folga = next((l["acumulado"] for l in base["projecao"] if l["mes"] == n_real), 0) if n_real else 0
+    folga = folga if folga > 0 else 0
 
     def roda(args, v=None, chave=k):
         d = rodar(args + (["--fixar", f"{chave}={v:.6f}"] if v is not None else []), a.out + ".tmp")
+        if d and folga:
+            d = {**d, "projecao": [{**l, "acumulado": l["acumulado"] - folga} for l in d["projecao"] if l["mes"] > n_real]}
+            zera_ = next((l["mes"] for l in d["projecao"] if l["acumulado"] >= 0), None)
+            d["veredito"] = {**d["veredito"], "acumulado_zera_em": zera_}
         r = ler(d, 0, lim) if d else None
         if r:   # no piso, "fecha" é zerar no prazo e continuar de pé: acumulado positivo no prazo e no fim da projeção
             r["fecha"] = r["fecha"] and de_pe(d, lim)
@@ -117,7 +126,9 @@ def piso(a, base, args0, r0, k, env, n_real, verba0):
     pct = lambda x: f"{br(x * 100, 1)}%"
     linhas = [f"Gerado automaticamente em toda projeção. Aqui o plano de hoje já bate o breakeven{(' (' + a.rotulo + ')') if a.rotulo else ''}: "
               f"com a verba de {rs(verba0)} e o funil do desejado, o acumulado zera em {cal(r0['zera'])}, sem nível de mercado nem verba a mais. "
-              f"Por isso este cenário mostra o PISO: até onde o funil pode cair e a conta ainda fecha no mesmo prazo (acumulado zerado até {cal(lim)}).",
+              f"Por isso este cenário mostra o PISO: até onde o funil pode cair e a conta ainda fecha no mesmo prazo (acumulado zerado até {cal(lim)})."
+              + (f" O contrato já se pagou (acumulado de {rs(folga)} até {cal(n_real)}): o piso não gasta essa folga — os meses daqui para frente "
+                 "precisam se pagar sozinhos, e o 'acumulado' do piso conta só eles." if folga else ""),
               (f"Piso: {rot_k} pode cair de {pct(plano_k)} (plano) para {pct(piso_k)} — {br(media_vendas(d), 1)} vendas por mês em média, "
                f"contra {br(media_vendas(d0), 1)} no plano — e o acumulado ainda zera em {cal(r['zera'])} e fica de pé. Abaixo disso, a conta deixa de fechar até {cal(lim)}."
                if piso_k > 0 else

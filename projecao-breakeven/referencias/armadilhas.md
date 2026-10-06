@@ -38,6 +38,14 @@ modelo estão em `inside_sales.md`, `ecommerce.md` e `plg.md`.
     não segue a busca. Confira a sazonalidade contra as vendas do próprio cliente nos meses da janela antes de aplicar;
     se não acompanhou, aplique só à parcela de busca (`1 + parcela × (índice ÷ base − 1)`) e escreva isso como premissa.
 
+26. **Pessimista igual ao desejado no melhor trimestre.** Na loja de pisos jul–set/26 foi o melhor trimestre (lead → venda de
+    4,4% contra a mediana de 3,0%): o desejado nunca planeja piora e o pessimista congelava as taxas atuais, e os dois
+    saíram em R$ 75.721. Regra (v8.7): o pessimista volta à mediana onde a janela está acima dela — é o risco real de
+    um cliente no pico.
+27. **Piso que gasta a folga do contrato.** Com legado, a loja de pisos já tinha R$ 134 mil de acumulado: os três meses à
+    frente fechavam até sem venda e o piso saía SQL → venda = 0%. Regra (v8.7): contrato que já se pagou tem o piso
+    calculado só sobre os meses à frente, como na leitura sem legado, e a aba diz quanto é a folga.
+
 ## Fonte
 
 23. **Linha de etapa que não mede.** Na distribuidora de peças automotivas os SQLs manuais foram 64, 207 e 33 com 24, 23 e 22 vendas (SQL → venda
@@ -53,6 +61,17 @@ modelo estão em `inside_sales.md`, `ecommerce.md` e `plg.md`.
 25. **Mercado mexendo em etapa fixada.** Com MQL = lead (o cliente não mede MQL) e lead → SQL fixado em 8%, o Breakeven
     comparava "MQL → SQL" com os 42% do mercado e subiria a etapa 5x. Etapa fixada pelo usuário fica onde está no
     Breakeven ("fica (fixada pelo usuário)"); quem mexe no funil de mercado é só o que foi medido.
+
+28. **Growth Pack que conta clique como lead.** Na loja de pisos "Leads TOTAL" somava conversas do WhatsApp, leads do Google e o
+    clique no link do Meta (1.929 em jul/26 contra 400 contatos reais), e o bloco do Meta estava com as linhas
+    deslocadas (impressões zeradas até jul/26, "Leads" = conversas, "Conversas" = cliques). Regra: monte a fonte da
+    base diária (aba bd Meta Ads) e da API do Google, confira a soma contra o investimento do Growth Pack e use o
+    lead = contato real (conversa + formulário + conversão). A base diária pode parar antes do fim do mês (21/09):
+    compare com a coluna manual.
+29. **Duas etapas manuais que não fecham entre si.** Na loja de pisos o SQL passou do MQL (189 contra 159 em jul) e o MQL
+    passou do lead no CRM (123 contra 95 em set); com só o SQL implícito, o otimista ainda juntava lead → MQL de 61% e
+    MQL → venda de 42% de meses diferentes. Regra: `--etapa-implicita MQLs --etapa-implicita SQLs` com as duas taxas
+    fixadas no agrupado do período; os cenários variam pelo lead → venda real.
 
 6. **Linha copiada de outra.** Na fábrica de acessórios de cortina, "Conexão (manual)" repetia a linha de SQLs mês a mês. Compare as linhas do
    funil entre si antes de aceitar: linha idêntica a outra não é medida — vira premissa de mercado (`--premissa-mercado`)

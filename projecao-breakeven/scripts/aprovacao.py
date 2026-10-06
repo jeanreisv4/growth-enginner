@@ -167,7 +167,7 @@ def main():
 
     tabela = {"colunas": ["Cenário", "Veredito", "No azul a partir de", "Acumulado zera em", "Acumulado no fim"],
               "linhas": [[k, r["status"], r["azul"] or "não acontece", r["zera"] or "não zera", rs(r["acum_fim"] or 0)] for k, r in res.items()],
-              "nota": "Pessimista: taxas atuais, sem rampa. Desejado: rampa até a mediana do período (o plano). "
+              "nota": "Pessimista: taxas atuais, ou de volta à mediana onde a janela está acima dela. Desejado: rampa até a mediana do período (o plano). "
                       "Otimista: rampa até o melhor mês fechado ou o benchmark de mercado, o que for maior."}
     topo = {"topo": [[f"RESTRIÇÃO MAPEADA ATÉ AGORA ({hoje}) · {tipo}", linhas + ([f"Ainda não medido: {x}." for x in lac] if lac else [])],
                      ["OS TRÊS CENÁRIOS", tabela]]}
